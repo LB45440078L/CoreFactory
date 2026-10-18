@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.moretntplus</groupId>
+    <artifactId>MoreTNTPlus</artifactId>
+    <version>1.0.0</version>
+  </parent>
+
+  <artifactId>MoreTNTPlus-ResourcePack</artifactId>
+  <name>MoreTNTPlus :: Resource Pack</name>
+  <description>
+    Build-time tool. Draws the textures of every TNT and component and writes the resource pack zip that
+    servers host. Reads the same tnts.yml and items.yml that the plugin ships, so the names always match.
+    Not a runtime dependency of the plugin.
+  </description>
+
+  <properties>
+    <!-- Resource pack format for the server version you target. Check the Minecraft wiki's pack format table. -->
+    <pack.format>75</pack.format>
+    <pack.description>MoreTNT+ custom TNT textures</pack.description>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Runs the generator at package time, so `mvn package` leaves the zip in target/. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>build-resource-pack</id>
+            <phase>package</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>io.moretntplus.resourcepack.ResourcePackBuilder</mainClass>
+              <arguments>
+                <argument>${project.basedir}/../MoreTNTPlus-Spigot/src/main/resources/tnts.yml</argument>
+                <argument>${project.basedir}/../MoreTNTPlus-Spigot/src/main/resources/items.yml</argument>
+                <argument>${project.build.directory}/MoreTNTPlus-ResourcePack-${project.version}.zip</argument>
+                <argument>${pack.format}</argument>
+                <argument>${pack.description}</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

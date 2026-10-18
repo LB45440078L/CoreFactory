@@ -1,0 +1,240 @@
+# =====================================================================================================
+#  MoreTNT+ crafting components
+#
+#  Components are custom items that are not TNT but are needed to craft the stronger TNT types.
+#  Each one has its own id, look (texture block below) and optional recipe.
+#
+#  Recipe ingredients:
+#    material:<NAME>   a vanilla item, e.g. material:IRON_INGOT (a bare name also works)
+#    item:<id>         another component from this file
+#    tnt:<id>          a TNT type from tnts.yml
+#
+#  Shaped recipes: "pattern" is up to three rows of three characters (a space is empty), and each
+#  character in the pattern maps to an ingredient under "ingredients".
+#  Shapeless recipes: "ingredients" is a list of up to nine items, in any arrangement.
+#
+#  "texture" is read by the resource pack builder only (see docs/RESOURCE_PACK.md). Colours are hex.
+# =====================================================================================================
+
+components:
+
+  fuse_linker:
+    name: "&bFuse Linker"
+    lore:
+      - "&7Right-click a placed TNT, then another,"
+      - "&7to link them with a visible fuse."
+      - "&8Sneak-right-click a TNT to clear its links."
+    material: REDSTONE
+    recipe:
+      type: shapeless
+      ingredients: [material:REDSTONE, material:REDSTONE, material:IRON_INGOT]
+    texture: { base: "#3A3F4A", accent: "#E0302A", pattern: circuit }
+
+  fuse_wire:
+    name: "&cFuse Wire"
+    lore:
+      - "&7Fine conductive wire, drawn for the linked fuses."
+    material: COPPER_INGOT
+    recipe:
+      type: shapeless
+      ingredients: [material:COPPER_INGOT, material:COPPER_INGOT, material:COPPER_INGOT, material:REDSTONE]
+    texture: { base: "#C07040", accent: "#FFB070", pattern: stripes }
+
+  shaped_charge_lens:
+    name: "&6Shaped Charge Lens"
+    lore:
+      - "&7Focuses a blast into a narrow cone."
+    material: GLASS
+    recipe:
+      type: shaped
+      pattern: ["GIG", "IDI", "GIG"]
+      ingredients:
+        G: material:GLASS
+        I: material:IRON_INGOT
+        D: material:DIAMOND
+    texture: { base: "#A8E0F0", accent: "#2F7F9F", pattern: rings }
+
+  gravity_core:
+    name: "&5Gravity Core"
+    lore:
+      - "&7A dense lattice that bends space around it."
+      - "&8Handle with care."
+    material: OBSIDIAN
+    recipe:
+      type: shaped
+      pattern: ["OEO", "ENE", "OEO"]
+      ingredients:
+        O: material:OBSIDIAN
+        E: material:ENDER_PEARL
+        N: material:NETHER_STAR
+    texture: { base: "#1E1030", accent: "#9A4DFF", pattern: rings }
+
+  vitrifier_flux:
+    name: "&fVitrifier Flux"
+    lore:
+      - "&7Lowers the melting point of anything it touches."
+    material: SAND
+    recipe:
+      type: shapeless
+      ingredients: [material:SAND, material:SAND, material:SAND, material:SAND, material:GLOWSTONE_DUST, material:BLAZE_POWDER]
+    texture: { base: "#E8D8A0", accent: "#FFFFFF", pattern: dots }
+
+  sorting_magnet:
+    name: "&9Sorting Magnet"
+    lore:
+      - "&7Pulls chosen ores toward the nearest chest."
+    material: LODESTONE
+    recipe:
+      type: shapeless
+      ingredients: [material:IRON_INGOT, material:IRON_INGOT, material:REDSTONE, material:LODESTONE]
+    texture: { base: "#505A70", accent: "#A0B0D0", pattern: checker }
+
+  anchor_crystal:
+    name: "&bAnchor Crystal"
+    lore:
+      - "&7Projects a field no explosion may enter."
+    material: AMETHYST_SHARD
+    recipe:
+      type: shaped
+      pattern: [" A ", "AEA", " A "]
+      ingredients:
+        A: material:AMETHYST_SHARD
+        E: material:END_CRYSTAL
+    texture: { base: "#7B5CC4", accent: "#D8C8FF", pattern: cross }
+
+  pulse_capacitor:
+    name: "&4Pulse Capacitor"
+    lore:
+      - "&7Stores enough charge to send one clean pulse."
+    material: REDSTONE_BLOCK
+    recipe:
+      type: shaped
+      pattern: ["RRR", "CCC", "RRR"]
+      ingredients:
+        R: material:REDSTONE
+        C: material:COPPER_INGOT
+    texture: { base: "#7A1010", accent: "#FF4040", pattern: stripes }
+
+  quantum_detonator:
+    name: "&eQuantum Detonator"
+    lore:
+      - "&7Watches for a body moving close by."
+    material: CLOCK
+    recipe:
+      type: shaped
+      pattern: ["RDR", "DGD", "RDR"]
+      ingredients:
+        R: material:REDSTONE
+        D: material:DIAMOND
+        G: material:GOLD_INGOT
+    texture: { base: "#222222", accent: "#FFD000", pattern: glyph }
+
+  biohazard_culture:
+    name: "&aBiohazard Culture"
+    lore:
+      - "&7Sealed, living and very unfriendly."
+    material: SLIME_BALL
+    recipe:
+      type: shapeless
+      ingredients: [material:ROTTEN_FLESH, material:ROTTEN_FLESH, material:SPIDER_EYE, material:FERMENTED_SPIDER_EYE, material:SLIME_BALL]
+    texture: { base: "#3B7A2A", accent: "#A8FF60", pattern: bio }
+
+  napalm_gel:
+    name: "&6Napalm Gel"
+    lore:
+      - "&7Sticky, burning, and it sticks to everything."
+    material: HONEY_BOTTLE
+    recipe:
+      type: shapeless
+      ingredients: [material:MAGMA_CREAM, material:COAL, material:COAL, material:GUNPOWDER, material:SLIME_BALL]
+    texture: { base: "#B84A10", accent: "#FFB030", pattern: flame }
+
+  anchor_plate:
+    name: "&7Anchor Plate"
+    lore:
+      - "&7A reinforcing plate for the nuclear casing."
+    material: IRON_BLOCK
+    recipe:
+      type: shaped
+      pattern: ["III", "IGI", "III"]
+      ingredients:
+        I: material:IRON_INGOT
+        G: material:GOLD_INGOT
+    texture: { base: "#9AA0A8", accent: "#D0D4DA", pattern: checker }
+
+  enriched_uranium:
+    name: "&aEnriched Uranium"
+    lore:
+      - "&7Weapons-grade stock. Dangerous to hold."
+      - "&8Handled only by licensed hands."
+    material: NETHERITE_SCRAP
+    recipe:
+      type: shapeless
+      ingredients: [material:NETHERITE_SCRAP, material:NETHERITE_SCRAP, material:NETHERITE_SCRAP,
+                    material:NETHERITE_SCRAP, material:AMETHYST_SHARD, material:AMETHYST_SHARD,
+                    material:AMETHYST_SHARD, material:AMETHYST_SHARD, material:EMERALD]
+    texture: { base: "#4E5A3A", accent: "#A6FF3A", pattern: hazard }
+
+  plutonium_pit:
+    name: "&dPlutonium Pit"
+    lore:
+      - "&7The hollow sphere at the heart of a bomb."
+      - "&8It is warm to the touch."
+    material: NETHER_STAR
+    recipe:
+      type: shapeless
+      ingredients: [item:enriched_uranium, item:enriched_uranium, material:NETHER_STAR, material:GOLD_BLOCK]
+    texture: { base: "#5A3A70", accent: "#E8A0FF", pattern: rings }
+
+  tritium_booster:
+    name: "&3Tritium Booster"
+    lore:
+      - "&7Fuses light atoms under extreme pressure."
+    material: PRISMARINE_CRYSTALS
+    recipe:
+      type: shaped
+      pattern: ["GBG", "BNB", "GBG"]
+      ingredients:
+        G: material:GOLD_INGOT
+        B: material:BLAZE_POWDER
+        N: material:NETHER_STAR
+    texture: { base: "#1E6A70", accent: "#7FFFE0", pattern: dots }
+
+  neutron_initiator:
+    name: "&eNeutron Initiator"
+    lore:
+      - "&7Fires the first neutrons into the core."
+    material: AMETHYST_CLUSTER
+    recipe:
+      type: shapeless
+      ingredients: [material:AMETHYST_BLOCK, material:GUNPOWDER, material:GUNPOWDER, material:REDSTONE_BLOCK]
+    texture: { base: "#6A4A9A", accent: "#FFE070", pattern: cross }
+
+  nuclear_casing:
+    name: "&cNuclear Casing"
+    lore:
+      - "&7Tamper-proof casing for a warhead."
+    material: IRON_BLOCK
+    recipe:
+      type: shaped
+      pattern: ["IGI", "GDG", "IGI"]
+      ingredients:
+        I: material:IRON_BLOCK
+        G: material:GOLD_BLOCK
+        D: material:DIAMOND_BLOCK
+    texture: { base: "#2E3238", accent: "#FFB020", pattern: hazard }
+
+  thermonuclear_core:
+    name: "&4Thermonuclear Core"
+    lore:
+      - "&7A staged fusion secondary. It is very heavy."
+      - "&8Crafting it is the hardest recipe on this server."
+    material: END_CRYSTAL
+    recipe:
+      type: shaped
+      pattern: ["PBP", "BNB", "PBP"]
+      ingredients:
+        P: item:plutonium_pit
+        B: item:tritium_booster
+        N: item:neutron_initiator
+    texture: { base: "#7A1020", accent: "#FF6A6A", pattern: rings }

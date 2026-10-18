@@ -1,0 +1,36 @@
+name: MoreTNTPlus
+version: ${project.version}
+main: io.moretntplus.spigot.MoreTntPlusPlugin
+# Quoted on purpose: YAML would read 1.21 as a float. 1.21 is the lowest API level this build relies on,
+# and every server it supports (1.21.11 and 26.x) accepts it.
+api-version: '1.21'
+description: New TNT mechanics, items, crafting and textures. Needs PacketEvents and WorldEdit or FastAsyncWorldEdit.
+authors: [MoreTNTPlus]
+# Hard dependency on PacketEvents: loaded first and must be present. Bukkit names are case-sensitive: its plugin.yml name is "packetevents".
+depend: [packetevents]
+# Either editor is enough. Both implement the same com.sk89q.worldedit API; the plugin disables itself if neither loads.
+softdepend: [WorldEdit, FastAsyncWorldEdit, WorldGuard, GriefPrevention]
+
+commands:
+  mtnt:
+    description: MoreTNT+ administration, TNT catalogue and placed-TNT configuration.
+    usage: /mtnt help
+    aliases: [moretnt]
+
+permissions:
+  moretntplus.*:
+    description: Every MoreTNT+ permission.
+    default: op
+    children:
+      moretntplus.give: true
+      moretntplus.configure: true
+      moretntplus.reload: true
+  moretntplus.give:
+    description: Give TNT and components, and open the catalogue.
+    default: op
+  moretntplus.configure:
+    description: Aim, target and unlink placed TNT.
+    default: op
+  moretntplus.reload:
+    description: Reload configuration and recipes.
+    default: op

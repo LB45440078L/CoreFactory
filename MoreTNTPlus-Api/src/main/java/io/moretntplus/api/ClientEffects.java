@@ -8,11 +8,17 @@ import org.bukkit.entity.Player;
  */
 public interface ClientEffects {
 
-    /** Makes the player's client show {@code timeOfDay} (0-24000) regardless of the world's real time. */
+    /**
+     * Holds the player's clock at {@code timeOfDay} (0-24000) regardless of the world's real time, until
+     * {@link #resetClientTime} is called. The hold survives the server's own periodic time updates.
+     */
     void setClientTime(Player player, long timeOfDay);
 
     /** Hands the player's clock back to the server. */
     void resetClientTime(Player player);
+
+    /** Shows rain and thunder to one player, whatever the world is doing. */
+    void setClientWeather(Player player, boolean raining, boolean thundering);
 
     /** Shows the given blocks to one player only. The server's world is not modified. */
     void showBlocks(Player player, World world, BlockChangeSet changes);

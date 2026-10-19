@@ -54,7 +54,7 @@ public final class BlockJobs {
     }
 
     public void submit(World world, BlockChangeSet changes, Runnable onComplete) {
-        if (changes.size() <= settings.instantThreshold()) {
+        if (changes.size() <= Math.min(settings.instantThreshold(), editor.preferredBatch())) {
             write(world, changes, 0, changes.size());
             onComplete.run();
             return;
@@ -89,7 +89,7 @@ public final class BlockJobs {
     }
 
     private void tick() {
-        int budget = settings.blocksPerTick();
+        int budget = Math.min(settings.blocksPerTick(), editor.preferredBatch());
         while (budget > 0 && !jobs.isEmpty()) {
             Job job = jobs.peek();
             try {

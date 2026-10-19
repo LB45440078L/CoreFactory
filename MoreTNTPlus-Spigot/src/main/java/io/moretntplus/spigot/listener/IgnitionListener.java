@@ -9,7 +9,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockIgniteEvent;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 
 import java.util.Optional;
@@ -29,10 +31,38 @@ public final class IgnitionListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onIgnite(BlockIgniteEvent event) {
         Block block = event.getBlock();
+        if (core.settings().debug()) {
+            core.plugin().getLogger().info("[debug] BlockIgniteEvent " + block.getType() + " cause=" + event.getCause()
+                    + " player=" + (event.getPlayer() == null ? "none" : event.getPlayer().getName()));
+        }
         if (block.getType() != Material.TNT) {
             return;
         }
         Optional<PlacedTnt> placed = core.placedAt(block.getLocation());
+        if (placed.isEmpty()) {
+            return;
+        }
+        event.setCancelled(true);
+        core.ignite(placed.get(), event.getPlayer());
+    }
+
+    /**
+     * Flint and steel or a fire charge used on a placed TNT. Vanilla does not raise BlockIgniteEvent for this, so the
+     * interaction itself is taken over: the item is not used and the core lights the placed TNT.
+     */
+    @EventHandler(ignoreCancelled = true)
+    public void onLight(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null) {
+            return;
+        }
+        Material item = event.getMaterial();
+        if (item != Material.FLINT_AND_STEEL && item != Material.FIRE_CHARGE) {
+            return;
+        }
+        if (event.getClickedBlock().getType() != Material.TNT) {
+            return;
+        }
+        Optional<PlacedTnt> placed = core.placedAt(event.getClickedBlock().getLocation());
         if (placed.isEmpty()) {
             return;
         }

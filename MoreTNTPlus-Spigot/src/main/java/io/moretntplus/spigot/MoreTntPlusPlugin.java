@@ -48,7 +48,11 @@ public final class MoreTntPlusPlugin extends JavaPlugin {
         saveResourceIfMissing("tnts.yml");
         saveResourceIfMissing("items.yml");
 
-        core = new MoreTntPlusCore(this, new WorldEditBlockEditor(getLogger()), new PacketClientEffects());
+        WorldEditBlockEditor blockEditor = new WorldEditBlockEditor(getLogger());
+        if (!getServer().getWorlds().isEmpty()) {
+            blockEditor.verify(getServer().getWorlds().get(0));
+        }
+        core = new MoreTntPlusCore(this, blockEditor, new PacketClientEffects());
         reloadConfiguration();
         core.loadPlaced();
         registerIntegrations(manager);

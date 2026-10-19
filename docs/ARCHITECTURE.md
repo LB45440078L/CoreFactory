@@ -86,8 +86,8 @@ mechanic ──► BlockChangeSet / BlockGenerator
                                                           fast mode, closed to flush
 ```
 
-A nuclear crater is a generator: it produces each column on demand, so a 150-block-radius hole never exists as one
-object in memory.
+A nuclear crater is a generator: it produces each column on demand, so a crater hundreds of blocks across never exists as
+one object in memory.
 
 ## Placed TNT
 
@@ -112,5 +112,7 @@ ticks, and saves on schedule. `BlockJobs` runs its own task only while there is 
 - **Mechanics are stateless.** All numbers arrive in `DetonationContext.settings()`, so one class serves every tier
   of the nuclear family, and a server admin can add a TNT type by writing YAML.
 - **Effects are modifiers, not subclasses.** Shockwave, debris, echo and silent are flags on a standard blast.
-- **Client-only effects stay client-only.** Daytime and beams are PacketEvents packets. They never touch the world,
-  so restoring a player's view is just re-sending the real blocks.
+- **Client-only effects stay client-only.** Daytime, weather and beams are PacketEvents packets. They never touch the
+  world, so restoring a player's view is just re-sending the real blocks and weather. The clock hold is the one effect
+  that also rewrites the server's own time packets on their way to that player, because the server would otherwise
+  undo it once a second.

@@ -22,7 +22,7 @@ and optional respect for WorldGuard regions and GriefPrevention claims.
 | Visual / audio | 4 | Shockwave ring, debris, echo, silent |
 | Utility / economy | 4 | Harvest, sorting, marker, anchor |
 | Military | 2 | Biological, napalm |
-| Nuclear | 10 | Davy Crockett to Tsar Bomba: countdowns, fallout, a crater cut to bedrock, debris, and a beacon array in the sky |
+| Nuclear | 10 | Davy Crockett to Tsar Bomba: countdowns, a saucer crater from surface bursts or a deep hemisphere from thermonuclear ones, flattened ground, debris, and a beacon array in the sky |
 
 Every type is a row in [`tnts.yml`](MoreTNTPlus-Spigot/src/main/resources/tnts.yml): its mechanic, radius, fuse,
 settings, recipe and texture can be changed without touching code. The full list is in
@@ -30,10 +30,12 @@ settings, recipe and texture can be changed without touching code. The full list
 
 ### Client-side beacon beams
 
-The nuclear tiers draw a 5 × 5 array of beacons, three blocks apart, on the surface around the blast. The beacons
-are sent to each nearby player with PacketEvents and are never written to the world, so the server's terrain does
-not change. When the player's view is restored, the real blocks are sent back. Each beacon draws its own beam up to
-the sky, and the player's client clock is set to noon for the same period.
+The nuclear tiers draw a 5 × 5 array of beacons, three blocks apart, around the blast. Each beacon sits on a small iron
+platform, because a client draws a beam only from a beacon with a pyramid. The beacons, platforms and light blocks are
+sent to each player within 3 × the radius with PacketEvents and are never written to the world, so the server's
+terrain does not change. Each beacon draws its own beam up to the sky. Those players also see the rain stop, and their
+clock hold at noon for 5 seconds and slide back to the real time over 20 more. When their view is restored, the real
+blocks, weather and clock are sent back. See [docs/MECHANICS.md](docs/MECHANICS.md#nuclear) for the details.
 
 ### Claims and integrations
 
@@ -76,7 +78,7 @@ are optional; install them and the blasts will respect their protection automati
 | Enable on Paper 26.1.2, 26.2, 26.3 and 1.21.11, with WorldEdit and PacketEvents | Passes; every server registers 58 recipes |
 | GriefPrevention integration, enable on Paper 1.21.11 | Attaches; no warnings |
 | WorldGuard integration | Compiles against the WorldGuard 7.0.20 API; not run on a server yet |
-| Gameplay in a client (placing, lighting, blasts, beacon beams, resource pack) | Not yet exercised |
+| Gameplay in a client (placing, lighting, blasts, beacon beams, resource pack) | A headless client (mineflayer) on Paper 26.1 has placed, lit and detonated TNT, and read back the nuclear clock, rain and beacon blocks. No graphical client has been used yet. |
 
 The full account, including known limitations, is in [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
 
@@ -89,6 +91,7 @@ The full account, including known limitations, is in [docs/COMPATIBILITY.md](doc
 | [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | `config.yml`, `tnts.yml`, `items.yml`, every key |
 | [docs/COMMANDS_AND_PERMISSIONS.md](docs/COMMANDS_AND_PERMISSIONS.md) | `/mtnt`, the Fuse Linker, permissions |
 | [docs/RESOURCE_PACK.md](docs/RESOURCE_PACK.md) | Textures, hosting the pack, pack format, changing the look |
+| [docs/TEXTURES.md](docs/TEXTURES.md) | Texture specification, tools and processes for every TNT and component, and a table of all of them |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Modules, the Api/Core/Spigot split, ignition and detonation, the block pipeline |
 | [docs/API.md](docs/API.md) | Writing your own mechanic or addon against the Api module |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Building, profiles, tests, the module layout, contributing |

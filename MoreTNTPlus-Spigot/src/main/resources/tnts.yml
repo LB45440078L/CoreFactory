@@ -652,15 +652,18 @@ tnts:
       - "&7Tier 1 of 10. Small, but not safe."
     material: TNT
     fuse-ticks: 100
-    radius: 6
+    radius: 14
     mechanic: nuclear
     effects: []
     settings: &nuke-common
-      crater-fraction: 0.45
       fire-far-seconds: 20
       fire-near-seconds: 5
       beam-seconds: 30
       damage: 40
+      shape: saucer
+      crater-radius: 30
+      crater-depth: 5
+      flatten-radius: 50
     recipe:
       type: shaped
       pattern: ["ENE", "NCN", "ENE"]
@@ -674,10 +677,14 @@ tnts:
       - "&7Tier 2 of 10."
     material: TNT
     fuse-ticks: 200
-    radius: 12
+    radius: 28
     mechanic: nuclear
     effects: []
-    settings: *nuke-common
+    settings:
+      <<: *nuke-common
+      crater-radius: 60
+      crater-depth: 8
+      flatten-radius: 100
     recipe:
       type: shaped
       pattern: ["EEE", "ECE", "EEE"]
@@ -691,10 +698,14 @@ tnts:
       - "&7Tier 3 of 10. Plutonium implosion."
     material: TNT
     fuse-ticks: 220
-    radius: 14
+    radius: 32
     mechanic: nuclear
     effects: []
-    settings: *nuke-common
+    settings:
+      <<: *nuke-common
+      crater-radius: 65
+      crater-depth: 8
+      flatten-radius: 110
     recipe:
       type: shaped
       pattern: ["PEP", "ECE", "PEP"]
@@ -708,10 +719,14 @@ tnts:
       - "&7Tier 4 of 10."
     material: TNT
     fuse-ticks: 240
-    radius: 15
+    radius: 34
     mechanic: nuclear
     effects: []
-    settings: *nuke-common
+    settings:
+      <<: *nuke-common
+      crater-radius: 70
+      crater-depth: 8
+      flatten-radius: 115
     recipe:
       type: shaped
       pattern: ["EPE", "PCP", "EPE"]
@@ -725,10 +740,14 @@ tnts:
       - "&7Tier 5 of 10. Boosted fission."
     material: TNT
     fuse-ticks: 300
-    radius: 35
+    radius: 80
     mechanic: nuclear
     effects: []
-    settings: *nuke-common
+    settings:
+      <<: *nuke-common
+      crater-radius: 110
+      crater-depth: 12
+      flatten-radius: 180
     recipe:
       type: shaped
       pattern: ["PBP", "BCB", "PBP"]
@@ -742,10 +761,15 @@ tnts:
       - "&7Tier 6 of 10. A strategic weapon."
     material: TNT
     fuse-ticks: 340
-    radius: 45
+    radius: 100
     mechanic: nuclear
     effects: []
-    settings: *nuke-common
+    settings:
+      <<: *nuke-common
+      shape: sphere
+      crater-radius: 60
+      sink-depth: 6
+      flatten-radius: 140
     recipe:
       type: shaped
       pattern: ["BPB", "PCP", "BPB"]
@@ -759,10 +783,15 @@ tnts:
       - "&7Tier 7 of 10. The sea was not the same after."
     material: TNT
     fuse-ticks: 400
-    radius: 70
+    radius: 130
     mechanic: nuclear
     effects: []
-    settings: *nuke-common
+    settings:
+      <<: *nuke-common
+      shape: sphere
+      crater-radius: 75
+      sink-depth: 8
+      flatten-radius: 180
     recipe:
       type: shaped
       pattern: ["BBB", "PCP", "BBB"]
@@ -776,10 +805,15 @@ tnts:
       - "&7Tier 8 of 10. Larger than predicted."
     material: TNT
     fuse-ticks: 420
-    radius: 85
+    radius: 150
     mechanic: nuclear
     effects: []
-    settings: *nuke-common
+    settings:
+      <<: *nuke-common
+      shape: sphere
+      crater-radius: 80
+      sink-depth: 8
+      flatten-radius: 190
     recipe:
       type: shaped
       pattern: ["NBN", "PCP", "NBN"]
@@ -793,10 +827,15 @@ tnts:
       - "&7Tier 9 of 10. The largest deliverable US design."
     material: TNT
     fuse-ticks: 480
-    radius: 105
+    radius: 170
     mechanic: nuclear
     effects: []
-    settings: *nuke-common
+    settings:
+      <<: *nuke-common
+      shape: sphere
+      crater-radius: 90
+      sink-depth: 8
+      flatten-radius: 210
     recipe:
       type: shaped
       pattern: ["PPP", "BCB", "PPP"]
@@ -807,18 +846,19 @@ tnts:
     name: "&4&lTsar Bomba"
     lore:
       - "&7USSR, 1961. About 50 megatons, the largest ever detonated."
-      - "&7Tier 10 of 10. The hole stops at bedrock."
+      - "&7Tier 10 of 10. A hemisphere of ground is vaporised."
       - "&8Everything within 1.5x the radius is warned."
     material: TNT
     fuse-ticks: 600
-    radius: 150
+    radius: 220
     mechanic: nuclear
     effects: []
     settings:
-      crater-fraction: 0.45
-      fire-far-seconds: 20
-      fire-near-seconds: 5
-      beam-seconds: 30
+      <<: *nuke-common
+      shape: sphere
+      crater-radius: 100
+      sink-depth: 10
+      flatten-radius: 260
       debris-count: 450
       damage: 80
     recipe:

@@ -123,6 +123,11 @@ public final class TntManager {
             return;
         }
         Optional<Mechanic> mechanic = core.mechanic(definition.mechanic());
+        if (core.settings().debug()) {
+            core.plugin().getLogger().info("[debug] detonate " + definition.id() + " mechanic="
+                    + definition.mechanic() + " depth=" + depth + " origin=" + origin.getBlockX() + ","
+                    + origin.getBlockY() + "," + origin.getBlockZ() + " placed=" + (placed != null));
+        }
         if (mechanic.isEmpty()) {
             return;
         }
@@ -166,9 +171,28 @@ public final class TntManager {
                 return;
             }
         }
+        if (core.settings().debug()) {
+            core.plugin().getLogger().info("[debug] explosion entity=" + (entity == null ? "none" : entity.getType())
+                    + " cancelled=" + event.isCancelled() + " blocks=" + event.blockList().size());
+        }
         if (event.isCancelled()) {
             // Another plugin refused this explosion: it must not chain into placed TNT either.
             return;
+        }
+        if (entity instanceof TNTPrimed) {
+            Optional<PlacedTnt> lit = core.placedAt(entity.getLocation());
+            if (lit.isPresent()) {
+                // A placed custom TNT that vanilla primed (arrows, fire, lava): run its mechanic, not a vanilla blast.
+                PlacedTnt placed = lit.get();
+                event.setCancelled(true);
+                event.blockList().clear();
+                Location at = entity.getLocation();
+                core.unregister(placed);
+                entity.remove();
+                core.definition(placed.tntId()).ifPresent(definition ->
+                        detonate(definition, at, null, placed.direction(), placed.chainDepth(), placed));
+                return;
+            }
         }
         if (core.protection().inAnchorField(event.getLocation())) {
             event.setCancelled(true);

@@ -127,38 +127,65 @@ Effects, measured from the blast centre as a fraction of the tier's radius R:
 | Distance | Effect |
 |---|---|
 | within 1.5 R | Countdown titles and an alarm while the fuse burns, then red warning titles at detonation. |
-| within 3 R | The player's client clock is set to noon for `beam-seconds`, and a 5 × 5 array of beacons (sent to the client only) draws a beam straight up from the surface around the centre. |
+| within 3 R | For that player's client only: the beacon array (below) draws its beams, the rain stops, and the clock holds at noon. |
 | 0.5 R or less | Killed instantly. |
 | 0.5 R to 0.8 R | Set on fire for `fire-far-seconds`. |
 | 0.8 R to R | Set on fire for `fire-near-seconds`, and nauseated for 15 seconds. |
 
-The crater is a circle of radius `crater-fraction` × R, cut straight down to bedrock, with sparse magma, lava and
-fire on its floor. It is streamed over several ticks. Debris clumps land on the ground around the crater and are
-set on fire. Creative and spectator players are not affected.
+**The viewer's sky, for `beam-seconds`.** The clock holds at noon for 5 seconds, then slides back to the real time over
+20 seconds and is handed back to the server. The server re-sends the real clock every second, so the hold is applied to
+those packets on their way out, not by sending one packet. The rain is removed for the whole `beam-seconds` and then
+restored to the world's real weather.
+
+**The beacon array.** A 5 × 5 array of beacons, three blocks apart, stands around the centre. Each beacon is raised on
+a 3 × 3 iron platform, one block above the ground. A client draws a beacon's beam only when the beacon has a pyramid,
+and a pyramid needs that platform. A beacon's beam also stops at the surface height the client knows, which counts the
+beacon itself, so each column gets an invisible light block at the top of the world; a light block at level 0 lets the
+beam through. The platform hangs in the air because the blast changes the ground, and the server sends those changes
+to every viewer, which would overwrite client-only blocks on the same spots. None of these blocks is placed on the
+server.
+
+**The cut.** Each tier has one of two shapes, chosen by `shape`:
+
+- `saucer` (tiers 1 to 5, surface bursts): a shallow bowl, `crater-depth` blocks deep at the centre and level at its rim
+  (radius `crater-radius`). Its floor is compacted coarse dirt, fused into green glass at the centre.
+- `sphere` (tiers 6 to 10, thermonuclear): a hemispherical hole of radius `crater-radius`, going down through the ground.
+  Outside the hole the rim sinks by `sink-depth` blocks and fades out at `flatten-radius`.
+
+Both shapes clear everything above the ground out to `flatten-radius`, so trees, grass and buildings flatten. The cut is
+streamed over several ticks, and blocks are never changed in protected regions. Sparse fire is left on a saucer's floor;
+a sphere also gets magma and lava. Debris clumps land on the flattened ring around the cut and are set on fire. Creative
+and spectator players are not affected.
 
 | Setting | Default | Meaning |
 |---|---|---|
-| `crater-fraction` | 0.45 | Crater radius as a fraction of R |
+| `shape` | `saucer` | `saucer` or `sphere`, as described above |
+| `crater-radius` | 0.6 × R | Radius of the cut |
+| `crater-depth` | 0.2 × R (at least 3) | Saucer only: depth at the centre |
+| `sink-depth` | 0 | Sphere only: how far the rim sinks |
+| `flatten-radius` | 1.8 × crater-radius | Everything above the ground is cleared out to here |
 | `fire-far-seconds` | 20 | Burning at 0.5 R to 0.8 R |
 | `fire-near-seconds` | 5 | Burning at 0.8 R to R |
-| `beam-seconds` | 30 | How long the client-side time and beams last |
+| `beam-seconds` | 30 | How long the viewer's beams, rain change and clock hold last |
 | `debris-count` | 3 × R | Number of debris clumps |
 | `damage` | 60 | Entity damage at the centre, falling off with distance |
 
-| Tier | TNT id | Reference | Radius (blocks) | Fuse (ticks) |
-|---|---|---|---|---|
-| 1 | `nuke_davy_crockett` | W54 family, about 20 tons | 6 | 100 |
-| 2 | `nuke_little_boy` | Hiroshima, about 15 kt | 12 | 200 |
-| 3 | `nuke_fat_man` | Nagasaki, about 21 kt | 14 | 220 |
-| 4 | `nuke_joe_1` | RDS-1, about 22 kt | 15 | 240 |
-| 5 | `nuke_ivy_king` | about 500 kt | 35 | 300 |
-| 6 | `nuke_b83` | about 1.2 Mt | 45 | 340 |
-| 7 | `nuke_ivy_mike` | about 10.4 Mt | 70 | 400 |
-| 8 | `nuke_castle_bravo` | about 15 Mt | 85 | 420 |
-| 9 | `nuke_mk17` | about 25 Mt | 105 | 480 |
-| 10 | `nuke_tsar_bomba` | about 50 Mt | 150 | 600 |
+| Tier | TNT id | Reference | Radius R (blocks) | Shape | Crater radius | Flatten radius | Fuse (ticks) |
+|---|---|---|---|---|---|---|---|
+| 1 | `nuke_davy_crockett` | W54 family, about 20 tons | 14 | saucer | 30 | 50 | 100 |
+| 2 | `nuke_little_boy` | Hiroshima, about 15 kt | 28 | saucer | 60 | 100 | 200 |
+| 3 | `nuke_fat_man` | Nagasaki, about 21 kt | 32 | saucer | 65 | 110 | 220 |
+| 4 | `nuke_joe_1` | RDS-1, about 22 kt | 34 | saucer | 70 | 115 | 240 |
+| 5 | `nuke_ivy_king` | about 500 kt | 80 | saucer | 110 | 180 | 300 |
+| 6 | `nuke_b83` | about 1.2 Mt | 100 | sphere | 60 | 140 | 340 |
+| 7 | `nuke_ivy_mike` | about 10.4 Mt | 130 | sphere | 75 | 180 | 400 |
+| 8 | `nuke_castle_bravo` | about 15 Mt | 150 | sphere | 80 | 190 | 420 |
+| 9 | `nuke_mk17` | about 25 Mt | 170 | sphere | 90 | 210 | 480 |
+| 10 | `nuke_tsar_bomba` | about 50 Mt | 220 | sphere | 100 | 260 | 600 |
 
-Yields are approximate public figures; the radii, fuses and crater sizes are scaled for gameplay, not physics.
+Yields are approximate public figures. The radii, fuses and crater sizes are scaled for gameplay, not physics. Crater
+sizes are in blocks, which are roughly metres: a saucer is about 60 blocks across at tier 1 and about 220 at tier 5, and
+a sphere's hole is 120 to 200 blocks across at the surface.
 
 ## Placement, timing and chains
 

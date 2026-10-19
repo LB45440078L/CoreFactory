@@ -45,7 +45,7 @@ From a mechanic, use `context.api()`.
 | `ignite(placed, source)` | Light a placed TNT as if a player had. |
 | `detonate(id, origin, source, direction, depth)` | Run a detonation directly. |
 | `scheduleLater(ticks, task)` | Run on the main thread later. |
-| `clientEffects()` | Per-player time and block views. |
+| `clientEffects()` | Per-player clock, weather and block views (`setClientTime`, `resetClientTime`, `setClientWeather`, `showBlocks`, `restoreBlocks`). |
 | `protection()` | Ask whether a block may be changed. |
 | `currentTick()`, `plugin()` | The tick counter and your scheduling owner. |
 

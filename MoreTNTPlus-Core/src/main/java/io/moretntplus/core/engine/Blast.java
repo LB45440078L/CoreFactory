@@ -45,16 +45,19 @@ public final class Blast {
     private final Effects effects;
     private final Explosions explosions;
     private int chainBaseDelay;
+    private boolean debug;
 
     public Blast(Plugin plugin, Effects effects, Explosions explosions, CoreSettings settings) {
         this.plugin = plugin;
         this.effects = effects;
         this.explosions = explosions;
         this.chainBaseDelay = settings.chainIgniteDelayTicks();
+        this.debug = settings.debug();
     }
 
     public void reconfigure(CoreSettings settings) {
         this.chainBaseDelay = settings.chainIgniteDelayTicks();
+        this.debug = settings.debug();
     }
 
     /**
@@ -76,6 +79,11 @@ public final class Blast {
 
         Runnable carve = () -> {
             BlockChangeSet set = carve(ctx, radius, chainDelayPerBlock);
+            if (debug) {
+                plugin.getLogger().info("[debug] blast " + ctx.tnt().id() + " at " + ctx.origin().getBlockX() + ","
+                        + ctx.origin().getBlockY() + "," + ctx.origin().getBlockZ() + " radius=" + radius
+                        + " source=" + (ctx.source() == null ? "none" : ctx.source().getType()) + " writes=" + set.size());
+            }
             ctx.api().submitBlockChanges(ctx.world(), set, () -> {
             });
             after.accept(set);

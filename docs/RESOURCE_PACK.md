@@ -1,7 +1,8 @@
 # Resource pack
 
 Every TNT and component has its own texture. The textures come in a resource pack, built from the same
-`tnts.yml` and `items.yml` the plugin reads, so the names always match.
+`tnts.yml` and `items.yml` the plugin reads, so the names always match. For the texture specification, the tools to
+build and preview them, and a table of every current texture, see [TEXTURES.md](TEXTURES.md).
 
 ## How the textures reach the screen
 

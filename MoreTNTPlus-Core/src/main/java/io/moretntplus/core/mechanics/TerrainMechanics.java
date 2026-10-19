@@ -62,7 +62,7 @@ final class TerrainMechanics {
                     });
             submit(ctx, set);
             kit.explosions().damage(origin, radius, damage(ctx, 3.0), ctx.source());
-            kit.effects().particle(origin, Particle.FLASH, 1, 0.0, 0.0, 64.0);
+            kit.effects().particle(origin, Particle.END_ROD, 20, 1.0, 0.1, 64.0);
             kit.effects().boom(origin, 2f);
         }
     }

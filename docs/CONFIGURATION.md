@@ -20,7 +20,7 @@ Errors in these files are reported on the console and the affected entry is skip
 
 | Key | Default | Meaning |
 |---|---|---|
-| `debug` | `false` | Verbose console output. |
+| `debug` | `false` | Verbose console output: each ignition, explosion, detonation and blast (origin, mechanic, number of blocks changed). Turn it on when a TNT does not behave. |
 | `disabled-worlds` | `[]` | World names (case-insensitive) where custom TNT cannot be placed or lit. |
 | `max-chain-depth` | `6` | Longest chain of detonations one ignition may start. Stops runaway chains. |
 | `max-detonations-per-second` | `60` | Global cap, measured over a rolling 20-tick window. Detonations beyond it are dropped. |
@@ -119,8 +119,9 @@ Keys:
 | `recipe` | no | Crafting recipe. A TNT without one is obtainable only by `/mtnt give`. |
 | `texture` | no | Used only when building the resource pack. |
 
-The `settings` of several nuclear tiers are written once with a YAML anchor (`&nuke-common`) and reused with an
-alias (`*nuke-common`). Any YAML feature Bukkit's loader supports is fine to use.
+The `settings` of the nuclear tiers share their fire and beam times through a YAML anchor (`&nuke-common`, on the first
+tier). Each tier then merges it with `<<: *nuke-common` and sets its own `shape`, `crater-radius`, `flatten-radius` and
+so on. Any YAML feature Bukkit's loader supports is fine to use.
 
 ## items.yml
 

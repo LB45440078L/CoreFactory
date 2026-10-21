@@ -1,0 +1,82 @@
+name: CoreFactory
+version: ${project.version}
+main: io.corefactory.spigot.CoreFactoryPlugin
+# Quoted on purpose: YAML would read 1.21 as a float. 1.21 is the lowest API level this build relies on,
+# and every server it supports (1.21.11 and 26.x) accepts it.
+api-version: '1.21'
+description: Research. Refine. Rule. Needs PacketEvents and WorldEdit or FastAsyncWorldEdit.
+authors: [CoreFactory]
+# Hard dependency on PacketEvents: loaded first and must be present. Bukkit names are case-sensitive: its plugin.yml name is "packetevents".
+depend: [packetevents]
+# Load before the Resource Pack Manager, so our pack is in its folder before it builds the merged pack.
+loadbefore: [ResourcePackManager]
+# Either editor is enough. Both implement the same com.sk89q.worldedit API; the plugin disables itself if neither loads.
+softdepend: [WorldEdit, FastAsyncWorldEdit, WorldGuard, GriefPrevention]
+
+commands:
+  cf:
+    description: CoreFactory administration, TNT catalogue and placed-TNT configuration.
+    usage: /cf help
+    aliases: [corefactory]
+
+permissions:
+  corefactory.*:
+    description: Every CoreFactory permission.
+    default: op
+    children:
+      corefactory.give: true
+      corefactory.configure: true
+      corefactory.reload: true
+      corefactory.guide: true
+      corefactory.achievements: true
+      corefactory.recipes: true
+      corefactory.geology: true
+      corefactory.research.admin: true
+      corefactory.pylons: true
+      corefactory.grid: true
+      corefactory.lock: true
+      corefactory.lock.admin: true
+      corefactory.friends: true
+      corefactory.turret: true
+  corefactory.give:
+    description: Give TNT and components, and open the catalogue.
+    default: op
+  corefactory.configure:
+    description: Aim, target and unlink placed TNT.
+    default: op
+  corefactory.reload:
+    description: Reload configuration and recipes.
+    default: op
+  corefactory.guide:
+    description: Get the tutorial book and browse the catalogue.
+    default: true
+  corefactory.achievements:
+    description: Open your own achievements.
+    default: true
+  corefactory.recipes:
+    description: Open the recipe of any TNT or component.
+    default: true
+  corefactory.geology:
+    description: Check the ore veins and lay them into existing chunks (/cf geology).
+    default: op
+  corefactory.research.admin:
+    description: Finish research for players (/cf research).
+    default: op
+  corefactory.lock:
+    description: Set, change and remove a PIN lock on your own nuclear TNT.
+    default: true
+  corefactory.lock.admin:
+    description: Remove a PIN lock from any nuclear TNT without its PIN, for recovery. Each removal is logged.
+    default: op
+  corefactory.pylons:
+    description: Show the grid outlines near you (/cf pylons show), and list the charts and the grid you stand in (/cf grid list, info).
+    default: true
+  corefactory.grid:
+    description: Make, remove and change the grid charts (/cf grid create, remove, mode).
+    default: op
+  corefactory.friends:
+    description: Keep your friend list (/cf friends add, remove, list). A turret never fires at a friend or its owner, except a player set to target or a teammate in team mode target.
+    default: true
+  corefactory.turret:
+    description: Change the targeting of the turrets you placed, and their friendly fire (/cf turret friendlyfire).
+    default: true

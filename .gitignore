@@ -1,36 +1,114 @@
-# Build output
-target/
-dependency-reduced-pom.xml
-*.jar
-!.mvn/wrapper/maven-wrapper.jar
-*.class
+# =============================================================================
+# CoreFactory .gitignore
+#
+# Commit: sources, the Maven poms, the resource pack source (art/, including
+# the generated textures and specs the pack is built from), the docs and the
+# docs images, the tools that generate art and sounds, and the sound sources
+# list. Never commit: build output, archives, runtime data, local settings,
+# caches, or anything that holds a secret.
+# =============================================================================
 
-# Local test servers and their runtime data
+# -- Maven and build output ---------------------------------------------------
+target/
+**/target/
+dependency-reduced-pom.xml
+.flattened-pom.xml
+pom.xml.tag
+pom.xml.releaseBackup
+release.properties
+*.jar
+*.war
+*.ear
+*.class
+*.hprof
+
+# The built resource pack and every archive. The pack is rebuilt by Maven
+# into target/, so no zip is ever a source file.
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+
+# -- Java tooling -------------------------------------------------------------
+hs_err_pid*
+replay_pid*
+*.dump
+*.heapdump
+.gradle/
+.mvn/wrapper/maven-wrapper.jar
+
+# -- Python tooling (sound and art scripts) -----------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.python-version
+
+# -- Local test servers and their runtime data --------------------------------
 run/
 server/
 test-server/
+plugins/
+world/
+world_nether/
+world_the_end/
 logs/
 *.log
-hs_err_pid*
-replay_pid*
+crash-reports/
+
+# Plugin runtime data written next to a server (never a source file)
 placed-tnt.yml
+energy.yml
+logistics.yml
+turrets.yml
+friends.yml
+processes.yml.bak
+*.bak
+*.orig
+*.rej
 
-# Local secrets and overrides (never commit server tokens or private world paths)
-.env
-*.env
-secrets/
-local-config/
-
-# IDEs and OS
+# -- Editor, IDE and scratch --------------------------------------------------
 .idea/
 *.iml
+*.ipr
+*.iws
 .vscode/
+*.code-workspace
 .settings/
 .project
 .classpath
 .factorypath
+.VSCodeCounter/
+.cache/
 *.swp
+*.swo
 *~
+*.tmp
+*.temp
+scratchpad/
+tmp/
+temp/
+
+# Generated review sheet of every texture. ArtGenerator writes it; it is not packed and is not committed.
+CoreFactory-ResourcePack/art/contact-sheet.png
+
+# -- Operating system ---------------------------------------------------------
 .DS_Store
 Thumbs.db
+ehthumbs.db
 desktop.ini
+$RECYCLE.BIN/
+
+# -- Secrets and private settings (never commit tokens, paths or worlds) ------
+.env
+*.env
+secrets/
+local-config/
+*.pem
+*.key
+*.p12
+*.keystore
+id_rsa*
+credentials*.json

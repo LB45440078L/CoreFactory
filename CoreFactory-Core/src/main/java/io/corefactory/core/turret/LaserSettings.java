@@ -1,0 +1,102 @@
+package io.corefactory.core.turret;
+
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.MemoryConfiguration;
+
+/**
+ * The typed form of the {@code laser-turret} section of config.yml. The laser turret is electric and fires an instant beam, so it holds no
+ * rounds: its stats are these. Its targeting, rotation, arc, tilt and search come from the machine gun turret's settings, so both turrets
+ * pick the same targets and turn the same way. Every value has a default, and every value is clamped to a sane range. Distances are in
+ * blocks, times in ticks, power in W.
+ *
+ * @param range               the reach of the beam, in blocks
+ * @param damage              the damage of one shot to each hit entity
+ * @param armourBypass        the share of the target's armour the beam ignores, from 0 to 1; 1 ignores all of it
+ * @param firingIntervalTicks ticks between two shots at full power
+ * @param powerDemandW        the power a laser turret asks for, in W
+ * @param beamParticles       the most dust particles one beam draws
+ */
+public record LaserSettings(
+        double range,
+        double damage,
+        double armourBypass,
+        int firingIntervalTicks,
+        int powerDemandW,
+        int beamParticles) {
+
+    /** The reach of a level 1 laser, from its level table. Range, damage, interval and power are per level, not read from the section. */
+    public static final double DEFAULT_RANGE = TurretLevels.LASER.level(1).range();
+    public static final double DEFAULT_DAMAGE = TurretLevels.LASER.level(1).damage();
+    public static final double DEFAULT_ARMOUR_BYPASS = 1.0;
+    public static final int DEFAULT_FIRING_INTERVAL_TICKS = TurretLevels.LASER.level(1).fireIntervalTicks();
+    public static final int DEFAULT_POWER_DEMAND_W = TurretLevels.LASER.level(1).powerDemandW();
+    public static final int DEFAULT_BEAM_PARTICLES = 24;
+
+    private static final String SECTION = "laser-turret";
+
+    public LaserSettings {
+        range = clamp(range, 1.0, 64.0);
+        damage = clamp(damage, 0.0, 1000.0);
+        armourBypass = clamp(armourBypass, 0.0, 1.0);
+        firingIntervalTicks = Math.max(1, Math.min(firingIntervalTicks, 1200));
+        powerDemandW = Math.max(0, powerDemandW);
+        beamParticles = Math.max(0, Math.min(beamParticles, BeamPlan.MAX_BEAM_PARTICLES));
+    }
+
+    /** The settings with every default. */
+    public static LaserSettings defaults() {
+        return from(new MemoryConfiguration());
+    }
+
+    /**
+     * Reads the {@code laser-turret} section of a configuration. A missing section gives the defaults.
+     *
+     * @param config the root configuration, or any section that holds a {@code laser-turret} section
+     */
+    public static LaserSettings from(ConfigurationSection config) {
+        ConfigurationSection laser = config == null ? null : config.getConfigurationSection(SECTION);
+        if (laser == null) {
+            laser = new MemoryConfiguration();
+        }
+        return new LaserSettings(
+                DEFAULT_RANGE,
+                DEFAULT_DAMAGE,
+                laser.getDouble("armour-bypass", DEFAULT_ARMOUR_BYPASS),
+                DEFAULT_FIRING_INTERVAL_TICKS,
+                DEFAULT_POWER_DEMAND_W,
+                laser.getInt("beam-particles", DEFAULT_BEAM_PARTICLES));
+    }
+
+    /**
+     * The turret settings a laser turret runs with: the machine gun's targeting, rotation, arc, tilt, search and idle sweep, with this
+     * laser's range, interval and power. A laser has no spread, so its spread is zero.
+     *
+     * @param machineGun the settings of the machine gun turrets
+     */
+    public TurretSettings asTurret(TurretSettings machineGun) {
+        return new TurretSettings(
+                machineGun.enabled(),
+                range,
+                machineGun.searchIntervalTicks(),
+                firingIntervalTicks,
+                machineGun.rotationSpeedDegrees(),
+                machineGun.arcDegrees(),
+                machineGun.pitchLimitDegrees(),
+                machineGun.idleSweep(),
+                0.0,
+                machineGun.ammoCapacity(),
+                machineGun.ammoPerShot(),
+                powerDemandW,
+                machineGun.targets(),
+                machineGun.targetNamed(),
+                machineGun.targetTamed(),
+                machineGun.rounds());
+    }
+
+    private static double clamp(double value, double min, double max) {
+        if (Double.isNaN(value)) {
+            return min;
+        }
+        return Math.max(min, Math.min(max, value));
+    }
+}

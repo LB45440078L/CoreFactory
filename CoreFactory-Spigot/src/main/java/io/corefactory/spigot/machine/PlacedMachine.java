@@ -1,0 +1,177 @@
+package io.corefactory.spigot.machine;
+
+import io.corefactory.core.drill.DrillSelection;
+import io.corefactory.core.drill.DrillState;
+import io.corefactory.core.process.Machine;
+import io.corefactory.core.process.MachineState;
+import io.corefactory.spigot.hologram.Hologram;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * One machine placed in the world: its host block, its menu and its engine state. The items are in the host block's barrel,
+ * which the menu and the engine both read. A machine loaded from an older machines.yml may still hold stacks in the file;
+ * they stay here until the barrel takes them, keyed by their menu slot.
+ */
+public final class PlacedMachine {
+
+    private final Location block;
+    private final Machine machine;
+    private final Material host;
+    private final MachineMenu menu;
+    private final MachineState state;
+    private final Map<Integer, ItemStack> legacy = new LinkedHashMap<>();
+    private UUID display;
+    private UUID topDisplay;
+    private UUID interaction;
+    private Hologram hologram;
+    private DrillState drill;
+    private DrillSelection selection = new DrillSelection();
+    private Boolean minedBefore;
+    private long lastWorkTick = Long.MIN_VALUE / 2;
+    private boolean settled;
+    private double workCredit;
+
+    PlacedMachine(Location block, Machine machine, Material host, MachineMenu menu) {
+        this.block = block;
+        this.machine = machine;
+        this.host = host;
+        this.menu = menu;
+        this.state = new MachineState(machine.id(), menu.inputs(), menu.outputs(), menu.fuel());
+    }
+
+    /** The server tick this machine last showed its work effect on. */
+    long lastWorkTick() {
+        return lastWorkTick;
+    }
+
+    void markWork(long tick) {
+        this.lastWorkTick = tick;
+    }
+
+    /** The host block's position, with whole block coordinates. */
+    public Location block() {
+        return block;
+    }
+
+    public Machine machine() {
+        return machine;
+    }
+
+    /** The block the machine occupies, or null when the machine's host is not a block. */
+    public Material host() {
+        return host;
+    }
+
+    public MachineMenu menu() {
+        return menu;
+    }
+
+    public MachineState state() {
+        return state;
+    }
+
+    /** The stacks an older version kept in machines.yml that the barrel has not taken yet, by menu slot. */
+    Map<Integer, ItemStack> legacy() {
+        return legacy;
+    }
+
+    /** True once the machine has been brought onto the barrel storage. */
+    boolean settled() {
+        return settled;
+    }
+
+    void markSettled() {
+        this.settled = true;
+    }
+
+    /** The process ticks a lab tool has earned under a partial network and not yet run, from 0 up to but not including 1. */
+    double workCredit() {
+        return workCredit;
+    }
+
+    void setWorkCredit(double workCredit) {
+        this.workCredit = workCredit;
+    }
+
+    /** The item display drawn over the host block, or null when none is shown. */
+    public UUID display() {
+        return display;
+    }
+
+    /**
+     * The item display of the block above the host block of a tall drill, or null when none is shown, which is always the case for a
+     * machine one block tall.
+     */
+    public UUID topDisplay() {
+        return topDisplay;
+    }
+
+    void setTopDisplay(UUID topDisplay) {
+        this.topDisplay = topDisplay;
+    }
+
+    /** The progress hologram over the host block while the machine is active, or null when none is shown. */
+    public Hologram hologram() {
+        return hologram;
+    }
+
+    void setHologram(Hologram hologram) {
+        this.hologram = hologram;
+    }
+
+    void setDisplay(UUID display) {
+        this.display = display;
+    }
+
+    /**
+     * The invisible interaction entity over the host block, which takes the clicks a concealed client sends to the barrel, or
+     * null when none is made.
+     */
+    public UUID interaction() {
+        return interaction;
+    }
+
+    void setInteraction(UUID interaction) {
+        this.interaction = interaction;
+    }
+
+    /** The cycle state of a drill, or null for a lab tool. */
+    public DrillState drill() {
+        return drill;
+    }
+
+    void setDrill(DrillState drill) {
+        this.drill = drill;
+    }
+
+    /** The ores a drill mines. Every ore is mined unless the player ignored it in the resources menu. */
+    public DrillSelection selection() {
+        return selection;
+    }
+
+    void setSelection(DrillSelection selection) {
+        this.selection = selection;
+    }
+
+    /** Whether the drill has mined before, or null when the ledger has not been read yet this start. */
+    Boolean minedBefore() {
+        return minedBefore;
+    }
+
+    void setMinedBefore(boolean minedBefore) {
+        this.minedBefore = minedBefore;
+    }
+
+    /** True when the chunk of the host block is loaded, so the machine may run. */
+    public boolean isLoaded() {
+        World world = block.getWorld();
+        return world != null && world.isChunkLoaded(block.getBlockX() >> 4, block.getBlockZ() >> 4);
+    }
+}

@@ -4,26 +4,29 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.moretntplus</groupId>
-  <artifactId>MoreTNTPlus</artifactId>
+  <groupId>io.corefactory</groupId>
+  <artifactId>CoreFactory</artifactId>
   <version>1.0.0</version>
   <packaging>pom</packaging>
 
-  <name>MoreTNTPlus (parent)</name>
+  <name>CoreFactory (parent)</name>
   <description>New TNT mechanics, items, crafting and textures for Spigot 1.21.11 and 26.x.</description>
-  <url>https://github.com/LB45440078L/MoreTNTPlus</url>
+  <url>https://github.com/LB45440078L/CoreFactory</url>
 
   <modules>
-    <module>MoreTNTPlus-Api</module>
-    <module>MoreTNTPlus-Core</module>
-    <module>MoreTNTPlus-Spigot</module>
-    <module>MoreTNTPlus-ResourcePack</module>
+    <module>CoreFactory-Api</module>
+    <module>CoreFactory-Storage</module>
+    <module>CoreFactory-Core</module>
+    <module>CoreFactory-ResourcePack</module>
+    <module>CoreFactory-Spigot</module>
   </modules>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.compiler.release>25</maven.compiler.release>
+    <!-- Resource pack format of the server version. Each api-* profile sets its own; see docs/RESOURCE_PACK.md. -->
+    <pack.format>84</pack.format>
 
     <!-- Compile target. Override with one of the api-* profiles below, e.g. -Papi-1.21.11 -->
     <spigot.api.version>26.1-R0.1-SNAPSHOT</spigot.api.version>
@@ -38,7 +41,8 @@
     <compiler.plugin.version>3.16.0</compiler.plugin.version>
     <surefire.plugin.version>3.6.0</surefire.plugin.version>
     <exec.plugin.version>3.5.0</exec.plugin.version>
-    <shade.plugin.version>3.6.0</shade.plugin.version>
+    <!-- 3.6.0 cannot read Java 25 class files (major version 69) and fails to shade the plugin. -->
+    <shade.plugin.version>3.6.1</shade.plugin.version>
   </properties>
 
   <profiles>
@@ -46,19 +50,31 @@
     <profile>
       <id>api-26.1</id>
       <activation><activeByDefault>true</activeByDefault></activation>
-      <properties><spigot.api.version>26.1-R0.1-SNAPSHOT</spigot.api.version></properties>
+      <properties>
+        <spigot.api.version>26.1-R0.1-SNAPSHOT</spigot.api.version>
+        <pack.format>84</pack.format>
+      </properties>
     </profile>
     <profile>
       <id>api-26.2</id>
-      <properties><spigot.api.version>26.2-R0.1-SNAPSHOT</spigot.api.version></properties>
+      <properties>
+        <spigot.api.version>26.2-R0.1-SNAPSHOT</spigot.api.version>
+        <pack.format>88</pack.format>
+      </properties>
     </profile>
     <profile>
       <id>api-26.3</id>
-      <properties><spigot.api.version>26.3-R0.1-SNAPSHOT</spigot.api.version></properties>
+      <properties>
+        <spigot.api.version>26.3-R0.1-SNAPSHOT</spigot.api.version>
+        <pack.format>97</pack.format>
+      </properties>
     </profile>
     <profile>
       <id>api-1.21.11</id>
-      <properties><spigot.api.version>1.21.11-R0.1-SNAPSHOT</spigot.api.version></properties>
+      <properties>
+        <spigot.api.version>1.21.11-R0.1-SNAPSHOT</spigot.api.version>
+        <pack.format>75</pack.format>
+      </properties>
     </profile>
   </profiles>
 
@@ -112,13 +128,13 @@
       </dependency>
 
       <dependency>
-        <groupId>io.moretntplus</groupId>
-        <artifactId>MoreTNTPlus-Api</artifactId>
+        <groupId>io.corefactory</groupId>
+        <artifactId>CoreFactory-Api</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>io.moretntplus</groupId>
-        <artifactId>MoreTNTPlus-Core</artifactId>
+        <groupId>io.corefactory</groupId>
+        <artifactId>CoreFactory-Core</artifactId>
         <version>${project.version}</version>
       </dependency>
 

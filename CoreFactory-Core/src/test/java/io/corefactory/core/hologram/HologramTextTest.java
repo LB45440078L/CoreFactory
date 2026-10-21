@@ -1,0 +1,195 @@
+package io.corefactory.core.hologram;
+
+import io.corefactory.core.drill.DrillKind;
+import io.corefactory.core.drill.DrillPower;
+import io.corefactory.core.drill.DrillRules;
+import io.corefactory.core.drill.DrillStatus;
+import io.corefactory.core.drill.DrillTable;
+import io.corefactory.core.process.MachineState;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.regex.Pattern;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class HologramTextTest {
+
+    private static final String GREEN = "&a";
+    private static final String DARK_GRAY = "&8";
+    private static final String SEGMENT = "■";
+
+    private static String bar(int filled, int empty) {
+        return GREEN + SEGMENT.repeat(filled) + DARK_GRAY + SEGMENT.repeat(empty);
+    }
+
+    @Test
+    void emptyBarHasNoFilledSegments() {
+        assertThat(HologramText.progressBar(0.0, 20)).isEqualTo(bar(0, 20));
+    }
+
+    @Test
+    void halfBarHasHalfFilled() {
+        assertThat(HologramText.progressBar(0.5, 20)).isEqualTo(bar(10, 10));
+    }
+
+    @Test
+    void fullBarHasNoEmptySegments() {
+        assertThat(HologramText.progressBar(1.0, 20)).isEqualTo(bar(20, 0));
+    }
+
+    @Test
+    void barRoundsToTheNearestSegment() {
+        assertThat(HologramText.progressBar(0.33, 20)).isEqualTo(bar(7, 13));
+        assertThat(HologramText.progressBar(0.32, 20)).isEqualTo(bar(6, 14));
+        assertThat(HologramText.progressBar(0.025, 20)).isEqualTo(bar(1, 19));
+        assertThat(HologramText.progressBar(0.024, 20)).isEqualTo(bar(0, 20));
+    }
+
+    @Test
+    void barClampsFractionsOutsideZeroToOne() {
+        assertThat(HologramText.progressBar(-0.5, 20)).isEqualTo(bar(0, 20));
+        assertThat(HologramText.progressBar(1.7, 20)).isEqualTo(bar(20, 0));
+        assertThat(HologramText.progressBar(Double.NaN, 20)).isEqualTo(bar(0, 20));
+    }
+
+    @Test
+    void barHasTheWidthAsked() {
+        assertThat(HologramText.progressBar(0.5, 4)).isEqualTo(bar(2, 2));
+        assertThat(HologramText.progressBar(0.5, 0)).isEqualTo(bar(1, 0));
+    }
+
+    @Test
+    void percentIsTruncatedAndClamped() {
+        assertThat(HologramText.percent(0.0)).isEqualTo("0%");
+        assertThat(HologramText.percent(0.5)).isEqualTo("50%");
+        assertThat(HologramText.percent(0.29)).isEqualTo("29%");
+        assertThat(HologramText.percent(0.999)).isEqualTo("99%");
+        assertThat(HologramText.percent(1.0)).isEqualTo("100%");
+        assertThat(HologramText.percent(2.0)).isEqualTo("100%");
+        assertThat(HologramText.percent(-1.0)).isEqualTo("0%");
+    }
+
+    @Test
+    void fractionIsProgressOverTotalAndClamped() {
+        assertThat(HologramText.fraction(5, 10)).isEqualTo(0.5);
+        assertThat(HologramText.fraction(11, 10)).isEqualTo(1.0);
+        assertThat(HologramText.fraction(-3, 10)).isEqualTo(0.0);
+        assertThat(HologramText.fraction(4, 0)).isEqualTo(0.0);
+    }
+
+    private static final Pattern COLOUR_CODE = Pattern.compile("&[0-9a-fk-or]");
+
+    /** The text a player reads: the line with its colour codes taken out. */
+    private static String visible(String line) {
+        return COLOUR_CODE.matcher(line).replaceAll("");
+    }
+
+    private static MachineState crushing(int progress) {
+        MachineState state = new MachineState("crusher", List.of(), List.of(), List.of());
+        state.start("crush_uraninite");
+        state.restore("crush_uraninite", progress);
+        return state;
+    }
+
+    @Test
+    void aRunningLabToolHasThreeLinesProcessBarAndPercentWithTheSecondsLeft() {
+        List<String> lines = HologramText.forMachine("&7Crusher", crushing(620), 1000);
+
+        assertThat(lines).hasSize(HologramText.MACHINE_LINES);
+        assertThat(lines.get(0)).isEqualTo("&fCrush uraninite");
+        assertThat(lines.get(1)).isEqualTo(HologramText.progressBar(0.62, HologramText.BAR_WIDTH));
+        assertThat(lines.get(2)).isEqualTo("&f62%&7  ·  about 19 s");
+    }
+
+    @Test
+    void theSecondsLeftRoundUpAndAFinishedPassSaysSo() {
+        assertThat(HologramText.forMachine("&7Crusher", crushing(0), 1200).get(2)).isEqualTo("&f0%&7  ·  about 60 s");
+        assertThat(HologramText.forMachine("&7Crusher", crushing(3), 4).get(2)).isEqualTo("&f75%&7  ·  about 1 s");
+        assertThat(HologramText.forMachine("&7Crusher", crushing(4), 4).get(2)).isEqualTo("&f100%&7  ·  finishing");
+    }
+
+    @Test
+    void anIdleLabToolHasThreeLinesWithAnEmptyBarAndIdle() {
+        MachineState state = new MachineState("crusher", List.of(), List.of(), List.of());
+
+        assertThat(HologramText.forMachine("&7Crusher", state, 4))
+                .containsExactly("&7Crusher", HologramText.progressBar(0.0, HologramText.BAR_WIDTH), "&7idle");
+    }
+
+    @Test
+    void aProcessIdBecomesAReadableName() {
+        assertThat(HologramText.processName("crush_uraninite")).isEqualTo("Crush uraninite");
+        assertThat(HologramText.processName("crush")).isEqualTo("Crush");
+        assertThat(HologramText.processName("")).isEmpty();
+    }
+
+    @Test
+    void aPetroleumDrillOnCharcoalShowsItsFourLines() {
+        DrillPower power = DrillRules.petroleumPower(0, List.of(), true);
+
+        assertThat(HologramText.drillLines(DrillKind.PETROLEUM, DrillTable.level(1), power, DrillStatus.RUNNING,
+                12, 576, 3)).containsExactly(
+                "&bL1 Petroleum drill",
+                "&7Power: &echarcoal 35%",
+                "&7Extracting &f0.01/s  (0.7/min)",
+                "&7Stored &f12&7/576 &7· fuel &f3");
+    }
+
+    @Test
+    void aFullRedstoneBlockShowsItsPowerAsOneHundredPercent() {
+        DrillPower power = DrillRules.petroleumPower(15, List.of(), false);
+
+        List<String> lines = HologramText.drillLines(DrillKind.PETROLEUM, DrillTable.level(3), power,
+                DrillStatus.RUNNING, 0, 576, 0);
+
+        assertThat(lines.get(1)).isEqualTo("&7Power: &eredstone 100%");
+        assertThat(lines.get(2)).isEqualTo("&7Extracting &f0.06/s  (3.3/min)");
+    }
+
+    @Test
+    void anOreDrillOnPetroleumShowsItsRateAndItsPetroleumAsPower() {
+        DrillPower power = DrillRules.orePower(true);
+
+        List<String> lines = HologramText.drillLines(DrillKind.ORE, DrillTable.level(5), power, DrillStatus.RUNNING,
+                40, 576, 0);
+
+        assertThat(lines).containsExactly(
+                "&bL5 Ore drill",
+                "&7Power: &epetroleum 100%",
+                "&7Extracting &f0.17/s  (10.0/min)",
+                "&7Stored &f40&7/576 &7· fuel &f0");
+    }
+
+    @Test
+    void aDrillThatIsNotRunningShowsItsStatusInPlaceOfTheRate() {
+        assertThat(HologramText.drillLines(DrillKind.PETROLEUM, DrillTable.level(1), DrillPower.NONE,
+                DrillStatus.NO_POWER, 0, 576, 0).get(2)).isEqualTo("&7No power");
+        assertThat(HologramText.drillLines(DrillKind.PETROLEUM, DrillTable.level(1),
+                DrillRules.petroleumPower(15, List.of(), false), DrillStatus.NO_TARGET, 0, 576, 0).get(2))
+                .isEqualTo("&7No deposit in range (depth 48)");
+        assertThat(HologramText.drillLines(DrillKind.ORE, DrillTable.level(1),
+                DrillRules.orePower(true), DrillStatus.FULL, 576, 576, 4).get(2)).isEqualTo("&7Output full");
+    }
+
+    @Test
+    void theOreDrillsStatusNamesItsOwnTarget() {
+        assertThat(visible(HologramText.drillLines(DrillKind.ORE, DrillTable.level(2), DrillRules.orePower(true),
+                DrillStatus.NO_TARGET, 0, 576, 0).get(2))).isEqualTo("No special ore in range");
+    }
+
+    @Test
+    void everyDrillLineIsAtMostThirtyTwoCharactersExceptThePetroleumNoTargetStatus() {
+        for (DrillStatus status : DrillStatus.values()) {
+            for (DrillKind kind : DrillKind.values()) {
+                List<String> lines = HologramText.drillLines(kind, DrillTable.level(5),
+                        DrillRules.petroleumPower(0, List.of(), true), status, 999, 576, 99);
+                assertThat(lines).hasSize(HologramText.DRILL_LINES);
+                for (int line = 0; line < lines.size(); line++) {
+                    int limit = 32;
+                    assertThat(visible(lines.get(line)).length()).as(lines.get(line)).isLessThanOrEqualTo(limit);
+                }
+            }
+        }
+    }
+}

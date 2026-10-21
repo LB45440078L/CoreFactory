@@ -1,0 +1,341 @@
+# =====================================================================================================
+#  CoreFactory configuration
+#
+#  Per-TNT settings (mechanics, radii, recipes, textures) live in tnts.yml.
+#  Crafting components (the ingredients that make the strong TNT) live in items.yml.
+#  After editing any of the three files run /cf reload. Placed TNT is kept across reloads.
+#
+#  Durations are in ticks (20 ticks = 1 second) unless the key says "seconds".
+# =====================================================================================================
+
+settings:
+  # Verbose console output: loaded definitions, skipped entries, detonation traces.
+  debug: false
+  # Worlds where custom TNT cannot be placed or lit. Names are case-insensitive.
+  disabled-worlds: []
+  # The longest chain of detonations one ignition may start. A guard against runaway chains.
+  max-chain-depth: 6
+  # Global cap on detonations per second (a rolling 20-tick window). Extra detonations are dropped.
+  max-detonations-per-second: 60
+
+performance:
+  # Block writes applied per server tick by the staged pipeline. Large blasts (nuclear craters, sculpt
+  # shells, debris) are spread over as many ticks as they need at this rate. Lower it on weak hosts.
+  blocks-per-tick: 25000
+  # Change sets up to this many blocks are applied in a single tick, without staging.
+  instant-threshold: 4000
+  # Ticks between a vanilla explosion reaching a placed custom TNT and that TNT igniting.
+  chain-ignite-delay-ticks: 6
+  # Particle packets sent per tick across every effect. Keeps shockwaves and beams from flooding clients.
+  particles-per-tick: 1500
+  # Players farther than this many blocks from an effect receive none of its sounds or particles.
+  effect-view-distance: 96
+
+effects:
+  # Sprite effects: fireballs, shock rings, mushroom clouds, machine steam and research bursts, drawn as item displays.
+  # Turn off to show none of them. Read at startup, so a change needs a restart.
+  enabled: true
+  # The most sprites alive at once. While the count is at this cap, newer effects are dropped and one warning is logged.
+  max-sprites: 600
+
+holograms:
+  # Progress holograms over the lab tools and drills while they run: a bar and a percentage, shown to players nearby. Turn off to
+  # show none. Read at startup, so a change needs a restart.
+  enabled: true
+  # Blocks from a player within which the player sees a lab tool's or drill's hologram. Read at startup.
+  view-distance: 32
+
+energy:
+  # Pylons and accumulators, the power network. Read at startup, so a change needs a restart.
+  consumers:
+    # Power a placed lab tool asks for, in watts (W). It runs at the share of this its network gives it, so a lab tool with no
+    # pylon in range stops. A value of 0 means a lab tool needs no power.
+    lab-demand: 4000
+    # Power a placed drill asks for when its level is not known, in watts (W). A drill normally asks for the power of its level
+    # (15 kW to 90 kW). A drill runs on the stronger of its own power (redstone, solar, fuel) and its network.
+    drill-demand: 15000
+  # Generators (wind, solar, charcoal, petroleum, diesel and nuclear) are placed on air like pylons, and a nuclear one may also stand
+  # in water. Their output, burn times and fuel are fixed by the energy table of the core, so they have no keys here.
+  # Ticks between saves of energy.yml, which holds the devices, wires, accumulator charge and generator fuel. The file is also saved on shutdown.
+  save-interval-ticks: 300
+  # Blocks from a player within which a wire is drawn to them. A wire is drawn only when its grid was solved this tick. Read at startup.
+  wire-view-blocks: 24
+  # The most particles a player is sent for the wires in one redraw, which is every 5 ticks, so about 64 a tick at 320. A wire of 24
+  # blocks costs about 50 particles, so the nearest wires are drawn whole and the rest wait. 0 turns the wires off for every player.
+  # Read at startup, so a change needs a restart.
+  wire-particle-cap: 320
+
+charts:
+  # Grid charts (/cf grid create): a hologram of a grid's satisfaction, production or storage. Read at startup, so a change
+  # needs a restart. The most charts one grid may have.
+  charts-per-grid: 1
+  # The most charts the server may have, in all.
+  charts-total: 5
+  # Ticks between the refreshes of a chart's text. A chart is refreshed only while a player is within 48 blocks of it.
+  refresh-ticks: 10
+
+logistics:
+  # The most item displays on belts at once. Each item on a belt is shown as a small item display that glides along the belt. Past
+  # this cap the items are still carried, but not shown, and one warning is logged. Read at startup, so a change needs a restart.
+  max-item-displays: 2000
+  # Ticks between saves of logistics.yml, which holds the belts, pickers, splitters and the items on the belts. The file is also saved
+  # on shutdown.
+  save-interval-ticks: 300
+
+turrets:
+  # Machine gun turrets. A turret is placed on air like a generator and fires at hostile mobs in its range. Read at startup, so a change
+  # needs a restart. Turn off to stop every turret: none searches, aims or fires, and none asks the network for power.
+  enabled: true
+  # The turret scan rate: ticks between two searches for a target while a turret has none (20 is one second). Lower scans more often
+  # and costs more server time; higher scans less often and reacts later. A turret keeps its target between searches, while it stays
+  # alive, in range and in its arc. Allowed: 1 to 1200.
+  search-interval-ticks: 20
+  # The most a turret turns in one tick, in degrees.
+  rotation-speed-degrees: 6
+  # The total sweep of a turret in degrees, centred on the way it faced when it was placed. 360 turns all round, so a turret fires at every
+  # hostile mob in its range whichever way it faces. A smaller value restricts it to a sector; a mob outside that sector is out of reach.
+  arc-degrees: 360
+  # The most a turret tilts up or down, in degrees. 90 looks straight up and down, so a mob above or below the turret is in reach. A smaller
+  # value refuses a mob beyond that tilt.
+  pitch-limit-degrees: 90
+  # Sweep the arc slowly while a turret has no target. Turn off to keep still until a target appears.
+  idle-sweep: true
+  # The spread of a regular round, as a half angle in degrees. Each round type scales it by its spread-factor below.
+  accuracy-spread: 3
+  # The rounds one shot uses.
+  ammo-per-shot: 1
+  # The kinds of mob a turret fires at. monsters is every hostile monster; phantoms, slimes and ghasts are spared until you add them
+  # to this list. Remove monsters to spare every mob, or leave the list empty to fire at none.
+  targets:
+    - monsters
+  # Fire at a mob that has a custom name. Off keeps named mobs safe.
+  target-named: false
+  # Fire at a tamed mob. Off keeps tamed mobs safe.
+  target-tamed: false
+  # Blocks between the two targets of a dual shot. A machine gun with two cannons (levels 4 and 5) fires at a second mob only when it
+  # stands within this many blocks of the first, and in range. Kept from 0 to 64.
+  dual-spacing-blocks: 6
+  # Each turret's own targets, and its friendly fire, are set in its menu (right-click it, or sneak-click). Its owner's friends are kept with
+  # /cf friends. A turret never fires at a friend or its owner. A player with a target stance, or a teammate in team mode target, is the exception.
+  # The four rounds. A turret's damage per hit comes from its level below, so a round adds no damage of its own. armour-bypass is the
+  # share of the target's armour the round ignores, from 0 to 1. fire-ticks sets the target alight for that many ticks. spread-factor
+  # scales accuracy-spread: lower is tighter.
+  rounds:
+    regular:
+      armour-bypass: 0
+      fire-ticks: 0
+      spread-factor: 1
+    armor-piercing:
+      armour-bypass: 0.5
+      fire-ticks: 0
+      spread-factor: 1
+    incendiary:
+      armour-bypass: 0
+      fire-ticks: 80
+      spread-factor: 1
+    depleted-uranium:
+      armour-bypass: 0.35
+      fire-ticks: 0
+      spread-factor: 0.5
+  # Upgrade levels, 1 to 5. Level 1 is the turret as placed, and each upgrade kit moves a turret up one level. A key that a level leaves
+  # out keeps its default. The keys: damage is the damage per hit before the boost, the same for every round; damage-boost-percent raises
+  # it, in per cent; fire-interval-ticks is the ticks between shots at full power; range is in blocks; ammo-capacity is the rounds the belt
+  # holds; cannons is 1 or 2, one target each; power-demand-w is the power in W. Levels 3 and up are two blocks high, as a door: the upgrade
+  # rule sets that, so it is not a key here.
+  levels:
+    # The turret as placed.
+    1:
+      damage: 6
+      damage-boost-percent: 0
+      fire-interval-ticks: 10
+      range: 24
+      ammo-capacity: 128
+      cannons: 1
+      power-demand-w: 24000
+    # First upgrade.
+    2:
+      damage: 6
+      damage-boost-percent: 10
+      fire-interval-ticks: 8
+      range: 26
+      ammo-capacity: 256
+      cannons: 1
+      power-demand-w: 33000
+    # Second upgrade. Two blocks high from here.
+    3:
+      damage: 6
+      damage-boost-percent: 20
+      fire-interval-ticks: 7
+      range: 28
+      ammo-capacity: 384
+      cannons: 1
+      power-demand-w: 42000
+    # Third upgrade. The second cannon comes with this level.
+    4:
+      damage: 6
+      damage-boost-percent: 35
+      fire-interval-ticks: 5
+      range: 30
+      ammo-capacity: 512
+      cannons: 2
+      power-demand-w: 51000
+    # Fourth upgrade, the highest.
+    5:
+      damage: 6
+      damage-boost-percent: 50
+      fire-interval-ticks: 4
+      range: 32
+      ammo-capacity: 768
+      cannons: 2
+      power-demand-w: 60000
+
+laser-turret:
+  # Laser turrets. Electric: they hold no rounds and fire an instant beam at the mobs a machine gun turret fires at, with the same targets,
+  # the same rotation and arc, and the same per-turret menu (the turrets section above). They stop with the turrets when enabled is off.
+  # Read at startup, so a change needs a restart.
+  # The share of a target's armour the beam ignores, from 0 to 1. 1 ignores all of it, so armour takes none of the damage.
+  armour-bypass: 1.0
+  # Dust particles one beam draws at most, from 0 to 32. The beam is spread evenly along its length when it is longer than the cap allows.
+  # A shot draws the beam's particles and, on a hit, a burst of six more: fewer than 40 in all.
+  beam-particles: 24
+  # Upgrade levels, 1 to 5, as for the machine gun. A laser holds no rounds, so it has no ammo-capacity here, and an ammo-capacity key is
+  # ignored. Every level has one cannon: one beam. Levels 3 and up are two blocks high, as a door, which the upgrade rule sets. Range,
+  # damage, interval and power are read from these levels only. At level 5 the beam and its impact are blue. damage-boost-percent raises
+  # the beam's damage, in per cent.
+  levels:
+    # The turret as placed.
+    1:
+      damage: 12
+      damage-boost-percent: 0
+      fire-interval-ticks: 10
+      range: 40
+      cannons: 1
+      power-demand-w: 60000
+    # First upgrade.
+    2:
+      damage: 12
+      damage-boost-percent: 10
+      fire-interval-ticks: 8
+      range: 44
+      cannons: 1
+      power-demand-w: 75000
+    # Second upgrade. Two blocks high from here.
+    3:
+      damage: 12
+      damage-boost-percent: 20
+      fire-interval-ticks: 6
+      range: 48
+      cannons: 1
+      power-demand-w: 90000
+    # Third upgrade.
+    4:
+      damage: 12
+      damage-boost-percent: 35
+      fire-interval-ticks: 5
+      range: 54
+      cannons: 1
+      power-demand-w: 105000
+    # Fourth upgrade, the highest.
+    5:
+      damage: 12
+      damage-boost-percent: 50
+      fire-interval-ticks: 4
+      range: 60
+      cannons: 1
+      power-demand-w: 120000
+
+concealment:
+  # Hides the barrel under each lab tool and drill from nearby players, so they see the custom model instead. The barrel
+  # stays on the server and in every other player's view. A click on the machine still opens it or breaks it. Turn off to
+  # show the barrels as usual. Read at startup, so a change needs a restart.
+  enabled: true
+  # Blocks from a machine's barrel within which a player sees it hidden. Players farther away see the barrel. Read at startup.
+  range: 48
+
+integrations:
+  # Respect other plugins' claims. Each is used only when the plugin is installed. Blasts never change blocks inside a WorldGuard
+  # region that denies TNT, or inside a GriefPrevention claim. Belts, pickers and splitters also deliver into containers only where
+  # their placer may use them. Set to false to ignore these plugins.
+  worldguard: true
+  griefprevention: true
+
+protection:
+  # Materials no blast may change. Add or remove as your server's rules require.
+  unbreakable-materials:
+    - BEDROCK
+    - BARRIER
+    - COMMAND_BLOCK
+    - CHAIN_COMMAND_BLOCK
+    - REPEATING_COMMAND_BLOCK
+    - STRUCTURE_BLOCK
+    - STRUCTURE_VOID
+    - JIGSAW
+    - END_PORTAL
+    - END_PORTAL_FRAME
+    - END_GATEWAY
+    - REINFORCED_DEEPSLATE
+  # Stop pistons from moving placed TNT, which would leave its item display behind.
+  protect-from-pistons: true
+
+locks:
+  # Wrong PINs on one locked nuclear TNT before its keypad is locked out. A correct PIN clears the count.
+  max-attempts: 3
+  # Seconds the keypad of that TNT stays locked out after the last allowed wrong PIN.
+  lockout-seconds: 30
+
+display:
+  # Show each placed TNT with its own custom model (an item display sits over the vanilla TNT block).
+  # Turn off to place plain TNT blocks. The item and recipe still work either way.
+  custom-textures: true
+  # Scale of that display. Slightly above 1 so the vanilla texture never shows through.
+  display-scale: 1.002
+
+placement:
+  # Record the placing player's horizontal facing as the TNT's direction (used by shaped charges and napalm).
+  direction-from-player: true
+
+geology:
+  # Chunks laid with ore veins per server tick. New chunks are queued as they generate, and /cf geology retrofit
+  # queues old ones. Raise it for faster catch-up on a strong server; each chunk costs a few block writes.
+  chunks-per-tick: 2
+
+persistence:
+  # Placed TNT (positions, links, targets, directions) is written here, inside the plugin's data folder.
+  file: placed-tnt.yml
+  # Seconds between automatic saves. The registry is always saved on shutdown.
+  save-interval-seconds: 300
+
+storage:
+  # Where research progress is kept, permanently. "sqlite" keeps it in one file in the plugin folder, for a single
+  # server. "postgresql" keeps it in a shared database, so several servers see the same research.
+  type: sqlite
+  sqlite-file: research.db
+  postgresql:
+    host: localhost
+    port: 5432
+    database: corefactory
+    user: corefactory
+    password: ""
+    pool-size: 6
+
+# Player-facing text. Colour codes use ampersands. {placeholders} are filled in by the plugin.
+messages:
+  prefix: "&8[&cCoreFactory&8] &7"
+  no-permission: "&cYou do not have permission to do that."
+  player-only: "&cThis command can only be used by a player."
+  unknown-id: "&cUnknown TNT or component: &f{id}"
+  player-offline: "&cNo online player named &f{player}&c."
+  given: "&7Gave &f{amount}x {name}&7 to &f{player}&7."
+  reloaded: "&aConfiguration reloaded: &f{tnts} &7TNT types, &f{components} &7components."
+  not-placed: "&cLook at a placed custom TNT block first."
+  aimed: "&7Direction set to &f{direction}&7."
+  target-set: "&7Teleport target set to &f{x}, {y}, {z}&7."
+  link-start: "&7Linked TNT selected. Right-click a second custom TNT to link them."
+  link-made: "&aFuse link created between two TNT blocks."
+  link-same: "&cA TNT cannot be linked to itself."
+  link-cleared: "&7All fuse links removed from this TNT."
+  disabled-world: "&cCoreFactory is disabled in this world."
+  placed-count: "&7Placed custom TNT: &f{count}&7."
+  info-header: "&6--- {name} &6---"
+  info-line: "&7{label}: &f{value}"
+  scan-result: "&7Scan of the marked region: &f{count} &7blocks, mostly {top}."

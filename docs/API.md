@@ -1,31 +1,31 @@
 # API
 
-MoreTNT+ can be extended by another plugin, or by a mechanic of your own, through the **Api** module. It has no
+CoreFactory can be extended by another plugin, or by a mechanic of your own, through the **Api** module. It has no
 implementation, only contracts, and it depends on Spigot-API alone.
 
 ## Adding the dependency
 
-The Api is published from this build as `io.moretntplus:MoreTNTPlus-Api`. Until you publish it, install it locally:
+The Api is published from this build as `io.corefactory:CoreFactory-Api`. Until you publish it, install it locally:
 
 ```bash
-mvn install -pl MoreTNTPlus-Api
+mvn install -pl CoreFactory-Api
 ```
 
 ```xml
 <dependency>
-  <groupId>io.moretntplus</groupId>
-  <artifactId>MoreTNTPlus-Api</artifactId>
+  <groupId>io.corefactory</groupId>
+  <artifactId>CoreFactory-Api</artifactId>
   <version>1.0.0</version>
   <scope>provided</scope>
 </dependency>
 ```
 
-Declare `MoreTNTPlus` as a dependency (`depend:` or `softdepend:`) of your plugin, so it loads first.
+Declare `CoreFactory` as a dependency (`depend:` or `softdepend:`) of your plugin, so it loads first.
 
 ## Getting the service facade
 
 ```java
-MoreTntPlusApi api = MoreTntPlusProvider.get();   // null until MoreTNT+ has enabled
+CoreFactoryApi api = CoreFactoryProvider.get();   // null until CoreFactory has enabled
 if (api == null) return;
 ```
 
@@ -53,7 +53,7 @@ Always call these on the main thread.
 
 ## Writing a mechanic
 
-A mechanic is a class that implements `io.moretntplus.api.Mechanic`:
+A mechanic is a class that implements `io.corefactory.api.Mechanic`:
 
 ```java
 public final class HealingBurst implements Mechanic {
@@ -75,11 +75,11 @@ public final class HealingBurst implements Mechanic {
 }
 ```
 
-Register it from your plugin's `onEnable`, after MoreTNT+ has enabled (declare `MoreTNTPlus` in your `depend` or
+Register it from your plugin's `onEnable`, after CoreFactory has enabled (declare `CoreFactory` in your `depend` or
 `softdepend`):
 
 ```java
-MoreTntPlusApi api = MoreTntPlusProvider.get();
+CoreFactoryApi api = CoreFactoryProvider.get();
 if (api != null) {
     api.registerMechanic(new HealingBurst());
 }
@@ -87,7 +87,7 @@ if (api != null) {
 
 `registerMechanic` adds the mechanic, or replaces the built-in mechanic with the same id, and re-reads the TNT
 configuration, so a TNT type that names it becomes usable at once and its recipe is registered. The same happens on
-`/mtnt reload`. Give a TNT type that names it in `tnts.yml`:
+`/cf reload`. Give a TNT type that names it in `tnts.yml`:
 
 ```yaml
 healing_tnt:
@@ -130,7 +130,7 @@ For a very large change, implement `BlockGenerator`: its `next(out, limit)` appe
 
 ## Events
 
-Both are cancellable Bukkit events in `io.moretntplus.api.event`:
+Both are cancellable Bukkit events in `io.corefactory.api.event`:
 
 | Event | Fired | Use it to |
 |---|---|---|
@@ -146,8 +146,36 @@ public void onDetonate(TntDetonateEvent event) {
 }
 ```
 
+## Extension points inside the plugin
+
+The Api module is the stable surface. The classes below are inside the plugin, in Core and Spigot. A developer who
+works on the plugin or forks it can use them. They may change between releases, so an addon should not depend on them.
+
+| Type | Module | What it does |
+|---|---|---|
+| `Visuals` | Core, `engine` | A functional interface with one method, `play(String effect, Location at, double scale)`. The core asks for a named effect and the platform draws it. `Visuals.NONE` shows nothing. The Spigot plugin supplies `SpriteEffects`, which implements it, with `CoreFactoryCore.setVisuals`. |
+| `VisualCatalog` | Core, `engine` | The 22 named effects, their shapes and sprites. `VisualCatalog.find(name)` returns one, and `VisualCatalog.placements(effect, scale)` lays out its sprites. A new effect is one entry in `EFFECTS`, plus its sprites in `SPRITES`. |
+| `ProcessCatalog` | Core, `process` | The lab tool kinds and processes of `processes.yml`. `ProcessCatalog.parse(ConfigurationSection, Logger)` reads them. Query with `machines()`, `machine(id)`, `process(id)`, `processesFor(machineId)`, `acceptsInput(machineId, ItemRef)` and `inputsOf(machineId)`. |
+| `DrillCatalog` | Core, `drill` | The drills of `processes.yml` (`drills:`). `DrillCatalog.parse(ConfigurationSection, Map<String, ComponentDefinition>, Logger)` reads them. Query with `drills()`, `drill(id)` and `machine(id)`. `DrillTable.level(n)` gives a level's area, depth and cycle. |
+| `HologramService` | Spigot, `hologram` | Creates and removes the progress holograms. `create(Location, List<String>)` returns an `Optional<Hologram>` with one line per text, top first. `remove(Hologram)` removes one, `spotAbove(Location)` gives the point 1.6 blocks above a block, and `enabled()` reports the `holograms.enabled` setting. `Hologram.setLines(List<String>)` changes the text of the lines, with `&` colour codes. |
+| `Database` and `StorageSettings` | Storage | `Database.open(StorageSettings, Logger)` opens the pool and runs the migrations. `query(SqlFunction)` and `execute(SqlConsumer)` run work on a pooled connection, and `close()` releases the pool. `StorageSettings` is the record of the `storage:` section. |
+
+Two rules hold for each of these. The catalogs, the visuals and the holograms are used on the main thread, as the Api is.
+The storage calls run on the background thread that the research store uses, so a `Database` call must not block the main thread.
+Do not write to the registries or the data files directly. Use the catalog's own parse and query methods, so the checks
+that the plugin runs on start still apply.
+
+For a new effect, a developer adds an entry to `VisualCatalog.EFFECTS`, and a test in `VisualCatalogTest` checks its
+sprite count. For a new drill level, the code in `DrillTable` is the only place that holds the numbers: the drill's
+`processes.yml` entry names its kind and level, and `DrillTable` gives the rest.
+
 ## Stability
 
-The Api module is what addons should depend on. `MoreTntPlusCore`, the `engine` and `mechanics` packages, and the
+The Api module is what addons should depend on. `CoreFactoryCore`, the `engine` and `mechanics` packages, and the
 Spigot module are implementation: they may change between releases. Every Api type is a `public` contract with
 Javadoc; the record components of `TntDefinition` and `DetonationContext` are part of it.
+
+The power network and the logistics devices are not part of the Api. The facade has no method for pylons, accumulators,
+generators, wires, belts, pickers or splitters. The pure models (`io.corefactory.core.energy` and
+`io.corefactory.core.logistics`) and the Bukkit side (`io.corefactory.spigot.energy` and `io.corefactory.spigot.logistics`)
+are internal to the plugin, and they can change between releases.

@@ -1,0 +1,906 @@
+# =====================================================================================================
+#  CoreFactory TNT types
+#
+#  Every entry is one TNT. The keys:
+#    name           display name (ampersand colour codes)
+#    lore           lines shown on the item
+#    material       base item material (TNT for every type, so placed blocks behave like TNT)
+#    fuse-ticks     fuse length once lit (20 ticks = 1 second)
+#    radius         blast radius in blocks. Its meaning depends on the mechanic (see docs/MECHANICS.md)
+#    mechanic       the behaviour; one of the ids listed in docs/MECHANICS.md
+#    effects        optional modifiers: shockwave_ring, debris, echo, silent
+#    settings       mechanic-specific numbers. Remove any key to use its default.
+#    recipe         shaped or shapeless; ingredients are material:, item: (see items.yml) or tnt:
+#
+#  Recipes use items.yml components where the TNT is meant to be hard to make.
+# =====================================================================================================
+
+tnts:
+
+  # ----------------------------------------------------------------- Structural / physics
+
+  chain_reaction_tnt:
+    name: "&6Chain Reaction TNT"
+    lore:
+      - "&7Lights every TNT nearby, one step at a time."
+      - "&8Builds a rolling wave, not a single frame."
+    material: TNT
+    fuse-ticks: 60
+    radius: 6
+    mechanic: chain_reaction
+    effects: []
+    settings:
+      delay-per-block: 3
+      chain-radius: 10
+      damage: 10
+    recipe:
+      type: shaped
+      pattern: ["RRR", "RTR", "RRR"]
+      ingredients: {R: "material:REDSTONE", T: "material:TNT"}
+
+  shaped_charge_tnt:
+    name: "&eShaped Charge TNT"
+    lore:
+      - "&7Blasts a narrow cone along the direction"
+      - "&7it was placed facing. Mines and breaches."
+      - "&8Aim with /cf aim."
+    material: TNT
+    fuse-ticks: 40
+    radius: 14
+    mechanic: shaped_charge
+    effects: []
+    settings:
+      length: 14
+      cone-degrees: 25
+      damage: 14
+      default-direction: [1, 0, 0]
+    recipe:
+      type: shaped
+      pattern: ["LIL", "ITI", "LIL"]
+      ingredients: {L: "item:shaped_charge_lens", I: "material:IRON_INGOT", T: "material:TNT"}
+
+  gravity_well_tnt:
+    name: "&5Gravity Well TNT"
+    lore:
+      - "&7Sucks blocks and creatures inward first,"
+      - "&7then carves a smaller crater at the centre."
+    material: TNT
+    fuse-ticks: 80
+    radius: 8
+    mechanic: gravity_well
+    effects: []
+    settings:
+      pull-ticks: 40
+      pull-strength: 0.45
+      max-debris: 300
+      crater-fraction: 0.5
+      damage: 6
+    recipe:
+      type: shaped
+      pattern: ["OGO", "GTG", "OGO"]
+      ingredients: {O: "material:OBSIDIAN", G: "item:gravity_core", T: "material:TNT"}
+
+  implosion_tnt:
+    name: "&8Implosion TNT"
+    lore:
+      - "&7The inverse of an explosion: everything"
+      - "&7collapses into one dense core at the centre."
+    material: TNT
+    fuse-ticks: 60
+    radius: 8
+    mechanic: implosion
+    effects: []
+    settings:
+      core-radius: 2
+      core-material: BLACK_CONCRETE
+      pull-strength: 1.2
+      damage: 4
+    recipe:
+      type: shaped
+      pattern: ["DDD", "DTD", "DDD"]
+      ingredients: {D: "material:DIAMOND_BLOCK", T: "material:TNT"}
+
+  fuse_linked_tnt:
+    name: "&cFuse-Linked TNT"
+    lore:
+      - "&7Does not explode on its own. Link it to other"
+      - "&7TNT with a Fuse Linker; ignite it to relay."
+    material: TNT
+    fuse-ticks: 20
+    radius: 3
+    mechanic: fuse_linked
+    effects: []
+    settings:
+      link-delay: 4
+    recipe:
+      type: shaped
+      pattern: ["WRW", "RTR", "WRW"]
+      ingredients: {W: "item:fuse_wire", R: "material:REDSTONE", T: "material:TNT"}
+
+  delayed_cascade_tnt:
+    name: "&7Cluster Cascade TNT"
+    lore:
+      - "&7Several waves of small submunitions,"
+      - "&7spaced by ticks, scattered around the target."
+    material: TNT
+    fuse-ticks: 60
+    radius: 10
+    mechanic: delayed_cascade
+    effects: []
+    settings:
+      waves: 3
+      wave-interval: 6
+      submunitions: 6
+      spread: 10
+      submunition-radius: 3.5
+      damage: 6
+    recipe:
+      type: shaped
+      pattern: ["SGS", "GTG", "SGS"]
+      ingredients: {S: "material:SAND", G: "material:GUNPOWDER", T: "material:TNT"}
+
+  four_dimensional_tnt:
+    name: "&d4-Dimensional Bomb"
+    lore:
+      - "&7Folds a fourth direction into the blast. The strongest"
+      - "&7weapon there is: about a gigaton, past every bomb above."
+      - "&8Needs a tesseract lattice and antimatter. Not indoors."
+    material: TNT
+    fuse-ticks: 800
+    radius: 340
+    mechanic: nuclear
+    effects: []
+    settings:
+      yield-megatons: 1000
+      visual: tesseract_fold
+      blast-fire-seconds: 60
+      beam-seconds: 60
+      damage: 300
+      shape: sphere
+      crater-radius: 150
+      sink-depth: 14
+      flatten-radius: 240
+      debris-count: 900
+    recipe:
+      type: shaped
+      pattern: ["LTL", "NAN", "LCL"]
+      ingredients:
+        L: "item:tesseract_lattice"
+        T: "material:TNT"
+        N: "item:neutronium_slug"
+        A: "item:antimatter_condensate"
+        C: "item:thermonuclear_core"
+
+  exotic_neutron_bomb:
+    name: "&bExotic Neutron Bomb"
+    lore:
+      - "&7A few kilotons of blast. Most of its harm is neutron"
+      - "&7radiation: it kills by dose, not by fire. A full suit holds it off."
+      - "&8Tier E1. Exotic Matter Series."
+    material: TNT
+    fuse-ticks: 100
+    radius: 45
+    mechanic: neutron
+    effects: []
+    settings:
+      yield-megatons: 0.005
+      damage: 20
+      dose-sv: 4.0
+      bio-radius: 90
+      blast-fire-seconds: 10
+    recipe:
+      type: shaped
+      pattern: ["SNS", "NCN", "SNS"]
+      ingredients:
+        S: "item:neutronium_slug"
+        N: "item:neutron_initiator"
+        C: "item:nuclear_casing"
+
+  exotic_antimatter_bomb:
+    name: "&5Antimatter Bomb"
+    lore:
+      - "&7A pinch of condensed antimatter, and a huge explosion."
+      - "&7About 180 megatons. Stronger than the Tsar Bomba."
+      - "&8Tier E2. Exotic Matter Series."
+    material: TNT
+    fuse-ticks: 400
+    radius: 260
+    mechanic: nuclear
+    effects: []
+    settings:
+      yield-megatons: 180
+      visual: antimatter_flash
+      blast-fire-seconds: 60
+      beam-seconds: 60
+      damage: 150
+      shape: sphere
+      crater-radius: 130
+      sink-depth: 12
+      flatten-radius: 210
+      debris-count: 600
+    recipe:
+      type: shaped
+      pattern: ["PSP", "SAS", "PCP"]
+      ingredients:
+        P: "item:plutonium_pit"
+        S: "item:superconducting_magnet"
+        A: "item:antimatter_condensate"
+        C: "item:nuclear_casing"
+
+  # ----------------------------------------------------------------- Terrain morphing
+
+  vitrify_tnt:
+    name: "&fVitrify TNT"
+    lore:
+      - "&7Fuses a sphere of blocks into glass, with an"
+      - "&7obsidian core. Nothing is destroyed or dropped."
+    material: TNT
+    fuse-ticks: 60
+    radius: 7
+    mechanic: vitrify
+    effects: []
+    settings:
+      outer-material: GLASS
+      inner-material: OBSIDIAN
+      inner-fraction: 0.45
+      damage: 3
+    recipe:
+      type: shaped
+      pattern: ["FSF", "STS", "FSF"]
+      ingredients: {F: "item:vitrifier_flux", S: "material:GLASS", T: "material:TNT"}
+
+  liquefy_tnt:
+    name: "&9Liquefy TNT"
+    lore:
+      - "&7Turns solid ground in the blast into lava."
+      - "&7Change the fluid in tnts.yml for water or slime."
+    material: TNT
+    fuse-ticks: 60
+    radius: 6
+    mechanic: liquefy
+    effects: []
+    settings:
+      fluid: LAVA
+      damage: 4
+    recipe:
+      type: shaped
+      pattern: ["WLW", "LTL", "WLW"]
+      ingredients: {W: "material:WATER_BUCKET", L: "material:LAVA_BUCKET", T: "material:TNT"}
+
+  terraform_tnt:
+    name: "&aTerraform TNT"
+    lore:
+      - "&7Reverse excavation: the crater is refilled"
+      - "&7up to the old ground level, with dirt."
+    material: TNT
+    fuse-ticks: 60
+    radius: 7
+    mechanic: terraform
+    effects: []
+    settings:
+      fill-material: DIRT
+      damage: 6
+    recipe:
+      type: shaped
+      pattern: ["DGD", "GTG", "DGD"]
+      ingredients: {D: "material:DIRT", G: "material:GRAVEL", T: "material:TNT"}
+
+  randomize_tnt:
+    name: "&dRandomize TNT"
+    lore:
+      - "&7Swaps every block in the blast for a random"
+      - "&7one from a weighted pool. Chaos for minigames."
+    material: TNT
+    fuse-ticks: 60
+    radius: 6
+    mechanic: randomize
+    effects: []
+    settings:
+      pool:
+        - {material: STONE, weight: 6}
+        - {material: DEEPSLATE, weight: 2}
+        - {material: ANDESITE, weight: 3}
+        - {material: GRAVEL, weight: 2}
+        - {material: MOSSY_COBBLESTONE, weight: 1}
+      damage: 5
+    recipe:
+      type: shaped
+      pattern: ["CRC", "RTR", "CRC"]
+      ingredients: {C: "material:COBBLESTONE", R: "material:REDSTONE", T: "material:TNT"}
+
+  sculpt_tnt:
+    name: "&bSculpt TNT"
+    lore:
+      - "&7Removes only a thin shell along a chosen"
+      - "&7sphere, cylinder or torus. Precise demolition."
+    material: TNT
+    fuse-ticks: 60
+    radius: 10
+    mechanic: sculpt
+    effects: []
+    settings:
+      shape: sphere
+      thickness: 1.5
+      height: 6
+      tube-radius: 3
+      damage: 4
+    recipe:
+      type: shaped
+      pattern: ["BIB", "ITI", "BIB"]
+      ingredients: {B: "material:IRON_BLOCK", I: "material:IRON_INGOT", T: "material:TNT"}
+
+  # ----------------------------------------------------------------- Entity / status
+
+  concussion_tnt:
+    name: "&eConcussion TNT"
+    lore:
+      - "&7No block damage and no deaths. Slows,"
+      - "&7nauseates and blinds everything in range."
+    material: TNT
+    fuse-ticks: 40
+    radius: 12
+    mechanic: concussion
+    effects: []
+    settings:
+      slowness-seconds: 8
+      nausea-seconds: 12
+      blindness-seconds: 5
+    recipe:
+      type: shaped
+      pattern: ["GBG", "BTB", "GBG"]
+      ingredients: {G: "material:GLOWSTONE_DUST", B: "material:BLAZE_POWDER", T: "material:TNT"}
+
+  launch_tnt:
+    name: "&bLaunch TNT"
+    lore:
+      - "&7Knocks everything in range up and away."
+      - "&7Fall damage is cancelled for the launched."
+    material: TNT
+    fuse-ticks: 40
+    radius: 8
+    mechanic: launch
+    effects: []
+    settings:
+      up: 1.4
+      radial: 1.6
+      damage: 0
+    recipe:
+      type: shaped
+      pattern: ["SPS", "PTP", "SPS"]
+      ingredients: {S: "material:SLIME_BLOCK", P: "material:PISTON", T: "material:TNT"}
+
+  teleport_tnt:
+    name: "&5Teleport TNT"
+    lore:
+      - "&7Moves everything in range. Place it, then"
+      - "&7/cf target at a block to pick a destination."
+    material: TNT
+    fuse-ticks: 40
+    radius: 10
+    mechanic: teleport
+    effects: []
+    settings:
+      random-offset: 12
+    recipe:
+      type: shaped
+      pattern: ["EPE", "PTP", "EPE"]
+      ingredients: {E: "material:ENDER_PEARL", P: "material:CHORUS_FRUIT", T: "material:TNT"}
+
+  gravity_flip_tnt:
+    name: "&3Gravity-Flip TNT"
+    lore:
+      - "&7Lifts everything in range into the air for a"
+      - "&7while, then lets it fall. Approximate by design."
+    material: TNT
+    fuse-ticks: 40
+    radius: 9
+    mechanic: gravity_flip
+    effects: []
+    settings:
+      duration-ticks: 100
+      lift: 0.9
+    recipe:
+      type: shaped
+      pattern: ["FGF", "GTG", "FGF"]
+      ingredients: {F: "material:FEATHER", G: "item:gravity_core", T: "material:TNT"}
+
+  # ----------------------------------------------------------------- Timing / logic
+
+  conditional_tnt:
+    name: "&6Conditional TNT"
+    lore:
+      - "&7A logic gate. Only detonates when its"
+      - "&7conditions hold; otherwise it fizzles."
+      - "&8Conditions are set in tnts.yml."
+    material: TNT
+    fuse-ticks: 80
+    radius: 6
+    mechanic: conditional
+    effects: []
+    settings:
+      require-block: REDSTONE_BLOCK
+      block-radius: 3
+      require-player-within: 0
+      require-powered: false
+      time-min: -1
+      time-max: -1
+      mode: all
+      damage: 14
+    recipe:
+      type: shaped
+      pattern: ["CRC", "RTR", "CRC"]
+      ingredients: {C: "material:COMPARATOR", R: "material:REDSTONE", T: "material:TNT"}
+
+  proximity_tnt:
+    name: "&4Proximity TNT"
+    lore:
+      - "&7Arms after a moment. The first player who"
+      - "&7comes near sets off a countdown. A trap."
+    material: TNT
+    fuse-ticks: 80
+    radius: 6
+    mechanic: proximity_tnt
+    effects: []
+    settings:
+      arm-ticks: 60
+      trigger-radius: 3
+      damage: 14
+    recipe:
+      type: shaped
+      pattern: ["QPQ", "PTP", "QPQ"]
+      ingredients: {Q: "item:quantum_detonator", P: "material:STONE_PRESSURE_PLATE", T: "material:TNT"}
+
+  pulse_tnt:
+    name: "&cPulse TNT"
+    lore:
+      - "&7Sends a redstone pulse through a shell around"
+      - "&7it, powering doors, lamps and pistons. May explode."
+    material: TNT
+    fuse-ticks: 40
+    radius: 4
+    mechanic: pulse_tnt
+    effects: []
+    settings:
+      explode: true
+      pulse-radius: 6
+      pulse-ticks: 40
+      pulse-material: REDSTONE_BLOCK
+      damage: 6
+    recipe:
+      type: shaped
+      pattern: ["CRC", "CTC", "CRC"]
+      ingredients: {C: "item:pulse_capacitor", R: "material:REDSTONE_BLOCK", T: "material:TNT"}
+
+  mirror_tnt:
+    name: "&bMirror TNT"
+    lore:
+      - "&7Carves the same blast again, reflected across"
+      - "&7a plane. For symmetry builds and puzzles."
+    material: TNT
+    fuse-ticks: 60
+    radius: 5
+    mechanic: mirror_tnt
+    effects: []
+    settings:
+      axis: x
+      plane-offset: 24
+      damage: 10
+    recipe:
+      type: shaped
+      pattern: ["GIG", "ITI", "GIG"]
+      ingredients: {G: "material:GLASS", I: "material:IRON_INGOT", T: "material:TNT"}
+
+  # ----------------------------------------------------------------- Visual / audio
+
+  shockwave_tnt:
+    name: "&fShockwave TNT"
+    lore:
+      - "&7A ring of flame expands before anything breaks."
+      - "&8Only players nearby see the ring."
+    material: TNT
+    fuse-ticks: 60
+    radius: 6
+    mechanic: standard
+    effects: [shockwave_ring]
+    settings:
+      ring-ticks: 12
+      damage: 12
+    recipe:
+      type: shaped
+      pattern: ["FFF", "FTF", "FFF"]
+      ingredients: {F: "material:FIREWORK_ROCKET", T: "material:TNT"}
+
+  debris_tnt:
+    name: "&7Debris TNT"
+    lore:
+      - "&7Destroyed blocks fly out as falling blocks."
+      - "&7They land, and can be collected."
+    material: TNT
+    fuse-ticks: 60
+    radius: 6
+    mechanic: standard
+    effects: [debris]
+    settings:
+      damage: 12
+    recipe:
+      type: shaped
+      pattern: ["CCC", "CTC", "CCC"]
+      ingredients: {C: "material:COBBLESTONE", T: "material:TNT"}
+
+  echo_tnt:
+    name: "&5Echo TNT"
+    lore:
+      - "&7The blast repeats, visually and audibly,"
+      - "&7a few times after. A decoy with no damage."
+    material: TNT
+    fuse-ticks: 60
+    radius: 5
+    mechanic: standard
+    effects: [echo]
+    settings:
+      echo-count: 3
+      echo-interval: 8
+      echo-jitter: 4
+      damage: 10
+    recipe:
+      type: shaped
+      pattern: ["NNN", "NTN", "NNN"]
+      ingredients: {N: "material:NOTE_BLOCK", T: "material:TNT"}
+
+  silent_tnt:
+    name: "&8Silent TNT"
+    lore:
+      - "&7No hiss, no sound, no particles, until it is"
+      - "&7too late. The stealth variant."
+    material: TNT
+    fuse-ticks: 80
+    radius: 5
+    mechanic: standard
+    effects: [silent]
+    settings:
+      damage: 12
+    recipe:
+      type: shaped
+      pattern: ["WWW", "WTW", "WWW"]
+      ingredients: {W: "material:WHITE_WOOL", T: "material:TNT"}
+
+  # ----------------------------------------------------------------- Utility / economy
+
+  harvest_tnt:
+    name: "&aHarvest TNT"
+    lore:
+      - "&7A mining charge. Blocks break, but their"
+      - "&7drops go to whoever lit it."
+    material: TNT
+    fuse-ticks: 60
+    radius: 6
+    mechanic: harvest
+    effects: []
+    settings:
+      max-items: 2000
+      damage: 0
+    recipe:
+      type: shaped
+      pattern: ["HHH", "HTH", "HHH"]
+      ingredients: {H: "material:HOPPER", T: "material:TNT"}
+
+  sorting_tnt:
+    name: "&9Sorting TNT"
+    lore:
+      - "&7Pulls chosen ores out of the blast and into the"
+      - "&7nearest chest. An automatic collector."
+    material: TNT
+    fuse-ticks: 60
+    radius: 6
+    mechanic: sorting
+    effects: []
+    settings:
+      sort-materials: [IRON_ORE, DEEPSLATE_IRON_ORE, GOLD_ORE, DEEPSLATE_GOLD_ORE, DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE, EMERALD_ORE, COAL_ORE, REDSTONE_ORE, LAPIS_ORE]
+      container-radius: 12
+      damage: 6
+    recipe:
+      type: shaped
+      pattern: ["CMC", "MTM", "CMC"]
+      ingredients: {C: "material:CHEST", M: "item:sorting_magnet", T: "material:TNT"}
+
+  marker_tnt:
+    name: "&bMarker TNT"
+    lore:
+      - "&7Does not explode. Outlines its region for"
+      - "&7everyone nearby. Lighting it scans the region."
+    material: TNT
+    fuse-ticks: 20
+    radius: 10
+    mechanic: marker
+    effects: []
+    settings: {}
+    recipe:
+      type: shaped
+      pattern: ["PLP", "LTL", "PLP"]
+      ingredients: {P: "material:PAPER", L: "material:LAPIS_LAZULI", T: "material:TNT"}
+
+  anchor_tnt:
+    name: "&bAnchor TNT"
+    lore:
+      - "&7Creates an anti-TNT field. While it stands,"
+      - "&7explosions cannot reach inside its radius."
+      - "&8Lighting it does nothing."
+    material: TNT
+    fuse-ticks: 20
+    radius: 12
+    mechanic: anchor
+    effects: []
+    settings: {}
+    recipe:
+      type: shaped
+      pattern: ["ACA", "CTC", "ACA"]
+      ingredients: {A: "item:anchor_crystal", C: "material:CRYING_OBSIDIAN", T: "material:TNT"}
+
+  # ----------------------------------------------------------------- Military
+
+  biological_tnt:
+    name: "&2Biological TNT"
+    lore:
+      - "&7A small burst, then a cloud of blight. Creatures"
+      - "&7sicken, grass turns to path, leaves and plants die."
+      - "&cHazardous. Stay out of the cloud."
+    material: TNT
+    fuse-ticks: 40
+    radius: 10
+    mechanic: biological
+    effects: []
+    settings:
+      burst-radius: 3.5
+      duration-seconds: 30
+      tick-interval: 20
+      samples: 180
+      player-damage: 1.0
+      mob-damage: 2.0
+    recipe:
+      type: shaped
+      pattern: ["BCB", "CTC", "BCB"]
+      ingredients: {B: "item:biohazard_culture", C: "material:COMPOSTER", T: "material:TNT"}
+
+  napalm_tnt:
+    name: "&6Napalm TNT"
+    lore:
+      - "&7Throw it. It bursts where it lands, spreading"
+      - "&7fire along the way it fell. Placed, it burns in a circle."
+    material: TNT
+    fuse-ticks: 40
+    radius: 5
+    mechanic: napalm
+    effects: []
+    settings:
+      stretch: 1.6
+      damage: 4
+    recipe:
+      type: shaped
+      pattern: ["NGN", "GTG", "NGN"]
+      ingredients: {N: "item:napalm_gel", G: "material:GUNPOWDER", T: "material:TNT"}
+
+  # ----------------------------------------------------------------- Nuclear family
+  #  Yields are approximate public figures. Radii, fuses and crater sizes are scaled for gameplay.
+  #  settings.yield-megatons sets the fallout: a yield of 10 or more also shows beacon beams to nearby clients.
+  #  The zones are 0.3 x radius (fireball, instant death), 1 x radius (blast area) and 3 x radius (fallout).
+
+  nuke_davy_crockett:
+    name: "&aDavy Crockett Warhead"
+    lore:
+      - "&7W54 family, USA. About 20 tons of yield."
+      - "&7Tier 1 of 10. Small, but not safe."
+    material: TNT
+    fuse-ticks: 100
+    radius: 14
+    mechanic: nuclear
+    effects: []
+    settings: &nuke-common
+      blast-fire-seconds: 30
+      beam-seconds: 30
+      yield-megatons: 0.00002
+      damage: 40
+      shape: saucer
+      crater-radius: 30
+      crater-depth: 5
+      flatten-radius: 50
+    recipe:
+      type: shaped
+      pattern: ["ENE", "NCN", "ENE"]
+      ingredients: {E: "item:enriched_uranium", N: "item:neutron_initiator", C: "item:nuclear_casing"}
+
+  nuke_little_boy:
+    name: "&aLittle Boy"
+    lore:
+      - "&7Hiroshima, 1945. About 15 kilotons."
+      - "&7Tier 2 of 10."
+    material: TNT
+    fuse-ticks: 200
+    radius: 28
+    mechanic: nuclear
+    effects: []
+    settings:
+      yield-megatons: 0.015
+      <<: *nuke-common
+      crater-radius: 60
+      crater-depth: 8
+      flatten-radius: 100
+    recipe:
+      type: shaped
+      pattern: ["EEE", "ECE", "EEE"]
+      ingredients: {E: "item:enriched_uranium", C: "item:nuclear_casing"}
+
+  nuke_fat_man:
+    name: "&eFat Man"
+    lore:
+      - "&7Nagasaki, 1945. About 21 kilotons."
+      - "&7Tier 3 of 10. Plutonium implosion."
+    material: TNT
+    fuse-ticks: 220
+    radius: 32
+    mechanic: nuclear
+    effects: []
+    settings:
+      yield-megatons: 0.021
+      <<: *nuke-common
+      crater-radius: 65
+      crater-depth: 8
+      flatten-radius: 110
+    recipe:
+      type: shaped
+      pattern: ["PEP", "ECE", "PEP"]
+      ingredients: {P: "item:plutonium_pit", E: "item:enriched_uranium", C: "item:nuclear_casing"}
+
+  nuke_joe_1:
+    name: "&eJoe-1 (RDS-1)"
+    lore:
+      - "&7First Lightning, USSR, 1949. About 22 kilotons."
+      - "&7Tier 4 of 10."
+    material: TNT
+    fuse-ticks: 240
+    radius: 34
+    mechanic: nuclear
+    effects: []
+    settings:
+      yield-megatons: 0.022
+      <<: *nuke-common
+      crater-radius: 70
+      crater-depth: 8
+      flatten-radius: 115
+    recipe:
+      type: shaped
+      pattern: ["EPE", "PCP", "EPE"]
+      ingredients: {E: "item:enriched_uranium", P: "item:plutonium_pit", C: "item:nuclear_casing"}
+
+  nuke_ivy_king:
+    name: "&6Ivy King"
+    lore:
+      - "&7USA, 1952. About 500 kilotons."
+      - "&7Tier 5 of 10. Boosted fission."
+    material: TNT
+    fuse-ticks: 300
+    radius: 80
+    mechanic: nuclear
+    effects: []
+    settings:
+      yield-megatons: 0.5
+      <<: *nuke-common
+      crater-radius: 110
+      crater-depth: 12
+      flatten-radius: 180
+    recipe:
+      type: shaped
+      pattern: ["PBP", "BCB", "PBP"]
+      ingredients: {P: "item:plutonium_pit", B: "item:tritium_booster", C: "item:nuclear_casing"}
+
+  nuke_b83:
+    name: "&6B83 Gravity Bomb"
+    lore:
+      - "&7Variable yield, about 1.2 megatons at full power."
+      - "&7Tier 6 of 10. A strategic weapon."
+    material: TNT
+    fuse-ticks: 340
+    radius: 100
+    mechanic: nuclear
+    effects: []
+    settings:
+      yield-megatons: 1.2
+      <<: *nuke-common
+      shape: sphere
+      crater-radius: 60
+      sink-depth: 6
+      flatten-radius: 140
+    recipe:
+      type: shaped
+      pattern: ["BPB", "PCP", "BPB"]
+      ingredients: {B: "item:tritium_booster", P: "item:plutonium_pit", C: "item:nuclear_casing"}
+
+  nuke_ivy_mike:
+    name: "&cIvy Mike"
+    lore:
+      - "&7First thermonuclear test, 1952. About 10.4 megatons."
+      - "&7Tier 7 of 10. The sea was not the same after."
+    material: TNT
+    fuse-ticks: 400
+    radius: 130
+    mechanic: nuclear
+    effects: []
+    settings:
+      yield-megatons: 10.4
+      <<: *nuke-common
+      shape: sphere
+      crater-radius: 75
+      sink-depth: 8
+      flatten-radius: 180
+    recipe:
+      type: shaped
+      pattern: ["BBB", "PCP", "BBB"]
+      ingredients: {B: "item:tritium_booster", P: "item:plutonium_pit", C: "item:thermonuclear_core"}
+
+  nuke_castle_bravo:
+    name: "&cCastle Bravo"
+    lore:
+      - "&7Bikini Atoll, 1954. About 15 megatons."
+      - "&7Tier 8 of 10. Larger than predicted."
+    material: TNT
+    fuse-ticks: 420
+    radius: 150
+    mechanic: nuclear
+    effects: []
+    settings:
+      yield-megatons: 15
+      <<: *nuke-common
+      shape: sphere
+      crater-radius: 80
+      sink-depth: 8
+      flatten-radius: 190
+    recipe:
+      type: shaped
+      pattern: ["NBN", "PCP", "NBN"]
+      ingredients: {N: "item:neutron_initiator", B: "item:tritium_booster", P: "item:plutonium_pit", C: "item:thermonuclear_core"}
+
+  nuke_mk17:
+    name: "&4Mk-17"
+    lore:
+      - "&7USA, 1954. About 25 megatons."
+      - "&7Tier 9 of 10. The largest deliverable US design."
+    material: TNT
+    fuse-ticks: 480
+    radius: 170
+    mechanic: nuclear
+    effects: []
+    settings:
+      yield-megatons: 25
+      <<: *nuke-common
+      shape: sphere
+      crater-radius: 90
+      sink-depth: 8
+      flatten-radius: 210
+    recipe:
+      type: shaped
+      pattern: ["PPP", "BCB", "PPP"]
+      ingredients: {P: "item:plutonium_pit", B: "item:tritium_booster", C: "item:thermonuclear_core"}
+
+  nuke_tsar_bomba:
+    name: "&4&lTsar Bomba"
+    lore:
+      - "&7USSR, 1961. About 50 megatons, the largest ever detonated."
+      - "&7Tier 10 of 10. A hemisphere of ground is vaporised."
+      - "&8Everything within 3x the radius is warned."
+    material: TNT
+    fuse-ticks: 600
+    radius: 220
+    mechanic: nuclear
+    effects: []
+    settings:
+      yield-megatons: 50
+      <<: *nuke-common
+      shape: sphere
+      crater-radius: 100
+      sink-depth: 10
+      flatten-radius: 260
+      debris-count: 450
+      damage: 80
+    recipe:
+      type: shaped
+      pattern: ["MBM", "BCB", "MBM"]
+      ingredients: {M: "item:thermonuclear_core", B: "item:tritium_booster", C: "item:nuclear_casing"}

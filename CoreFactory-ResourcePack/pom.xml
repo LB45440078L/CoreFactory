@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.corefactory</groupId>
+    <artifactId>CoreFactory</artifactId>
+    <version>1.0.0</version>
+  </parent>
+
+  <artifactId>CoreFactory-ResourcePack</artifactId>
+  <name>CoreFactory :: Resource Pack</name>
+  <description>
+    Build-time tool. Paints the textures of every TNT and component (art package, run ArtGenerator) and writes the
+    resource pack zip that servers host, from the generated art in art/. Not a runtime dependency of the plugin.
+  </description>
+
+  <properties>
+    <pack.description>CoreFactory custom TNT textures</pack.description>
+    <!-- The pack version is the project version plus this build stamp. A newer build replaces an older pack. -->
+    <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
+  </properties>
+
+  <dependencies>
+    <!-- Only PackVersion is used here: the plugin reads the same class back from the version entry. -->
+    <dependency>
+      <groupId>io.corefactory</groupId>
+      <artifactId>CoreFactory-Api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Runs the generator at package time, so `mvn package` leaves the zip in target/. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>build-resource-pack</id>
+            <phase>package</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>io.corefactory.resourcepack.ResourcePackBuilder</mainClass>
+              <arguments>
+                <argument>${project.basedir}/art</argument>
+                <!-- A fixed name, so the Spigot module can bundle it without knowing the version. -->
+                <argument>${project.build.directory}/CoreFactory-ResourcePack.zip</argument>
+                <argument>${pack.format}</argument>
+                <argument>${pack.description}</argument>
+                <argument>${project.version}</argument>
+                <argument>${maven.build.timestamp}</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

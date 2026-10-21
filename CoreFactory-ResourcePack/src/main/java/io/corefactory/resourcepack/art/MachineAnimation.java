@@ -1,0 +1,196 @@
+package io.corefactory.resourcepack.art;
+
+import java.awt.image.BufferedImage;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+/**
+ * The animated faces of the machines. A machine listed here has one face that is a vertical strip of {@link #FRAMES}
+ * square frames, {@link #FRAME} pixels wide, and the resource pack builder writes an animation of the clip's frame time
+ * beside it, as it does for the belt tops. The other faces of the machine stay static.
+ *
+ * <p>Each frame is painted on a canvas over the same casing as the static face, and then halved, so an animated face has
+ * half the resolution of the static ones. Frame {@code k} is the animation's state at {@code k / FRAMES} of its cycle, so
+ * a pulse goes up over the first half of the strip and back down over the second, and the strip loops.
+ */
+public final class MachineAnimation {
+
+    /** The number of frames in an animated face. */
+    public static final int FRAMES = 8;
+
+    /** The width and height of one frame, in pixels: half a canvas. */
+    public static final int FRAME = Canvas.SIZE / 2;
+
+    private static final int GOLD = Color.hex("#FFD040");
+
+    /**
+     * One animated face.
+     *
+     * @param id        the machine id, such as {@code pylon_1}
+     * @param face      the side that is animated
+     * @param frametime the ticks each frame is shown, from 2 to 4
+     */
+    public record Clip(String id, MachineArt.Face face, int frametime) {
+    }
+
+    /**
+     * Every animated face: the beacons and the charge meters, which are painted here, and the generators, drills, lab
+     * tools and turrets, which their own classes list and paint.
+     */
+    public static final List<Clip> ALL = Stream.of(
+                    List.of(
+                            new Clip("pylon_1", MachineArt.Face.UP, 3),
+                            new Clip("pylon_2", MachineArt.Face.UP, 3),
+                            new Clip("pylon_3", MachineArt.Face.UP, 3),
+                            new Clip("accumulator_1", MachineArt.Face.NORTH, 3),
+                            new Clip("accumulator_2", MachineArt.Face.NORTH, 3),
+                            new Clip("accumulator_3", MachineArt.Face.NORTH, 3)),
+                    GeneratorArt.CLIPS, DrillArt.CLIPS, BigLabArt.CLIPS, TurretArt.CLIPS, TurretLevelArt.CLIPS)
+            .flatMap(List::stream).toList();
+
+    private MachineAnimation() {
+    }
+
+    /** The animation of a machine, if it has one. */
+    public static Optional<Clip> clip(String id) {
+        return ALL.stream().filter(clip -> clip.id().equals(id)).findFirst();
+    }
+
+    /** Whether a face of a machine is one of its animated faces. */
+    public static boolean animates(MachineArt.Spec spec, MachineArt.Face face) {
+        return clip(spec.id()).filter(clip -> clip.face() == face).isPresent();
+    }
+
+    /**
+     * An animated face: {@link #FRAMES} frames of {@link #FRAME} pixels, stacked top to bottom, so the image is
+     * {@code FRAME} wide and {@code FRAME * FRAMES} tall.
+     */
+    public static BufferedImage strip(MachineArt.Spec spec, MachineArt.Face face) {
+        BufferedImage strip = new BufferedImage(FRAME, FRAME * FRAMES, BufferedImage.TYPE_INT_ARGB);
+        for (int frame = 0; frame < FRAMES; frame++) {
+            Canvas canvas = new Canvas();
+            MachineArt.paintCasing(canvas, spec, face);
+            paintFrame(canvas, spec, frame);
+            strip.setRGB(0, frame * FRAME, FRAME, FRAME, halve(canvas), 0, FRAME);
+        }
+        return strip;
+    }
+
+    /** Paints the animated detail of a face for one frame, over the casing already on the canvas. */
+    static void paintFrame(Canvas c, MachineArt.Spec spec, int frame) {
+        int base = Color.hex(spec.base());
+        int accent = Color.hex(spec.accent());
+        switch (spec.id()) {
+            case "pylon_1", "pylon_2", "pylon_3" -> beacon(c, accent, frame);
+            case "accumulator_1", "accumulator_2", "accumulator_3" ->
+                    meter(c, base, accent, spec.id().charAt(spec.id().length() - 1) - '0', frame);
+            default -> {
+                if (GeneratorArt.owns(spec.id())) {
+                    GeneratorArt.paintFrame(c, spec, frame);
+                } else if (DrillArt.owns(spec.id())) {
+                    DrillArt.paintFrame(c, spec, frame);
+                } else if (TurretArt.owns(spec.id())) {
+                    TurretArt.paintFrame(c, spec, frame);
+                } else if (TurretLevelArt.owns(spec.id())) {
+                    TurretLevelArt.paintFrame(c, spec, frame);
+                } else {
+                    BigLabArt.paintFrame(c, spec, frame);
+                }
+            }
+        }
+    }
+
+    /** The frame's 32 x 32 canvas halved to {@link #FRAME} pixels square, each pixel the mean of a 2 x 2 block. */
+    private static int[] halve(Canvas canvas) {
+        int[] pixels = new int[FRAME * FRAME];
+        for (int y = 0; y < FRAME; y++) {
+            for (int x = 0; x < FRAME; x++) {
+                int alpha = 0;
+                int red = 0;
+                int green = 0;
+                int blue = 0;
+                for (int dy = 0; dy < 2; dy++) {
+                    for (int dx = 0; dx < 2; dx++) {
+                        int p = canvas.get(2 * x + dx, 2 * y + dy);
+                        alpha += Color.alpha(p);
+                        red += Color.red(p);
+                        green += Color.green(p);
+                        blue += Color.blue(p);
+                    }
+                }
+                pixels[y * FRAME + x] = Color.argb(alpha / 4, red / 4, green / 4, blue / 4);
+            }
+        }
+        return pixels;
+    }
+
+    /** The pulse of a cycle: 0 at frame 0, 1 at the middle frame, and back to 0, so the strip loops. */
+    static double pulse(int frame) {
+        return 0.5 - 0.5 * Math.cos(2 * Math.PI * frame / FRAMES);
+    }
+
+    /** A lamp in a ring, with a halo that brightens and dims: the ring is brighter at the middle of the cycle. */
+    private static void beacon(Canvas c, int accent, int frame) {
+        double p = pulse(frame);
+        c.paint(Area.ring(16, 16, 10, 3), Color.withAlpha(accent, 0.5 * p));
+        c.paint(Area.ring(16, 16, 7, 2.4), Color.mix(Color.scale(accent, 0.6), Color.mix(accent, Color.WHITE, 0.6), p));
+        c.paint(Area.disc(16, 16, 3.5), Color.mix(accent, Color.WHITE, 0.4 + 0.4 * p));
+    }
+
+    /**
+     * The charge meter of an accumulator: a fill that rises from the bottom of the meter and falls back over the cycle, and
+     * the level's bars, the first {@code level} of them lit.
+     */
+    private static void meter(Canvas c, int base, int accent, int level, int frame) {
+        c.paint(Area.rect(0, 14, Canvas.SIZE, 17), accent);
+        c.paint(Area.rect(9, 6, 23, 26), Color.hex("#0E1A14"));
+        double top = 26 - 20 * pulse(frame);
+        c.paint(Area.rect(11, top, 21, 26), Color.withAlpha(accent, 0.6));
+        for (int k = 0; k < 3; k++) {
+            double y = 21 - 5 * k;
+            c.paint(Area.rect(11, y, 21, y + 3), k < level ? GOLD : Color.scale(base, 0.4));
+        }
+    }
+
+    /**
+     * The glass column of a refinery top: a tube with bubbles that rise through it. Each bubble moves up 2.75 pixels a
+     * frame and wraps inside the tube, so the eight frames loop.
+     */
+    static void column(Canvas c, int accent, int frame) {
+        Area tube = Area.roundRect(11, 4, 21, 28, 4);
+        c.paint(tube, Color.withAlpha(Color.WHITE, 0.2));
+        c.paint(tube.minus(Area.roundRect(12, 5, 20, 27, 3)), accent);
+        double[][] bubbles = {{13.5, 20, 1.4}, {16, 9, 1.8}, {18.5, 25, 1.2}};
+        int bubble = Color.mix(accent, Color.WHITE, 0.6);
+        for (double[] b : bubbles) {
+            double rise = (b[1] - 5 - 22.0 * frame / FRAMES) % 22;
+            if (rise < 0) {
+                rise += 22;
+            }
+            c.paint(Area.disc(b[0], 5 + rise, b[2]), bubble);
+        }
+    }
+
+    /**
+     * Flames rising from the bottom of an area, clipped to it. Each column is as tall as the height at the middle of the
+     * width, flickers over the frames, and has a tip in its top two rows.
+     */
+    static void flames(Canvas c, Area clip, double left, double right, double bottom, double height, int frame,
+                       int body, int tip) {
+        double centre = (left + right) / 2;
+        double half = (right - left) / 2;
+        double cycle = 2 * Math.PI * frame / FRAMES;
+        for (int x = (int) left; x < right; x++) {
+            double swell = 1 - 0.5 * square((x + 0.5 - centre) / half);
+            double flicker = 0.6 + 0.25 * Math.sin(cycle + x * 1.7) + 0.15 * Math.sin(2 * cycle + x * 2.9);
+            double h = height * swell * flicker;
+            c.paint(Area.rect(x, bottom - h, x + 1, bottom).and(clip), body);
+            c.paint(Area.rect(x, bottom - h, x + 1, bottom - h + 2).and(clip), tip);
+        }
+    }
+
+    private static double square(double value) {
+        return value * value;
+    }
+}

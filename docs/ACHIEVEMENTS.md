@@ -20,7 +20,7 @@ do not count, so the achievements measure play.
 | Setting off a TNT, including a chain it starts | The player who started the chain. |
 | A fuse-linked pair | The player who linked it, when the link is made. |
 | Dropping a TNT item | The player who dropped it. |
-| Mining a placed ore block, one placed from an ore block item (a patch block dug by hand does not count) | The player who mined it. |
+| Mining an ore block: one placed from an ore block item, or a patch block dug by hand that gives its raw item | The player who mined it. |
 | Taking an item out of a machine's output slots | The player who took it. |
 | Placing a machine | The player who placed it. |
 | Finishing a research node at a console | The player who fed the last packs. |
@@ -82,7 +82,7 @@ The thirty are: Prospector, Crushing Work, First Research Pack, the seven produc
 
 | Achievement | Needs |
 |---|---|
-| Prospector | Mine a placed ore block, one placed from an ore block item. A patch block dug by hand does not count. |
+| Prospector | Mine an ore block: one placed from an ore block item, or a patch block dug by hand that gives its raw item. |
 | Crushing Work | Take crushed ore out of a <img src="images/components/crusher.png" width="24" height="24" align="absmiddle"> crusher. |
 | First Research Pack | Take a research pack out of a <img src="images/components/spectrometer.png" width="24" height="24" align="absmiddle"> spectrometer. |
 | Made: <img src="images/components/yellowcake.png" width="24" height="24" align="absmiddle"> Yellowcake (U3O8), <img src="images/components/uf6_cylinder.png" width="24" height="24" align="absmiddle"> UF6 Cylinder, <img src="images/components/enriched_uranium.png" width="24" height="24" align="absmiddle"> Enriched Uranium, <img src="images/components/u233_oxide.png" width="24" height="24" align="absmiddle"> Uranium-233 Oxide, <img src="images/components/plutonium_oxide.png" width="24" height="24" align="absmiddle"> Plutonium Oxide, <img src="images/components/deuterium_cell.png" width="24" height="24" align="absmiddle"> Deuterium Cell, <img src="images/components/antimatter_condensate.png" width="24" height="24" align="absmiddle"> Antimatter Condensate | Take one out of a machine. One feat each. |

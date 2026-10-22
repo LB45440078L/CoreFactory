@@ -22,7 +22,8 @@ offers the ids that have a recipe. A suggestion is offered only when you have th
 | `/cf count` | none | Number of placed custom TNT blocks. |
 | `/cf reload` | `corefactory.reload` | Re-reads `config.yml`, `tnts.yml`, `items.yml` and `materials.yml`, and re-registers recipes. Placed TNT stays as it is. `processes.yml`, `ores.yml`, `research.yml`, the `deposits` section and the drill section need a restart. See [CONFIGURATION.md](CONFIGURATION.md). |
 | `/cf pack [update]` | `corefactory.reload` | Shows the bundled and installed resource pack versions and what the next start will do. `update` copies the bundled pack now, only if it is newer. See [RESOURCE_PACK.md](RESOURCE_PACK.md#versions-and-updates). |
-| `/cf geology deposits [radius]` | `corefactory.geology` | Lists the deposits whose circle comes within `radius` blocks of you, in your world, nearest centre first. Each line gives the ore, what is left of the deposit's initial amount, its centre and its radius. `radius` is a whole number from 1 to 512, and the default is 64. Players only. |
+| `/cf geology deposits [radius]` | `corefactory.geology` | Lists the deposits whose circle comes within `radius` blocks of you, in your world, nearest first, with no limit. Each line gives the ore, its direction and distance, its richness and what is left. `radius` is a whole number from 1 to 512, and the default is 64. Players only. |
+| `/cf deposits` | `corefactory.geology` | Opens the deposit map: the nearest deposits of the scanner's filter, up to 54 in three pages of 18. A click on a deposit sets your waypoint. The filter and clear-waypoint buttons are in the menu. Players only. The permission is for operators by default; grant it to players to open the map for them. The scanner itself needs no permission. |
 | `/cf research max [player]` | `corefactory.research.admin` | Finishes every research node for a player. Without a name it is you. The player may be offline if they have joined before. |
 | `/cf research grant <node> [player]` | `corefactory.research.admin` | Finishes one node and every node it requires, for a player. The node id is checked; `/cf research nodes` lists them. |
 | `/cf research nodes` | `corefactory.research.admin` | Lists the node ids in research order. |
@@ -88,7 +89,7 @@ can be linked; only fuse-linked TNT does something with the links.
 | `corefactory.guide` | everyone | `/cf gui` (the catalogue) and `/cf book`. |
 | `corefactory.recipes` | everyone | `/cf recipe`, and right-clicking a catalogue entry. |
 | `corefactory.achievements` | everyone | `/cf achievements` for yourself. |
-| `corefactory.geology` | op | `/cf geology deposits`. |
+| `corefactory.geology` | op | `/cf geology deposits` and `/cf deposits`. |
 | `corefactory.research.admin` | op | `/cf research max`, `grant` and `nodes`. |
 | `corefactory.pylons` | everyone | `/cf pylons show`, `/cf grid list` and `/cf grid info`. |
 | `corefactory.grid` | op | `/cf grid create`, `/cf grid remove`, `/cf grid mode`, and right-clicking a chart to cycle its mode. |

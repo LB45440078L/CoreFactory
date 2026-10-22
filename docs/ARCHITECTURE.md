@@ -30,7 +30,7 @@ CoreFactory (parent pom, profiles per Spigot-API version)
 │     data files. WorldEditBlockEditor, PacketClientEffects, listeners, /cf, the catalogue GUI, lab tool
 │     and drill machines, barrel concealment, holograms, the energy and logistics devices, sprite
 │     effects, the startup data merge. geology/*: DepositGenerator, DepositChunkListener, GeologyCommand, and the
-│     placed-ore-block classes GeologyListener, GeologyWorker, OreChunks. ledger/*: DepositLedger (the deposit store).
+│     placed-ore-block classes GeologyListener, GeologyWorker, OreChunks. ledger/*: DepositLedger (the deposit store). scanner/*: the Ore Density Scanner, its map, outlines and waypoints (DepositScanner, DepositMap, DepositOutline, WaypointService).
 └── CoreFactory-ResourcePack Build-time only. snakeyaml. Draws textures; writes the pack zip.
 ```
 
@@ -382,8 +382,9 @@ The `CoreFactory-Storage` module holds the research store and the deposit store,
   - `corefactory_deposits` (migration 3): `id` (primary key), `world`, `centre_x`, `centre_z`, `radius`, `ore`,
     `initial_amount`, and `remaining` (which must not be negative), with the index `corefactory_deposits_centre` on
     (`world`, `centre_x`, `centre_z`). A take lowers `remaining` in one conditional update.
-  - `corefactory_mining_ledger` and `corefactory_chunk_budget` (migration 2) are dropped by migration 4. No code reads or
-    writes them: `corefactory_deposits` replaced the chunk budgets.
+  - `corefactory_mining_ledger` and `corefactory_chunk_budget` (created by migration 2) are dropped by migration 4, which runs
+    `DROP TABLE IF EXISTS` for both when the database opens. No code reads or writes them: `corefactory_deposits` replaced the
+    chunk budgets.
 - `JdbcResearchStore` implements `unlocked`, `unlock`, `progress` and `setProgress`. It reads and writes through
   `Database.query` and `Database.execute`. `JdbcDepositStore` does the same for the deposits.
 
@@ -419,10 +420,19 @@ is the admin command, and a finished node is an achievement (see [ACHIEVEMENTS.m
   through the store (see [Lab tools, drills and hoppers](#lab-tools-drills-and-hoppers)).
 - The placed-ore-block path still exists for the ore block items a player places: `GeologyListener`, `GeologyWorker`,
   `OreChunks` and `GeologyRegistry`. A placed ore item is registered, and breaking a registered block gives the raw
-  mineral (or the ore block item with silk touch). Patch blocks laid by `DepositGenerator` are not registered, so
-  breaking one by hand gives its vanilla drop. Drills are the only source of raw minerals from deposits.
-- The Ore Density Scanner item still exists, and Laboratory Basics still unlocks it, so it can be crafted. No code
-  listens for its right-click, so it does nothing.
+  mineral (or the ore block item with silk touch). Patch blocks laid by `DepositGenerator` are not registered.
+- Hand-mining a patch block. `PatchBlocks` (Core, pure) says whether a block is a patch site of a deposit: the deposit covers
+  its column, the ore and host match, the height is in band, and `OreBlocks.shows` holds. `GeologyListener.planPatchBreak`
+  cancels the vanilla drop of such a block at the break, and `givePatchOre` (monitor priority, so a later cancel by another
+  plugin takes nothing) makes one component item, takes one unit from the deposit and gives the item. An empty deposit gives
+  nothing. `PatchExclusions` keeps, per chunk, the entries of host blocks that are never patch blocks: a placed host block, a
+  piston or dispenser move, or a host block already in the stone when the chunk was laid. Those are recorded from the
+  `BlockPlaceEvent`, `BlockPistonExtendEvent`, `BlockPistonRetractEvent` and `BlockDispenseEvent` handlers.
+- The Ore Density Scanner (`scanner/*`) is a listener, `DepositScanner`, that scans on right-click, cycles the filter on
+  sneak and right-click, and surveys on sneak and left-click. Its rules are pure Core code in `deposit/*`: `DepositScan`
+  (which deposits count, their order and reach), `DepositFilter`, `DepositText` (the action bar and chat lines), `RichnessTier`,
+  `Compass` and `ScannerSettings` (the `scanner-radius`, `scan-cooldown-ticks` and `outline-seconds` keys of `deposits`). `DepositMap` is the `/cf deposits` menu, `WaypointService`
+  ticks each player's waypoint, and `DepositOutline` draws the rings. Filters, cooldowns and waypoints are kept in memory.
 
 ## Why it looks like this
 

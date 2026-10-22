@@ -103,8 +103,10 @@ All notable changes to CoreFactory. The format follows Keep a Changelog; version
   instead. Each machine has an invisible interaction hitbox: right-click opens it and left-click breaks it. Config:
   `concealment.enabled` (true) and `concealment.range` (48).
 - Progress holograms over running lab tools and drills, sent as packets. A lab tool's hologram has three lines (the process, a bar, and the percentage with the time left or `idle`) and goes when the tool is idle. A drill's has five lines (its name and level, its power, its rate or status, the deposit it works on, and its storage and fuel) and shows while the drill has power and room. Each line is its own invisible armour stand. Config: `holograms.enabled` and `holograms.view-distance`.
-- Ore Density Scanner: a held item that still crafts and unlocks after Laboratory Basics (`materials.yml`), but it does nothing.
-  Its map and chat summary were removed.
+- Ore Density Scanner rework: a held item that crafts and unlocks after Laboratory Basics (`materials.yml`). Right-click it in air or on a block to scan the deposits within `deposits.scanner-radius` (96 blocks), with `deposits.scan-cooldown-ticks` (60) between two scans. The action bar names the nearest deposit with its direction, distance, richness and what is left (`Nearest Galena Ore: 42 m NE, Rich, 3.2M left`), and the chat lists up to five. Sneak and right-click cycles the ore filter (all ores, each ore, then all). Sneak and left-click surveys the radius: the chat gives the exact centre and radius of up to ten deposits, and it never breaks a block. A scan or survey outlines the nearest eight deposits in their ore's colour for `deposits.outline-seconds` (20). Richness is Poor under 1,000,000 left, Rich from 1,000,000 and Exceptional from 10,000,000 (`RichnessTier`). The scanner keys are read on their own. See `docs/PLAYER_GUIDE.md#the-ore-density-scanner`.
+- Deposit map and waypoint: `/cf deposits` (`corefactory.geology`) opens the nearest deposits of the scanner's filter, 18 to a page and up to 54, each with its direction, distance, richness and share left. A click on a deposit sets the player's waypoint: a gold beam points toward it, the action bar shows its direction and distance, it lasts two minutes, and it ends with an arrival message inside the deposit. The map has a filter button and a clear-waypoint button. The map needs `corefactory.geology`, which is for operators by default. `/cf geology deposits` lists the same chat line for every deposit in its radius, with no limit.
+- Hand-mining deposits: breaking a deposit's patch block by hand gives one item of its ore (the component: raw minerals, charcoal for coal, petroleum for crude petroleum) and takes one unit from that deposit. Silk touch gives the same item. An empty deposit gives nothing, and the block still breaks. A block you cannot break gives nothing, so claims and protection apply. Hand-mined patch blocks count toward the mining achievements when they give their item (`GeologyListener`, `PatchBlocks`). See `docs/MECHANICS.md#deposits`.
+- Patch exclusions: a host block that a player places on a patch site, that a piston moves onto one, or that a dispenser puts on one is excluded from being a patch block, so it gives no ore even on a mined-out site. The exclusions are kept per chunk in its persistent data (`PatchExclusions`). Blasts give no ore either. Host blocks already in the stone when a chunk is laid, such as natural coal ore, are excluded too.
 - Petroleum drills (five levels) pump petroleum from crude deposits, on the strongest of a solar panel, redstone or charcoal. Ore drills (five levels)
   mine ore deposits and run on petroleum. Each level has its own area, depth and cycle, and a drill stands on hard base
   stone. A drill holds its items in its barrel and takes fuel from a hopper.
@@ -113,7 +115,7 @@ All notable changes to CoreFactory. The format follows Keep a Changelog; version
 - Crude petroleum deposit, an ore laid as deposits. A petroleum drill draws the deposit down, one petroleum per unit taken,
   so the deposit is used up rather than kept.
 - Ore blocks: each special ore is a placeable block item. A placed ore block gives its raw mineral when mined; silk touch gives
-  the block item back. A patch block dug by hand gives its vanilla drop, not raw ore. `/cf give` accepts ore ids.
+  the block item back. A patch block dug by hand gives one raw item from its deposit (see Hand-mining deposits above). `/cf give` accepts ore ids.
 - Catalogue (`/cf gui`): a paged browser of every TNT, component, machine, ore and research pack, in fifteen categories, each its own tab. Browsing
   needs `corefactory.guide`. Right-click for a recipe, and in the recipe view click an ingredient with a recipe of its own
   to open it. BACK returns.
@@ -273,12 +275,14 @@ All notable changes to CoreFactory. The format follows Keep a Changelog; version
 - Dual spacing is a preference, not a limit: when no unclaimed mob lies within `turrets.dual-spacing-blocks` of the first target, the second cannon takes the nearest unclaimed mob in range, and it no longer waits.
 - Red flash: a mob flashes red when it takes any hit, and a turret's hit is one. A mob that burns from an incendiary round flashes red from the fire, which is not a hit.
 - Picker claim rule for taking: a picker takes from a container on its input side only where its owner may use it, by the rule for deliveries: the owner's own claim, a GriefPrevention trust level of Inventory, Container, Build, Edit or Manage, or a WorldGuard region membership. A picker with no stored owner takes nothing from a claimed container, and a double chest counts as claimed if either half is. Splitters still take from the belt behind them only.
+- Turret power: a turret, machine gun or laser, asks for its level's power only while a cannon holds a target. Otherwise it asks for 1 W of standby (`TurretService.consumers`).
 
 ### Removed
 
 - Removed systems: the vein-based ore placement (and the `veins-per-chunk` and `vein-size` keys, which are no longer read), the
   chunk budgets and their retrofit (`/cf geology retrofit`, `/cf geology status`, and `geology.chunks-per-tick`), the mining
-  ledger, the old ore survey, and the scanner's map and chat summary.
+  ledger, and the old ore survey. The scanner's earlier map and chat summary are replaced by the scanner rework under Added.
+- Schema migration 4 drops the `corefactory_mining_ledger` and `corefactory_chunk_budget` tables when the database opens (`SchemaMigrations`). No code reads or writes them.
 
 ### Fixed
 
@@ -334,6 +338,13 @@ All notable changes to CoreFactory. The format follows Keep a Changelog; version
 - Turret placement no longer refuses a valid spot with "This spot is protected": a placement-guard bug, now fixed.
 - Turret shots are no longer blocked by Minecraft's short invulnerability after a hit (about half a second). Each turret hit clears that window before it deals damage, so every shot lands, and only the turret's own fire interval separates its shots. The hit still uses the normal damage call, so armour, protection and damage events apply.
 - A failure while one world's logistics runs is logged, and the rest of the logistics keeps running. The failed world runs again on the next tick.
+- Picker and splitter at partial power: the time a tick overshoots an item's interval now carries into the next one, so a picker or splitter at satisfaction s moves s times its rate, with no item lost to tick rounding.
+- Laser and machine gun targets: a laser pass and a machine gun pass each avoid a mob the other kind holds. Such a mob is taken only when no other mob is free for the cannon, so a laser does not take a machine gun's mob while another is free.
+- Drill deposit hand-over: when a drill moves to another deposit, it keeps the old one until the items it made for it are in the outputs, so no item is dropped for want of room.
+- Turret damage count: a turret's damage dealt (and the kill blow in it) counts only the health the mob lost, read after the blow. A cancelled damage event or a resistance can leave a mob standing, and then only the health it did lose is counted.
+- Drill search reach: the search covers the largest radius a deposit may have plus the drill's square, so the largest deposits are found. A lowered `max-radius` no longer shortens it.
+- Drill squares: a square is exactly as wide as its area, for odd areas too. An odd area is centred, and an even area puts the extra block on the low side.
+- Turret feeding: a round that a belt or a picker puts into a turret is saved at once, as every other turret change is.
 
 ## [1.0.0] - 2026-10-18
 

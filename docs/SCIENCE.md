@@ -11,9 +11,10 @@ are in `processes.yml`, `materials.yml`, `research.yml` and `ores.yml`, which yo
 Ore is laid in deposits on top of the vanilla terrain. A deposit is a circular patch of one ore, with a remaining amount,
 and its blocks are that ore's host block, about 30 percent of the stone in the patch, so a patch shows as scattered ore
 blocks over stone. The deposits are planned from the world seed, so the same seed always gives the same deposits. Mining a
-placed ore block gives its raw mineral and nothing else. Drills take raw minerals from a deposit, one for each unit they
-take. The planning numbers are in the `deposits` section of `config.yml`, and `/cf geology deposits [radius]` lists the
-deposits near you. See `ores.yml` for the height band and the host block of each ore.
+placed ore block gives its raw mineral and nothing else. Digging a patch block by hand gives one raw mineral from its deposit, and
+drills take raw minerals from a deposit, one for each unit they take. The planning numbers are in the `deposits` section of
+`config.yml`. The Ore Density Scanner finds the nearest deposits (see section 10). See `ores.yml` for the height band and the
+host block of each ore.
 
 | Ore | Found | Raw mineral | Why it matters |
 |---|---|---|---|
@@ -25,6 +26,10 @@ deposits near you. See `ores.yml` for the height band and the host block of each
 | <img src="images/ores/cinnabar_ore.png" width="24" height="24" align="absmiddle"> Cinnabar | mid | <img src="images/components/raw_cinnabar.png" width="24" height="24" align="absmiddle"> Raw cinnabar | Mercury. Roasting frees it. |
 | <img src="images/ores/fluorite_ore.png" width="24" height="24" align="absmiddle"> Fluorite | wide | <img src="images/components/raw_fluorite.png" width="24" height="24" align="absmiddle"> Raw fluorite | Fluorine, for converting uranium into a gas. |
 | <img src="images/ores/crude_petroleum_deposit.png" width="24" height="24" align="absmiddle"> Crude petroleum deposit | deep, from y -64 to y 0 | <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> Petroleum | Fuel for the ore drills. A petroleum drill draws the deposit down, one petroleum for each unit it takes. |
+| <img src="images/ores/saltpeter_deposit.png" width="24" height="24" align="absmiddle"> Saltpeter deposit | y -32 to 80 | <img src="images/components/raw_saltpeter.png" width="24" height="24" align="absmiddle"> Raw saltpeter | Crude potassium nitrate. Purified twice, it is the oxidiser of the powder. |
+| <img src="images/ores/sulfur_deposit.png" width="24" height="24" align="absmiddle"> Sulfur deposit | y -48 to 32 | <img src="images/components/raw_sulfur.png" width="24" height="24" align="absmiddle"> Raw sulfur | Native sulfur, crushed to sulfur for the powder mill. |
+| <img src="images/ores/zinc_deposit.png" width="24" height="24" align="absmiddle"> Sphalerite (zinc ore) | y -48 to 48 | <img src="images/components/raw_sphalerite.png" width="24" height="24" align="absmiddle"> Raw sphalerite | Zinc. Crushed to zinc ore dust, then roasted to a zinc ingot. |
+| <img src="images/ores/coal_ore.png" width="24" height="24" align="absmiddle"> Coal ore | y -64 to 96 | <img src="images/components/charcoal.png" width="24" height="24" align="absmiddle"> Charcoal | Fuel for the roasting kiln, and charcoal for the powder. Coal patches are the vanilla coal ore block. |
 
 Ores that were already in your world before the plugin was installed are laid the first time their chunks load after the
 upgrade. Each chunk is laid once, so a restart adds no ore blocks. There is no retrofit command.
@@ -195,11 +200,27 @@ raw minerals that start the process chain above.
 Each special ore has a placeable block item: the host block, named after the ore. Placing it registers the block as that
 ore. Mining a placed ore block gives the raw mineral, and silk touch gives the block item back.
 
-A patch block that the world generator laid is not registered. Breaking one by hand gives its ordinary drop (glazed
-terracotta drops itself, and coal ore drops coal), not raw ore. Drills are the only source of raw minerals from a deposit.
+A patch block that the world generator laid is not registered. Breaking one by hand gives one raw mineral from its deposit,
+and the deposit loses one unit. Coal gives charcoal, and crude petroleum gives petroleum. Silk touch gives the same item. A
+block you place on a patch, or that a piston or dispenser puts there, gives no ore, and neither does a blast. Drills take the
+raw minerals of a deposit at their rate, one for each unit.
 
-The Ore Density Scanner can still be crafted after Laboratory Basics, but it does nothing. Right-clicking it shows no map
-and no summary.
+The Ore Density Scanner finds the deposits near you. It crafts after Laboratory Basics, and you use it like this:
+
+- **Scan.** Right-click it, in the air or on a block. It finds the deposits within 96 blocks. The action bar names the nearest
+  one with its direction, distance, richness and what is left, such as `Nearest Galena Ore: 42 m NE, Rich, 3.2M left`. The chat
+  lists up to five. A scan waits three seconds after the last one.
+- **Richness.** Poor is under 1,000,000 left, Rich is 1,000,000 to just under 10,000,000, and Exceptional is 10,000,000 and up.
+- **Filter.** Sneak and right-click to move the ore filter on: all ores, then each ore, then all again.
+- **Survey.** Sneak and left-click to list up to ten deposits in the chat, with each one's exact centre and radius. It does not
+  break a block.
+- **Outline.** The nearest eight deposits are outlined in their ore's colour for 20 seconds.
+- **Map and waypoint.** `/cf deposits` opens a map of the nearest deposits, 18 to a page. A click on a deposit sets a waypoint:
+  a gold beam points toward it, the action bar shows its direction and distance, and it ends when you stand inside the deposit
+  or after two minutes.
+
+The rules, the numbers and the commands are in [PLAYER_GUIDE.md](PLAYER_GUIDE.md#the-ore-density-scanner) and
+[MECHANICS.md](MECHANICS.md#deposits).
 
 ## 11. Brass, gunpowder and ammunition
 
@@ -215,7 +236,7 @@ its rules are in [MECHANICS.md](MECHANICS.md#machine-gun-turret).
 
 ## 13. The laser turret
 
-The <img src="images/components/laser_turret.png" width="24" height="24" align="absmiddle"> laser turret is the other turret, and it needs no ammunition. It fires a beam, not rounds, and it reaches 40 blocks against the machine gun's 24. It is made in the <img src="images/components/heavy_weapons_assembly.png" width="24" height="24" align="absmiddle"> heavy weapons assembly from a steel frame, a targeting unit and a turret mechanism, with four <img src="images/components/optical_lens.png" width="24" height="24" align="absmiddle"> optical lenses and two <img src="images/components/laser_emitter.png" width="24" height="24" align="absmiddle"> laser emitters. The lenses come from the metal lathe, from amethyst and high-purity graphite. The emitters come from the component assembly, from circuit boards, glowstone dust and brass. The turret draws 60 kW at level 1, and each beam does 12 damage at level 1, which armour does not reduce. It has the same five levels as the machine gun, and a level 5 laser's beam is blue. Its rules are in [MECHANICS.md](MECHANICS.md#laser-turret), and its numbers are the `laser-turret` section of `config.yml`.
+The <img src="images/components/laser_turret.png" width="24" height="24" align="absmiddle"> laser turret is the other turret, and it needs no ammunition. It fires a beam, not rounds, and it reaches 40 blocks against the machine gun's 24. It is made in the <img src="images/components/heavy_weapons_assembly.png" width="24" height="24" align="absmiddle"> heavy weapons assembly from a steel frame, a targeting unit and a turret mechanism, with four <img src="images/components/optical_lens.png" width="24" height="24" align="absmiddle"> optical lenses and two <img src="images/components/laser_emitter.png" width="24" height="24" align="absmiddle"> laser emitters. The lenses come from the metal lathe, from amethyst and high-purity graphite. The emitters come from the component assembly, from circuit boards, glowstone dust and brass. The turret draws 60 kW at level 1, up to 120 kW at level 5, while it holds a target (1 W of standby otherwise). Each beam does 12 damage at level 1, which armour does not reduce. It has the same five levels as the machine gun, and a level 5 laser's beam is blue. Its rules are in [MECHANICS.md](MECHANICS.md#laser-turret), and its numbers are the `laser-turret` section of `config.yml`.
 
 ## 14. Upgrade kits
 

@@ -178,7 +178,7 @@ A round's damage is not a key. Every round deals the damage of its turret's leve
 | `range` | `24`, `26`, `28`, `30`, `32` | Blocks from the barrel within which the turret sees a target. |
 | `ammo-capacity` | `128`, `256`, `384`, `512`, `768` | Rounds the belt holds, of one kind at a time. |
 | `cannons` | `1`, `1`, `1`, `2`, `2` | Cannons that fire, one target each: 1 or 2. |
-| `power-demand-w` | `24000`, `33000`, `42000`, `51000`, `60000` | Power the level asks for, in watts. |
+| `power-demand-w` | `24000`, `33000`, `42000`, `51000`, `60000` | Power the level asks for, in watts, while a cannon holds a target. Otherwise it asks for 1 W of standby. |
 
 Levels 3 to 5 are two blocks high. That is set by the upgrade rule, so it is not a key. The defaults are the same as the table in [MECHANICS.md](MECHANICS.md#upgrading-a-turret).
 
@@ -206,7 +206,7 @@ targeting, rotation, arc, tilt, search and menu come from the `turrets` section 
 | `fire-interval-ticks` | `10`, `8`, `6`, `5`, `4` | Ticks between shots at full power. |
 | `range` | `40`, `44`, `48`, `54`, `60` | Blocks from the barrel within which the laser sees a target and its beam reaches. |
 | `cannons` | `1` at every level | One beam at every level. |
-| `power-demand-w` | `60000`, `75000`, `90000`, `105000`, `120000` | Power the level asks for, in watts. It asks for this whenever it is loaded. |
+| `power-demand-w` | `60000`, `75000`, `90000`, `105000`, `120000` | Power the level asks for, in watts, while a cannon holds a target. Otherwise it asks for 1 W of standby. |
 
 A laser holds no rounds, so an `ammo-capacity` key under its levels is ignored. Levels 3 to 5 are two blocks high, as for the machine gun. At level 5 the beam and its impact are blue.
 
@@ -261,8 +261,11 @@ The patches of ore that the world lays, and how much each holds. The rules are i
 | `min-amount` | `500000` | Smallest amount a deposit starts with. At least 1. |
 | `max-amount` | `25000000` | Largest amount a deposit starts with. At least `min-amount`. |
 | `ore-block-density` | `0.3` | Share of the stone blocks in a deposit's patch that become its host block when the chunk is laid. From 0 to 1. |
+| `scanner-radius` | `96` | Radius, in blocks, that a scan of the Ore Density Scanner searches around the player. A deposit counts when its circle reaches within it. From 1 to 512. |
+| `scan-cooldown-ticks` | `60` | Ticks between two scans of one scanner, so a held scanner cannot scan every tick. 20 ticks is one second. From 0 to 1200. |
+| `outline-seconds` | `20` | Seconds that a scan's outline of the nearest deposits stays drawn around the player. From 1 to 120. |
 
-The shipped `config.yml` has a `deposits:` section with these defaults, so editing it changes the deposits. If the values break a rule, the console logs one warning, and the defaults are used for the whole section, not only for the key that is wrong. A `config.yml` with no `deposits:` section takes the defaults in the table.
+The last three keys are the scanner's, and they are read on their own: when they break a rule, one warning is logged and their defaults are used, while the planning keys keep their values. The shipped `config.yml` has a `deposits:` section with these defaults, so editing it changes the deposits. If the values break a rule, the console logs one warning, and the defaults are used for the whole section, not only for the key that is wrong. A `config.yml` with no `deposits:` section takes the defaults in the table.
 
 ### drill-rates
 
@@ -400,7 +403,7 @@ the products of roasting, separation and conversion, the research packs, the lab
 (`solar_panel`), petroleum (`petroleum`), and the drills (`petroleum_drill_1` to `petroleum_drill_5`, `ore_drill_1` to
 `ore_drill_5`).
 
-A lab tool or a drill is a component whose `material` is the block it stands on. `BARREL` is the host of the lab tools and of every drill. The solar panel's `material` is `DAYLIGHT_DETECTOR`. The Ore Density Scanner (`ore_density_scanner`) is still an item, and it can still be crafted, but it does nothing: no code reacts to its use.
+A lab tool or a drill is a component whose `material` is the block it stands on. `BARREL` is the host of the lab tools and of every drill. The solar panel's `material` is `DAYLIGHT_DETECTOR`. The Ore Density Scanner (`ore_density_scanner`) is a held item that finds deposits. Its scanner keys are in the `deposits` section.
 
 ## processes.yml
 

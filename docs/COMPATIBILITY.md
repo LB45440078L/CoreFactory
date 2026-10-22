@@ -140,8 +140,9 @@ what was placed before, and what it cannot convert is listed here.
 - **Tall devices may overlap a block above them.** A generator or a level IV or V drill placed before this change stood one block
   high. If a block was placed above it, the upper half of the new footprint now overlaps that block. There is no migration. See
   [MECHANICS.md](MECHANICS.md#placing-and-breaking-the-energy-devices).
-- **Charcoal from coal.** Ore drills now mine coal deposits, which give charcoal, one item for each unit mined. A coal ore
-  block broken by hand gives its vanilla drop, coal, not charcoal.
+- **Charcoal from coal.** Ore drills now mine coal deposits, which give charcoal, one item for each unit mined. A coal patch
+  block broken by hand gives one charcoal from its deposit, the same as a drill. Natural coal ore that was in the stone before
+  its chunk was laid is not a patch block, so it still gives its vanilla drop, coal.
 - **Turret arc and tilt.** The arc defaults to `arc-degrees: 360` and the tilt limit to `pitch-limit-degrees: 90`, the whole
   sphere. A `config.yml` that already sets `arc-degrees: 180` keeps 180, and then a turret ignores every mob outside that
   sector. Change `arc-degrees` to `360` and `pitch-limit-degrees` to `90`, then restart. The scan rate is
@@ -162,9 +163,12 @@ what was placed before, and what it cannot convert is listed here.
   tables (`corefactory_chunk_budget` and `corefactory_mining_ledger`) are dropped by schema migration 4, so none is left
   after the plugin opens its database. The petroleum volumes that the old code kept per chunk are not used by drills or deposits. They are read
   only for crude petroleum ore blocks that a player placed.
-- **The Ore Density Scanner does nothing.** It can still be crafted after Laboratory Basics, and it has no right-click
-  action: no map and no summary. `/cf geology status` and `/cf geology retrofit` are removed, and `/cf geology deposits`
-  replaces them. The `geology.chunks-per-tick` key is no longer read.
+- **The Ore Density Scanner is reworked.** It scans, filters, surveys and outlines deposits, and `/cf deposits` shows them as a
+  map with waypoints (see [PLAYER_GUIDE.md](PLAYER_GUIDE.md#the-ore-density-scanner)). Its three keys are in `deposits`.
+  `/cf geology status` and `/cf geology retrofit` are removed, and
+  `/cf geology deposits` replaces them. The `geology.chunks-per-tick` key is no longer read.
+- **Patch blocks give ore by hand.** A patch block dug by hand gives one raw item from its deposit, and the deposit loses one unit.
+  Before this change it gave its vanilla drop. Placed host blocks on a patch give no ore (see the pending checks below).
 
 ## Pending in-game checks
 
@@ -234,8 +238,16 @@ listed here until it is checked on a server with a client.
 | Exhausted deposit | An exhausted deposit reports "Deposit exhausted", and the drill moves on to another deposit in range when one exists. | `DrillMining`, `DrillRules.status` |
 | Deposits survive a restart | The remaining amounts survive a restart. This holds with the JDBC store only. | `JdbcDepositStore`, `DepositLedger` |
 | Resources menu | The resources menu pages the deposits, six per page, with the arrows and the back button. | `DrillResourcesMenu`, `DrillResourceRows` |
-| Patch block broken by hand | Breaking a patch block by hand gives its vanilla drop (glazed terracotta drops itself, coal ore drops coal), not raw ore. Drills are the only source of raw minerals from deposits. | `GeologyListener`, `DepositGenerator` |
 | No database, restart | Without the database, a drill finds no deposit in a chunk laid before a restart, because the deposits were kept in memory only. | `DepositLedger`, `MemoryDepositStore` |
+| Hand-mined deposit block | Dig a patch block of a deposit by hand. You get one raw item of its ore (coal gives charcoal, crude petroleum gives petroleum), the deposit goes down by one, and `/cf geology deposits` shows the new amount. A block with an empty deposit gives nothing and still breaks. | `GeologyListener.planPatchBreak`, `GeologyListener.givePatchOre`, `PatchBlocks` |
+| Silk touch on a patch block | Silk touch on a patch block gives the same one raw item as without it, and no ore block item. | `GeologyListener.givePatchOre` |
+| Placed host block on a mined-out site | Mine a patch block until its deposit is empty. Place the same host block on that spot, then break it: it gives no ore. | `PatchExclusions`, `GeologyListener.onHostPlace` |
+| Claim you cannot break | In a claim or region that refuses the break, a patch block gives nothing, and it stays in place. | `GeologyListener.givePatchOre` |
+| Piston and dispenser | A piston that pushes a host block onto a patch site, and a dispenser that puts one there, leave a block that gives no ore when broken. | `GeologyListener.onPistonExtend`, `GeologyListener.onDispense` |
+| Explosions | A blast that destroys a patch block gives no ore, and the deposit keeps its amount. | `GeologyListener.onBlockExplode`, `GeologyListener.onEntityExplode` |
+| Scanner | Right-click scans the nearest deposits within 96 blocks: the action bar names the nearest, the chat lists up to five, and a scan inside 60 ticks says "Scanner recharging". Sneak and right-click cycles the filter. Sneak and left-click surveys up to ten deposits with their centre and radius, and breaks no block. The nearest eight are outlined for 20 seconds. `/cf deposits` opens the map (it needs `corefactory.geology`, which is for operators by default), and a click sets a waypoint: a gold beam, its direction on the action bar, and an arrival message inside the deposit, ending after two minutes. | `DepositScanner`, `DepositMap`, `DepositOutline`, `WaypointService`, `DepositScan` |
+| Picker and splitter at partial power | At about half power a picker and a splitter move items at about half their rate, and no item is lost to tick rounding. Count the items over a minute. | `LogisticsNetwork.stepPicker`, `LogisticsNetwork.stepSplitter` |
+| Laser beside machine guns | With a machine gun and a laser in one world and more mobs in range than turrets, the two kinds fire at different mobs. Put a mob that a machine gun holds in a laser's range, with no other free mob there: the laser takes it. With another free mob in range, the laser takes that one instead. | `TargetAssignment.assign`, `TurretService.claimsOutside` |
 
 ## Known limitations
 
@@ -283,6 +295,10 @@ These are real, and are part of the design unless noted.
 | Friends from GriefPrevention | A GriefPrevention player trusted with Access or Manage in the claim at a turret counts as a friend. The reflective names it uses (the `dataStore` field, `getClaimAt`, `getPermission`, and the `Access` and `Manage` levels) are not verified against a live GriefPrevention jar. If the lookup fails, the player counts as a friend, so the turret does not fire at them. |
 | Tall devices | The two-block footprint does not move existing blocks. See the changes for existing worlds above. |
 | Storage scope | SQLite keeps research in one server's folder. PostgreSQL shares research between servers. Achievements, lab tools and drills are saved per server, in files. |
+| Admin-given ore blocks | An ore block from `/cf give` or the catalogue is a placed ore block: it yields ore when mined, without drawing on any deposit. |
+| Patch exclusions and events | The placed-host exclusion is enforced for player, piston and dispenser placements only. WorldEdit, or a command that places blocks without events, can make a host block on a patch count as a patch block. |
+| Turret damage count | The damage a turret reports as dealt depends on the server's damage handling. A cancelled damage event, or a resistance, can leave a mob standing; the turret then counts only the health the mob lost. |
+| Logistics on a refused belt | Logistics items on a belt or a splitter that its network refuses are counted as lost, not dropped. A warning is logged with the count. |
 
 ## Changing the supported set
 

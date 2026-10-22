@@ -169,7 +169,7 @@ Every mod item, bomb, machine, ore and research pack has its picture next to its
 
 CoreFactory adds seven things to your world.
 
-1. **Ores.** Eleven solid ores and crude petroleum lie in the world as deposits: round patches of one ore, set in the stone. They sit at different depths and show different colours. Drills dig the raw minerals out of the deposits. See [Finding ores](#finding-ores).
+1. **Ores.** Eleven solid ores and crude petroleum lie in the world as deposits: round patches of one ore, set in the stone. They sit at different depths and show different colours. Digging a patch block gives one raw mineral, and drills take the rest out of the deposits. See [Finding ores](#finding-ores).
 2. **Machines.** Twenty machines turn raw minerals into the materials for bombs, ammunition and the turret. You place them like blocks, then open them to load and empty them. Hoppers can feed them. See [The lab machines](#the-lab-machines).
 3. **Drills.** Ten drills dig for you. Five petroleum drills draw petroleum, and five ore drills mine the solid ores. See [Drills and petroleum](#drills-and-petroleum).
 4. **Power and belts.** Generators make power, pylons carry it to the machines, and accumulators store it. Belts, pickers and splitters move items between machines. See [Electricity](#electricity) and [Belts and automation](#belts-and-automation).
@@ -196,7 +196,7 @@ There are three kinds of new item: the things you craft, the things you dig up o
 | Crafted components | <img src="images/components/fuse_linker.png" width="24" height="24" align="absmiddle"> Fuse linker, <img src="images/components/fuse_wire.png" width="24" height="24" align="absmiddle"> Fuse wire, <img src="images/components/shaped_charge_lens.png" width="24" height="24" align="absmiddle"> Shaped charge lens, <img src="images/components/gravity_core.png" width="24" height="24" align="absmiddle"> Gravity core, <img src="images/components/vitrifier_flux.png" width="24" height="24" align="absmiddle"> Vitrifier flux, <img src="images/components/sorting_magnet.png" width="24" height="24" align="absmiddle"> Sorting magnet, <img src="images/components/anchor_crystal.png" width="24" height="24" align="absmiddle"> Anchor crystal, <img src="images/components/pulse_capacitor.png" width="24" height="24" align="absmiddle"> Pulse capacitor, <img src="images/components/quantum_detonator.png" width="24" height="24" align="absmiddle"> Quantum detonator, <img src="images/components/biohazard_culture.png" width="24" height="24" align="absmiddle"> Biohazard culture, <img src="images/components/napalm_gel.png" width="24" height="24" align="absmiddle"> Napalm gel, <img src="images/components/anchor_plate.png" width="24" height="24" align="absmiddle"> Anchor plate, <img src="images/components/plutonium_pit.png" width="24" height="24" align="absmiddle"> Plutonium pit, <img src="images/components/tritium_booster.png" width="24" height="24" align="absmiddle"> Tritium booster, <img src="images/components/neutron_initiator.png" width="24" height="24" align="absmiddle"> Neutron initiator, <img src="images/components/nuclear_casing.png" width="24" height="24" align="absmiddle"> Nuclear casing, <img src="images/components/thermonuclear_core.png" width="24" height="24" align="absmiddle"> Thermonuclear core | Crafting table |
 | Protection | <img src="images/components/hazmat_fabric.png" width="24" height="24" align="absmiddle"> Hazmat fabric, the four Radioactive Suit pieces, <img src="images/components/geiger_counter.png" width="24" height="24" align="absmiddle"> Geiger counter | Crafting table, after research |
 | Machines | <img src="images/components/crusher.png" width="24" height="24" align="absmiddle"> Crusher, <img src="images/components/roaster.png" width="24" height="24" align="absmiddle"> Roasting kiln, <img src="images/components/separator.png" width="24" height="24" align="absmiddle"> Centrifugal separator, <img src="images/components/purifier.png" width="24" height="24" align="absmiddle"> Purification still, <img src="images/components/converter.png" width="24" height="24" align="absmiddle"> Fluorination converter, <img src="images/components/enrichment_cascade.png" width="24" height="24" align="absmiddle"> Enrichment cascade, <img src="images/components/transmuter.png" width="24" height="24" align="absmiddle"> Neutron transmuter, <img src="images/components/spectrometer.png" width="24" height="24" align="absmiddle"> Spectrometer, <img src="images/components/particle_accelerator.png" width="24" height="24" align="absmiddle"> Particle accelerator, <img src="images/components/antimatter_condenser.png" width="24" height="24" align="absmiddle"> Antimatter condenser, <img src="images/components/research_console.png" width="24" height="24" align="absmiddle"> Research console | Crafting table, after research |
-| Drills and power | <img src="images/components/petroleum_drill_1.png" width="24" height="24" align="absmiddle"> Petroleum drills I to V, <img src="images/components/ore_drill_1.png" width="24" height="24" align="absmiddle"> Ore drills I to V, <img src="images/components/solar_panel.png" width="24" height="24" align="absmiddle"> Solar panel, <img src="images/components/ore_density_scanner.png" width="24" height="24" align="absmiddle"> Ore density scanner (does nothing now) | Crafting table, after research. The scanner needs Laboratory Basics |
+| Drills and power | <img src="images/components/petroleum_drill_1.png" width="24" height="24" align="absmiddle"> Petroleum drills I to V, <img src="images/components/ore_drill_1.png" width="24" height="24" align="absmiddle"> Ore drills I to V, <img src="images/components/solar_panel.png" width="24" height="24" align="absmiddle"> Solar panel, <img src="images/components/ore_density_scanner.png" width="24" height="24" align="absmiddle"> Ore density scanner (finds deposits) | Crafting table, after research. The scanner needs Laboratory Basics |
 | Petroleum | <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> Petroleum | A petroleum drill working a crude petroleum deposit |
 | Research packs | <img src="images/components/research_pack_basic.png" width="24" height="24" align="absmiddle"> Basic, <img src="images/components/research_pack_chemical.png" width="24" height="24" align="absmiddle"> Chemical, <img src="images/components/research_pack_nuclear.png" width="24" height="24" align="absmiddle"> Nuclear, <img src="images/components/research_pack_plasma.png" width="24" height="24" align="absmiddle"> Plasma, <img src="images/components/research_pack_exotic.png" width="24" height="24" align="absmiddle"> Exotic | Spectrometer |
 | Crafted parts for machines | <img src="images/components/superconducting_magnet.png" width="24" height="24" align="absmiddle"> Superconducting magnet, <img src="images/components/neutron_flux_cell.png" width="24" height="24" align="absmiddle"> Neutron flux cell, <img src="images/components/tesseract_lattice.png" width="24" height="24" align="absmiddle"> Tesseract lattice | Crafting table, after research |
@@ -227,7 +227,7 @@ Eleven solid ores and crude petroleum lie in the world as **deposits**. A deposi
 
 Each chunk (a 16 by 16 block column) gets its deposits the first time it loads, and only once. Deposits never overlap, and the same world always has the same deposits in the same places. Old land gets its deposits too, when you first visit it.
 
-Digging a patch block by hand gives you its vanilla drop, not raw minerals. Drills take the raw minerals out of a deposit, one unit for each raw piece. Raw minerals are not the end of the chain. They must be crushed, roasted and separated before they become useful. See [The science](#the-science) for what each one becomes.
+Digging a patch block by hand gives you one raw mineral from its deposit, and the deposit loses one unit. Drills take raw minerals out of a deposit for the rest, one unit for each raw piece. Raw minerals are not the end of the chain. They must be crushed, roasted and separated before they become useful. See [The science](#the-science) for what each one becomes.
 
 Three things decide what you find and how much of it there is:
 
@@ -334,16 +334,19 @@ In the world, a deposit shows as a patch of its colour. Most patch blocks are gl
 
 - **Where:** from y -64 to y 0, in stone and deepslate.
 - **The mineral:** crude oil, black and thick. The game calls it petroleum.
-- **Drill yield:** one <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> petroleum for each unit a petroleum drill takes from a deposit. Digging a patch block by hand gives you only the block, not petroleum.
+- **Drill yield:** one <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> petroleum for each unit a petroleum drill takes from a deposit. Digging a patch block by hand gives one petroleum too, and the deposit loses one unit.
 - **Silk touch:** on an ore block item that you placed, keeps the block as an item. See [The silk touch trick](#the-silk-touch-trick).
 - **Pumping:** a petroleum drill draws the deposit down, one petroleum for each unit, until it is empty. The amount left is shown on the drill's info item. See [Petroleum drills](#petroleum-drills).
 - **Why it matters:** petroleum is the fuel of the ore drills. See [Petroleum](#petroleum).
 
 ### What to mine with
 
-**Drills are the way to get raw minerals from a deposit.** A drill takes one item for each unit of the deposit, at its level's rate. See [Ore drills](#ore-drills) and [Petroleum drills](#petroleum-drills).
+**Hand-mining takes a little, drills take the rest.** Each patch block you dig by hand gives one item of its ore from the deposit, and the deposit loses that one unit. Coal gives charcoal, and crude petroleum gives petroleum. A drill takes one item for each unit of the deposit, at its level's rate. See [Ore drills](#ore-drills) and [Petroleum drills](#petroleum-drills).
 
-Hand-mining a patch block gives its vanilla drop, not a raw mineral. A glazed terracotta patch block drops itself, and a coal patch block drops coal. The only raw minerals you get by hand come from a placed ore block item, which the game registers when you place it. See [The silk touch trick](#the-silk-touch-trick).
+- **Empty deposits.** When a deposit has nothing left, a patch block still breaks, but it gives nothing.
+- **Blocks you placed.** A host block that you place on a patch, or that a piston or dispenser puts there, gives no ore, even on a mined-out site. A blast gives no ore either.
+- **Protection.** A block you cannot break, because a claim or a region protects it, gives nothing.
+- **Placed ore blocks.** An ore block item you placed gives its raw mineral when mined. See [The silk touch trick](#the-silk-touch-trick).
 
 - **Use a pickaxe.** The blocks are hard stone-like blocks, and a pickaxe breaks them fastest. Use the best pickaxe you have.
 - **Fortune does not help.** Fortune does not add to a drill's yield, which is one item for each unit it takes.
@@ -359,7 +362,7 @@ Silk touch works only on an ore block that you placed. It keeps the ore block it
 - Place that item in the world to put the ore back. You can place it at any height from y -64 to y 959.
 - Mine a placed ore block without silk touch to get raw minerals. The drop is the same as before.
 
-Silk touch on a patch block in a deposit does not give you the ore block item. You get the vanilla drop, as you do without silk touch. A patch block is never registered, so it is not an ore block item.
+Silk touch on a patch block in a deposit does not give you the ore block item. You get the same one raw mineral as without silk touch, and the deposit loses one unit. A patch block is never registered, so it is not an ore block item.
 
 Why use it? Two reasons:
 
@@ -374,7 +377,7 @@ Each chunk gets its deposits the first time it loads, and only once. This applie
 
 Deposits are patches, not every block, so explore a good distance between digs. If you find none nearby, keep walking.
 
-Operators can list the deposits near a player with `/cf geology deposits [radius]`. See [The Ore Density Scanner](#the-ore-density-scanner).
+The Ore Density Scanner finds the deposits near you, and `/cf deposits` shows the nearest ones as a map with waypoints. Operators can also list them in chat with `/cf geology deposits [radius]`. See [The Ore Density Scanner](#the-ore-density-scanner).
 
 A patch block stays in place until you mine it or a blast destroys it.
 
@@ -382,11 +385,20 @@ A patch block stays in place until you mine it or a blast destroys it.
 
 <img src="images/components/ore_density_scanner.png" width="24" height="24" align="absmiddle"> **Ore density scanner**
 
-**The scanner does nothing now.** It is still an item you can craft, but right-clicking it gives no map and no chat summary. The old ore survey it used has been removed, so do not rely on it to find ores.
+The scanner finds the deposits near you. You hold it and use it like this.
 
-To find ores, dig into the stone in the band of depths that the table gives for each ore. A patch is a round area, roughly 48 to 96 blocks across, of one ore's patch blocks in the stone, so a few digs may pass near one without showing it.
+- **Scan (right-click, in the air or on a block).** It looks for deposits within 96 blocks. A deposit counts when its edge comes within that distance. The action bar shows the filter and the nearest deposit, such as `Filter: all ores | Nearest Galena Ore: 42 m NE, Rich, 3.2M left`: its ore, its direction and distance, its richness and what is left. The chat lists up to five of the nearest, each with its share left. If there is none, the action bar says `No deposits within 96 blocks`, or `No Galena Ore deposits within 96 blocks` when a filter is set.
+- **Cooldown.** A scan waits three seconds after the last one. A scan inside that time says `Scanner recharging`.
+- **Richness.** Poor is under 1,000,000 left. Rich is 1,000,000 to just under 10,000,000. Exceptional is 10,000,000 and up.
+- **Filter (sneak and right-click).** It moves the ore filter on: all ores, then each ore in turn, then all ores again. The next scan uses the filter, and the map follows it.
+- **Survey (sneak and left-click).** It searches the same radius and lists up to ten deposits in the chat, each with its exact centre and radius, so you can walk to it. It never breaks a block.
+- **Outline.** A scan or a survey draws a ring of particles in each ore's colour around the nearest eight deposits. Only you see it, and it lasts 20 seconds. A new scan replaces the old outline.
+- **The deposit map (`/cf deposits`).** It lists the nearest deposits of the scanner's filter, up to 54 in three pages of 18. The map needs the `corefactory.geology` permission, which is for operators by default. Without it, the scanner's action bar and chat still work. Each entry shows its ore, its direction and distance, its richness and what is left out of what it started with. A click on an entry sets your waypoint and closes the map. The bottom row has the page arrows, a filter button that moves the filter on, a summary, and a clear-waypoint button.
+- **Waypoint.** A gold beam points from you toward the deposit's centre, and the action bar shows the deposit's direction and distance. It lasts two minutes. It ends when you stand inside the deposit (`You are inside Galena Ore.`), or when it runs out (`The waypoint to Galena Ore has expired.`). You have one at a time, and leaving the server clears it.
 
-**For operators.** `/cf geology deposits [radius]` lists the deposits near you, in your world. The radius is in blocks, from 1 to 512, and it defaults to 64. The list shows each deposit whose edge comes within the radius, nearest centre first, with the ore, how much is left of how much it started with, and its centre and radius. If none is in range, it says "None. Try a larger radius." The permission `corefactory.geology` is for operators by default.
+To find ores without the scanner, dig into the stone in the band of depths that the table gives for each ore. A patch is a round area, roughly 48 to 96 blocks across, of one ore's patch blocks in the stone, so a few digs may pass near one without showing it.
+
+**For operators.** `/cf geology deposits [radius]` lists the deposits near you, in your world, in the same chat line as the scanner: the ore, the direction and distance, the richness and what is left. The radius is in blocks, from 1 to 512, and it defaults to 64. It lists every deposit in the radius, with no limit of five. If none is in range, it says "None. Try a larger radius." The permission `corefactory.geology` is for operators by default.
 
 **Recipe and research.** The scanner needs Laboratory Basics to craft. Its recipe is in [Survey and power recipes](#survey-and-power-recipes).
 
@@ -959,7 +971,7 @@ Research is a single line of 15 steps, called nodes. You finish them in order, o
 ### How research works
 
 - **The line.** Each node has a name, a short description, the nodes it needs first, a cost in research packs, and a list of the items it unlocks.
-- **Free nodes.** Laboratory Basics has no requirements and costs nothing, so it is finished from the start. It unlocks the console, the spectrometer, the crusher and the Ore Density Scanner. The scanner does nothing now, so see [The Ore Density Scanner](#the-ore-density-scanner).
+- **Free nodes.** Laboratory Basics has no requirements and costs nothing, so it is finished from the start. It unlocks the console, the spectrometer, the crusher and the Ore Density Scanner, which finds deposits. See [The Ore Density Scanner](#the-ore-density-scanner).
 - **Paid nodes.** Every other node costs packs. You feed the packs into the research console, and when the cost is paid the node is finished.
 - **Partial progress.** You do not have to pay all the packs at once. Feed a few, leave, and come back. The progress is kept for each node.
 - **Your own research.** Research belongs to each player. Your progress is yours, not the server's, so a friend starts their own line.
@@ -1078,7 +1090,7 @@ Drills need research. The first ones come after Chemical Separation, and the las
 
 ### What a drill does
 
-- **It works a square.** The square is centred on the drill, and its side is the area of its level. It searches the square for deposits, and it works one deposit at a time: the one with the most left in the square. When that deposit is empty, it moves on to the next.
+- **It works a square.** The square is centred on the drill, and its side is the area of its level. A deposit counts when its circle touches the square, whatever its size, so the largest deposits are found too. The drill works one deposit at a time: the one with the most left in the square. When that deposit is empty, it moves on to the next. When it moves on before the items it made for the old deposit are all in its outputs, it keeps the old deposit until they are, so no item is lost for want of room.
 - **It makes items at its level's rate.** At full power a level 1 drill makes 1.0 item a second, and each level is faster. A petroleum drill mines crude petroleum deposits. An ore drill mines the other ores, including coal, which gives charcoal. Each unit it takes from a deposit becomes one item.
 - **It has its own storage.** Its barrel holds one fuel item and nine products. You take products out by clicking them. A hopper can fill the fuel slot and take products out. Nothing else goes in.
 - **It needs power.** Without power, it does nothing. See [The power of a drill](#the-power-of-a-drill).
@@ -1189,7 +1201,7 @@ Older solar panels are different. A solar panel placed before the electrical sys
 
 <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> **Petroleum**
 
-Petroleum is crude oil. It has one use: fuel for the ore drills. It has no recipe. You get it from a crude petroleum deposit, one unit at a time, by working the deposit with a petroleum drill. Each unit the drill takes gives one petroleum, and the deposit is drawn down by that amount. Digging the patch block by hand does not give petroleum.
+Petroleum is crude oil. It has one use: fuel for the ore drills. It has no recipe. You get it from a crude petroleum deposit, one unit at a time, by working the deposit with a petroleum drill. Each unit the drill takes gives one petroleum, and the deposit is drawn down by that amount. Digging a patch block by hand also gives one petroleum, and takes one unit from the deposit.
 
 Patch blocks lie from y -64 to y 0, in stone and deepslate. See [Crude petroleum deposit](#crude-petroleum-deposit).
 
@@ -1556,12 +1568,12 @@ This is the late-game chain. It starts with the new ores, runs through seven mac
 
 The turret is a placeable defence. Hold it and right-click the side of a block, on air, like a generator. It starts at level 1 and has five levels, and an upgrade kit makes it one level better. It is one block tall at levels 1 and 2, and two blocks tall at levels 3 to 5. See [Upgrading a turret](#upgrading-a-turret).
 
-- **It needs power.** A turret with rounds asks the energy network for 24 kW at level 1, and more at each level, up to 60 kW at level 5. Without that power it does not fire. With less than its full share, it fires more slowly.
+- **It needs power.** A turret with rounds asks the energy network for 24 kW at level 1, and more at each level, up to 60 kW at level 5, but only while a cannon holds a target. Otherwise it asks for 1 W of standby. Without its share of that power it does not fire. With less than its full share, it fires more slowly.
 - **Loading.** Hold rounds and right-click the turret. It takes up to 128 rounds at level 1, and up to 768 at level 5, one kind at a time: a different kind is refused until the turret is empty.
 - **Its menu.** Right-click the turret with no rounds in your hand, or sneak-click it, to open its menu. It has three rows. The first row holds the info item (the level, range, damage per hit, cannons, fire interval, power, and the rounds and their status), a load button that takes one stack from your inventory, an eject button that gives the rounds back, the friendly-fire switch, the team switch, and four category buttons. The two rows below hold the wool toggles for each mob. The hologram above the turret shows its name and level, such as `L3`. Anyone may open a turret's menu and look at it, but only the turret's owner can change anything in it. The buttons of anyone else refuse, with a message.
 - **Targeting in the menu.** Four category buttons (monsters, phantoms, slimes and ghasts) and one wool toggle for each of 18 mobs: Zombie, Husk, Drowned, Skeleton, Stray, Wither Skeleton, Creeper, Spider, Enderman, Witch, Blaze, Pillager, Vindicator, Ravager, Phantom, Slime, Magma Cube and Ghast. Green wool means the turret fires at that kind, and red means it spares it. A single mob's wool overrides its category, and a category overrides the config. These choices are for this turret only.
 - **What it shoots.** Every hostile monster within 24 blocks at level 1 (32 at level 5), by default, in every direction. Its arc is the whole turn by default, so it reaches a mob behind it as well as in front, and its tilt is 90 degrees, so a mob straight above or below it is in reach. It turns toward a target at 6 degrees a tick. The arc is centred on the way it faced when you placed it, and a smaller arc in the config restricts the turret to a sector. It looks for targets once a second (`search-interval-ticks`, 20 by default). Once a cannon has a mob, it keeps it while the mob lives, stays in range and stays in the arc. Phantoms, slimes and ghasts are spared by default. Turn them on in the menu, or add them to `targets` in the `turrets` section of `config.yml`. Reach is a sphere measured to the nearest part of the mob, so a big mob at the edge of the range is hit.
-- **Turrets share the targets.** The turrets in one area do not all fire at the nearest mob. Each cannon takes the nearest mob that no other turret has claimed, so several turrets spread over several mobs. A cannon keeps its mob while the mob is alive and stays in its reach, and the other turrets leave that mob alone. When there are more turrets than mobs, the extra turrets share the mobs. The turrets look again once a second, and again on the tick after a mob they were firing at dies, so a free turret moves to the next mob at once. Lasers take part too.
+- **Turrets share the targets.** The turrets in one area do not all fire at the nearest mob. Each cannon takes the nearest mob that no other turret has claimed, so several turrets spread over several mobs. A cannon keeps its mob while the mob is alive and stays in its reach, and the other turrets leave that mob alone. When there are more turrets than mobs, the extra turrets share the mobs. The turrets look again once a second, and again on the tick after a mob they were firing at dies, so a free turret moves to the next mob at once. Lasers take part too. A turret takes a mob that a turret of the other kind holds only when no other mob is free for its cannon, so a laser and a machine gun usually fire at different mobs.
 - **The line of fire.** A solid block between the barrel and the mob stops the shot, so the turret never fires through a wall. Grass, flowers and snow layers do not block it. A living thing on the line stops the shot too, a friend or a spared mob included, and it takes no damage.
 - **Every shot lands.** After a hit, a mob is briefly protected, for about half a second, from a hit no stronger than the last one. A turret's hit clears that short protection first, so a shot is not dropped because of the one before it. The only pause between a turret's shots is its own fire interval. A hit still counts armour, protection and the damage events, as any hit does.
 - **Red flash.** A mob flashes red when it takes any hit, so a turret's hit makes it flash red. A mob that burns from an incendiary round flashes red from the fire, which is not a turret hit.
@@ -1592,7 +1604,7 @@ Every round hits for the turret's damage at its level: 6 at level 1, and more wi
 
 The laser turret is the second defence. It fires a beam instead of rounds, so it never needs ammunition, and it reaches farther than the machine gun turret. Hold it and right-click the side of a block, on air, like the machine gun turret.
 
-- **It needs power.** It asks the energy network for 60 kW at level 1, up to 120 kW at level 5, whenever it stands in a loaded chunk, whether it has a target or not. Without its share of that power it does not fire. With less than its full share, it fires more slowly.
+- **It needs power.** It asks the energy network for 60 kW at level 1, up to 120 kW at level 5, while a cannon holds a target. Otherwise it asks for 1 W of standby. Without its share of that power it does not fire. With less than its full share, it fires more slowly.
 - **No ammunition.** It has no load or eject buttons, and no belt, picker or hopper feeds it. Every right-click on it opens its menu.
 - **Its menu.** The info slot shows its level, power, range (40 blocks at level 1), damage (12 a shot at level 1), its armour bypass (100 percent), how often it fires at full power (every 10 ticks) and its status. Below it are the friendly-fire switch, the team switch and the same targeting toggles as the machine gun turret. Only the owner can change them.
 - **What it shoots.** The same mobs as the machine gun turret, from 40 blocks away at level 1 (60 at level 5), instead of 24 for a machine gun at level 1. It turns at 6 degrees a tick, and its arc and tilt are the same as the machine gun's: the whole sphere by default. Phantoms, slimes and ghasts are spared by default, as they are for the machine gun turret.
@@ -1980,7 +1992,7 @@ Needs research: Laboratory Basics.
 | Iron ingot | Amethyst shard | Iron ingot |
 | Glass | Redstone | Glass |
 
-Makes: <img src="images/components/ore_density_scanner.png" width="24" height="24" align="absmiddle"> **Ore Density Scanner**. It does nothing when you right-click it. See [The Ore Density Scanner](#the-ore-density-scanner).
+Makes: <img src="images/components/ore_density_scanner.png" width="24" height="24" align="absmiddle"> **Ore Density Scanner**. Right-click it to scan for deposits, and sneak-click to change its filter or survey. See [The Ore Density Scanner](#the-ore-density-scanner).
 
 
 **<img src="images/components/solar_panel.png" width="24" height="24" align="absmiddle"> Solar Panel** (id `solar_panel`)
@@ -3497,7 +3509,7 @@ Each time you unlock an achievement, you get a toast on your screen, and the ser
 | Set off a TNT, including a chain it starts | You, the player who started the chain. |
 | Link two placed TNT with the fuse linker | You, the player who made the link. |
 | Drop a TNT item | You, the player who dropped it. |
-| Mine a placed ore block, the block you put back from an ore block item. Patch blocks in a deposit do not count. | You, the player who mined it. |
+| Mine an ore block: a placed one, the block you put back from an ore block item, or a patch block in a deposit that gives its raw mineral. | You, the player who mined it. |
 | Take an item out of a machine's output slot | You, the player who took it. |
 | Place a machine or a drill | You, the player who placed it. |
 | Finish a research node at the console | You, the player who fed the last packs. |
@@ -3555,7 +3567,7 @@ The nuclear tiers are listed under Detonated, and they count toward the Atomic A
 
 | Achievement | What it needs |
 |---|---|
-| Prospector | Mine any placed ore block, the block you put back from an ore block item. Patch blocks in a deposit do not count. |
+| Prospector | Mine any ore block: a placed one, the block you put back from an ore block item, or a patch block in a deposit that gives its raw mineral. |
 | Crushing Work | Take crushed ore out of a <img src="images/components/crusher.png" width="24" height="24" align="absmiddle"> crusher. |
 | First Research Pack | Take a research pack out of a <img src="images/components/spectrometer.png" width="24" height="24" align="absmiddle"> spectrometer. |
 | Made: Yellowcake | Take yellowcake out of a machine. |
@@ -3602,7 +3614,7 @@ The goal of your first session is to set up your first laboratory, finish the fi
 
 **Step 3. Light your first bomb.** Craft a vanilla TNT, then a <img src="images/tnt/chain_reaction_tnt.png" width="24" height="24" align="absmiddle"> Chain Reaction TNT. Its recipe is a ring of redstone around a TNT block. It is free, so you can craft it straight away. Place it on open ground, walk well away, light it with flint and steel, and watch the fuse. It is a good way to learn how the fuse works.
 
-**Step 4. Find galena.** Dig into stone at a height between -32 and 40, and look for light grey galena patch blocks. Digging a patch block by hand gives you the block, not raw galena. Raw galena comes from an ore drill working the deposit, one <img src="images/components/raw_galena.png" width="24" height="24" align="absmiddle"> raw galena for each unit it takes, or from a galena ore block item that you placed. You need at least five crushed galena for your first research.
+**Step 4. Find galena.** Dig into stone at a height between -32 and 40, and look for light grey galena patch blocks. Dig a few patch blocks by hand. Each one gives you one <img src="images/components/raw_galena.png" width="24" height="24" align="absmiddle"> raw galena from its deposit, and the deposit loses that unit. Each raw piece crushes into two crushed galena, and your first research needs five, so three raw galena is enough.
 
 **Step 5. Craft the lab.** Craft these three machines. None of them needs research, because Laboratory Basics is free and finished from the start:
 
@@ -3620,16 +3632,16 @@ Place all three in a safe, dry place near your base. Right-click the crusher to 
 
 **Step 9. Craft your radiation gear.** You now have access to the hazmat fabric, the four Radioactive Suit pieces and the Geiger counter. The hazmat fabric is made from leather and lead, which are vanilla items. Start with a few pieces of hazmat fabric, then craft a Geiger counter. The Geiger counter takes 2 hazmat fabric, plus iron, redstone and a compass. Hold it in your hand to see the radiation around you.
 
-**Step 10. Look for uraninite.** The next research step is Metallurgy, which costs ten basic packs and unlocks the roasting kiln. You will need more galena for that. You will also need uraninite, which is the main uranium ore. Uraninite patches are found between y -48 and 24, in stone, deepslate and similar rock. Note where one is. Raw uraninite comes from a drill working the deposit, and you will need it when you have a roasting kiln.
+**Step 10. Look for uraninite.** The next research step is Metallurgy, which costs ten basic packs and unlocks the roasting kiln. You will need more galena for that. You will also need uraninite, which is the main uranium ore. Uraninite patches are found between y -48 and 24, in stone, deepslate and similar rock. Note where one is. Dig a few patch blocks by hand for raw uraninite, one each, and set a drill on the deposit for the rest once you have one. You will need it when you have a roasting kiln.
 
-**A tip for the search.** The Ore Density Scanner does nothing now, so do not craft it for the search. Explore, and dig into the stone in each ore's band of depths. An operator can list the deposits near you with `/cf geology deposits [radius]`. See [The Ore Density Scanner](#the-ore-density-scanner).
+**A tip for the search.** The Ore Density Scanner finds deposits for you. It needs only Laboratory Basics, which is free, so craft it once you have the glass, iron, amethyst and redstone. Right-click it to find the nearest deposit and its direction. Or explore, and dig into the stone in each ore's band of depths. See [The Ore Density Scanner](#the-ore-density-scanner).
 
 **What you should have after the first hour:**
 
 - A working crusher, a spectrometer and a research console.
 - Radiation Safety finished, shown in your console as a lime tile.
 - A Geiger counter, and the first pieces of hazmat fabric.
-- A set of raw galena, and the start of a raw uraninite stock.
+- A few raw galena and raw uraninite, dug by hand from their deposits. Drills take the rest once you have them.
 - A clear plan for Metallurgy, which is your next step.
 
 From here, go on to the [research line](#the-research-line), the [science](#the-science) and the [machines](#the-lab-machines). Work through the nodes in order, and you will find the whole mod opens up step by step.
@@ -3650,11 +3662,11 @@ Deposits are patches, not every block, so you may need to explore a good distanc
 
 **Can I keep an ore block instead of mining it for raw minerals?**
 
-Yes, for an ore block item that you placed. Mine the placed block with a pickaxe that has silk touch, and you get the ore block as an item. Place it again to get an ore back, and mine that without silk touch to get the raw minerals. Silk touch on a patch block in a deposit gives you the vanilla drop. See [The silk touch trick](#the-silk-touch-trick).
+Yes, for an ore block item that you placed. Mine the placed block with a pickaxe that has silk touch, and you get the ore block as an item. Place it again to get an ore back, and mine that without silk touch to get the raw minerals. Silk touch on a patch block in a deposit gives you one raw mineral, the same as without silk touch. See [The silk touch trick](#the-silk-touch-trick).
 
 **Does fortune give me more ore?**
 
-No. A drill gives one item for each unit it takes from a deposit, and fortune does not change that. See [What to mine with](#what-to-mine-with).
+No. A drill gives one item for each unit it takes from a deposit, and a hand-mined patch block gives one item, and fortune changes neither. See [What to mine with](#what-to-mine-with).
 
 **Where do I get enriched uranium?**
 
@@ -3710,7 +3722,7 @@ Type `/cf achievements`. You can also see them in the Advancements screen, under
 
 **Why did an achievement not count?**
 
-It probably came from an item you were given, from the catalogue, or from a blast started by redstone or by another plugin. Mining a patch block in a deposit does not count toward the ore achievements, only a placed ore block does. See [What counts](#achievements).
+It probably came from an item you were given, from the catalogue, or from a blast started by redstone or by another plugin. Mining a patch block in a deposit counts toward the ore achievements when it gives you its raw mineral. A patch block that gives nothing, because its deposit is empty, does not count. See [What counts](#achievements).
 
 **Why does the 4-Dimensional Bomb not need vanilla TNT?**
 
@@ -3742,15 +3754,15 @@ The hologram goes when a drill has no power or its outputs are full, so check th
 
 **Where do I find petroleum?**
 
-In crude petroleum deposits. Their patch blocks lie from y -64 to y 0, in stone and deepslate. Place a petroleum drill over a deposit, and it draws out one petroleum for each unit. Digging a patch block by hand gives you the block, not petroleum. See [Petroleum](#petroleum).
+In crude petroleum deposits. Their patch blocks lie from y -64 to y 0, in stone and deepslate. Place a petroleum drill over a deposit, and it draws out one petroleum for each unit. Digging a patch block by hand gives you one petroleum from the deposit, as a drill does, one unit at a time. See [Petroleum](#petroleum).
 
 **Why does my petroleum drill stop at night?**
 
 An older solar panel gives no power at night. Then the drill needs a redstone source, charcoal in its fuel slot, or grid power. The power line of the info item shows which source runs the drill. See [The power of a drill](#the-power-of-a-drill).
 
-**Why does my scanner do nothing?**
+**My scanner says there are no deposits. Why?**
 
-The Ore Density Scanner no longer shows the ores of a chunk. It still crafts, but right-clicking it gives no map and no chat summary. For operators, `/cf geology deposits [radius]` lists the deposits near a player. See [The Ore Density Scanner](#the-ore-density-scanner).
+The scanner looks only within 96 blocks, and only for deposits whose edge comes within that distance. Walk toward a different area and scan again. Check the filter too: sneak and right-click to set it back to all ores. A scan that is too soon after the last one says `Scanner recharging`. See [The Ore Density Scanner](#the-ore-density-scanner).
 
 **Can a hopper fill a lab machine with anything?**
 
@@ -3788,7 +3800,7 @@ The line shows only while the machine runs or has something it can start. Some s
 
 **Component.** A custom item that a bomb or machine needs as an ingredient. Components are made by crafting or by machines.
 
-**Crude petroleum deposit.** A deposit of crude oil. A petroleum drill draws petroleum from it, one unit at a time. Digging its patch block by hand gives only the block.
+**Crude petroleum deposit.** A deposit of crude oil. A petroleum drill draws petroleum from it, one unit at a time. Digging its patch block by hand gives one petroleum, from the deposit.
 
 **Crushed ore.** Raw ore after the crusher. It is a fine powder, and two crushed pieces come from each raw piece.
 
@@ -3848,7 +3860,7 @@ The line shows only while the machine runs or has something it can start. Some s
 
 **Node.** A research step, on the line of 15 nodes. You finish a node by feeding it packs.
 
-**Ore density scanner.** A crafted item that does nothing now. Right-clicking it gives no map and no chat summary.
+**Ore density scanner.** A held item that finds the deposits near you. Right-click it to scan, sneak and right-click to change its filter, and sneak and left-click to survey. It shows the nearest deposits in a map with `/cf deposits`.
 
 **Output slot.** A slot in a machine that holds its products. You can take items out, but not put them in.
 

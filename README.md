@@ -18,10 +18,10 @@ and [docs/COMMANDS_AND_PERMISSIONS.md](docs/COMMANDS_AND_PERMISSIONS.md).
 
 ## Feature list
 
-- **Science chain:** seven ores that are roasted, separated, converted, enriched and transmuted to U-233 and plutonium,
-  in twenty machines. Each lab tool keeps its items in a barrel that hoppers can feed and empty.
+- **Science chain:** seven ores, and five ores that the roasting kiln roasts (uraninite, pitchblende, galena, cinnabar and, for
+  zinc, sphalerite). The chain separates, converts, enriches and transmutes them to U-233 and plutonium, in twenty machines. Each lab tool keeps its items in a barrel that hoppers can feed and empty.
 - **Progress holograms:** a three-line hologram over each running lab tool (process, bar, time left), and a five-line one over each running drill (name, power, rate or status, the deposit it works on, storage and fuel). Set by `holograms` in `config.yml`.
-- **Ore Density Scanner:** a held item that still crafts after Laboratory Basics, but it does nothing. Its map and chat summary were removed.
+- **Ore Density Scanner:** a held item that crafts after Laboratory Basics. Right-click it to find the nearest deposits and their richness, sneak and right-click to filter by ore, sneak and left-click to survey them, and `/cf deposits` for a map with waypoints.
 - **Drills:** petroleum drills (five levels) pump petroleum from crude deposits, on the strongest of a solar panel, redstone or charcoal.
   Ore drills (five levels) mine ore deposits, and run on petroleum. Every machine and drill keeps its items in a barrel, which is
   hidden from nearby players (`concealment` in `config.yml`).
@@ -29,7 +29,7 @@ and [docs/COMMANDS_AND_PERMISSIONS.md](docs/COMMANDS_AND_PERMISSIONS.md).
 - **Electricity and belts:** pylons carry power to the machines in their range, wires join pylons and generators into grids, grids have
   outlines and charts, and accumulators store power. Belts, pickers and splitters move items between machines. See the [player guide](docs/PLAYER_GUIDE.md#electricity).
 - **Protection and claims:** belts, pickers and splitters respect the chests in WorldGuard regions and GriefPrevention claims, so a device delivers, and a picker takes, only where its placer may use the container. Only an owner can change a turret. See [Claims and integrations](docs/MECHANICS.md#claims-and-integrations).
-- **Ore blocks:** each special ore is a placeable block, and its deposits are patches of one ore in the stone, with a remaining amount, drilled by ore and petroleum drills. Silk touch keeps a placed ore block item when it is mined.
+- **Ore blocks:** each special ore is a placeable block, and its deposits are patches of one ore in the stone, with a remaining amount, dug by hand for one raw item each, and drilled by ore and petroleum drills. Silk touch keeps a placed ore block item when it is mined.
 - **Catalogue:** `/cf gui` browses everything in seventeen categories, each its own tab. Right-click an entry for its recipe; in the recipe view,
   click an ingredient that has a recipe of its own to open it.
 - **Research:** a line of fifteen nodes, finished at a Research Console. Admins can finish it with `/cf research`.

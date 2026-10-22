@@ -26,6 +26,9 @@ public final class TurretDevice {
     /** The most cannons a turret has, and so the number of its aims, targets and cooldowns. */
     public static final int CANNONS = DualTargeting.MAX_CANNONS;
 
+    /** The ticks of a second, the window of the damage counter's last second. */
+    private static final int SECOND_TICKS = 20;
+
     private final String id;
     private final TurretKind kind;
     private final UUID owner;
@@ -53,6 +56,11 @@ public final class TurretDevice {
     private TurretStatus status = TurretStatus.NO_ROUNDS;
     private double satisfaction;
     private TurretMenu menu;
+    private double damageDealt;
+    private long hitsDealt;
+    private final long[] damageTicks = new long[SECOND_TICKS];
+    private final double[] damageInTick = new double[SECOND_TICKS];
+    private final int[] hitsInTick = new int[SECOND_TICKS];
 
     /**
      * @param id       the turret's id
@@ -330,6 +338,55 @@ public final class TurretDevice {
     /** The menu, when it has been made. */
     TurretMenu existingMenu() {
         return menu;
+    }
+
+    /**
+     * Counts one hit the turret dealt. The counter keeps the damage and the hits of each tick in a ring of the last second's ticks, so the
+     * damage of the last second is the sum over that ring and nothing is allocated on a hit.
+     */
+    void countHit(long tick, double dealt) {
+        damageDealt += dealt;
+        hitsDealt++;
+        int slot = (int) Math.floorMod(tick, (long) SECOND_TICKS);
+        if (damageTicks[slot] != tick) {
+            damageTicks[slot] = tick;
+            damageInTick[slot] = 0.0;
+            hitsInTick[slot] = 0;
+        }
+        damageInTick[slot] += dealt;
+        hitsInTick[slot]++;
+    }
+
+    /** The damage the turret has dealt since it was placed or loaded, in health. */
+    public double damageDealt() {
+        return damageDealt;
+    }
+
+    /** The number of hits the turret has dealt since it was placed or loaded. */
+    public long hitsDealt() {
+        return hitsDealt;
+    }
+
+    /** The damage the turret dealt in the last second before the given tick. */
+    public double damageInLastSecond(long now) {
+        double dealt = 0.0;
+        for (int slot = 0; slot < SECOND_TICKS; slot++) {
+            if (now - damageTicks[slot] < SECOND_TICKS) {
+                dealt += damageInTick[slot];
+            }
+        }
+        return dealt;
+    }
+
+    /** The number of hits the turret dealt in the last second before the given tick. */
+    public int hitsInLastSecond(long now) {
+        int hits = 0;
+        for (int slot = 0; slot < SECOND_TICKS; slot++) {
+            if (now - damageTicks[slot] < SECOND_TICKS) {
+                hits += hitsInTick[slot];
+            }
+        }
+        return hits;
     }
 
     /** The saved form of this turret. */

@@ -120,6 +120,9 @@ public final class TurretCommand {
                 + format(facts.damage()) + " &7per hit, cannons &f" + facts.cannons()));
         sender.sendMessage(Messages.color("&7Fire: every &f" + facts.view().firingIntervalTicks() + " &7ticks at full power, power &f"
                 + facts.view().powerDemandW() + " &7W"));
+        long now = service.currentTick();
+        sender.sendMessage(Messages.color(damageLine(turret.damageDealt(), turret.damageInLastSecond(now),
+                turret.hitsInLastSecond(now))));
         sender.sendMessage(Messages.color("&7Friendly fire: " + (policy.friendlyFire() ? "&con" : "&aoff")
                 + "&7, team: &f" + teamWord(policy.teamMode())));
         sender.sendMessage(Messages.color("&7Monsters: " + onOff(policy.allows(null, TargetKind.MONSTER, service.settings()))
@@ -368,6 +371,15 @@ public final class TurretCommand {
 
     private static String format(double value) {
         return value == Math.rint(value) ? String.valueOf((long) value) : String.valueOf(Math.round(value * 100.0) / 100.0);
+    }
+
+    /**
+     * The damage line of the info, with its colour codes: the damage the turret dealt in total, the damage in the last second, and the hits
+     * in the last second.
+     */
+    static String damageLine(double total, double lastSecond, long hitsInLastSecond) {
+        return "&7Damage dealt: &f" + format(total) + " &7total, &f" + format(lastSecond) + " &7in the last second, hits in the last second: &f"
+                + hitsInLastSecond;
     }
 
     /** A player who is online, or who is already known to the server by name. Never waits for a profile lookup. */

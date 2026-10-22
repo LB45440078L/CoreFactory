@@ -19,15 +19,16 @@ public final class LaserRules {
     }
 
     /**
-     * The damage to hand to an entity so that, after its armour and toughness, a laser does the damage it would do with the given share of
-     * its armour ignored. With a share of 1 the entity's armour takes nothing, and the damage is the configured damage.
+     * The damage a laser hit leaves in an entity after its armour: the configured damage, less the reduction of the armour the beam does not
+     * ignore. With a share of 1 the entity's armour takes nothing, and the damage is the configured damage.
      *
      * @param damage       the laser's damage per hit
      * @param armour       the entity's armour value
      * @param toughness    the entity's armour toughness
      * @param armourBypass the share of the armour the beam ignores, from 0 to 1
+     * @return the damage the turret removes from the entity
      */
     public static double damageAfterArmour(double damage, double armour, double toughness, double armourBypass) {
-        return ArmourBypass.adjustedDamage(damage, armour, toughness, armourBypass);
+        return ArmourBypass.finalDamage(damage, armour, toughness, armourBypass);
     }
 }

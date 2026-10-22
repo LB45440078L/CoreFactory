@@ -19,7 +19,9 @@ import static org.assertj.core.api.Assertions.within;
 class LaserVolleyTest {
 
     private static final int LASERS = 10;
+    private static final int THREE_LASERS = 3;
     private static final double WARDEN_HEALTH = 500.0;
+    private static final double WARDEN_ARMOUR = 20.0;
     private static final double TARGET_YAW = 0.0;
     private static final double START_YAW = 180.0;
     private static final int LEVEL_FIVE_INTERVAL = TurretLevels.LASER.level(5).fireIntervalTicks();
@@ -75,6 +77,20 @@ class LaserVolleyTest {
     @Test
     void theNewRulesTakeTwentySevenTicksToKillTheWardenWithTenLasers() {
         assertThat(ticksToKill(5, 12.0)).isEqualTo(27);
+    }
+
+    @Test
+    void threeLevelFiveLasersDealTwoHundredSeventyPerSecond() {
+        assertThat(damagePerSecond(THREE_LASERS, 1.0, 1200)).isCloseTo(270.0, within(1e-9));
+    }
+
+    @Test
+    void threeLevelFiveLasersTakeTheWardenFromFiveHundredInTwoSecondsWithDirectRemoval() {
+        int tick = ticksToKillByHealth(THREE_LASERS, WARDEN_HEALTH, WARDEN_ARMOUR);
+
+        // Nine volleys make 27 hits of 18, which is 486: short of 500. The tenth volley, on tick 36, makes 540 and the Warden dies.
+        assertThat(tick).isEqualTo(36);
+        assertThat(tick).isLessThan(2 * 20);
     }
 
     /** The damage per second of lasers that hold a target from the first tick, on a target with no armour. */
@@ -138,6 +154,30 @@ class LaserVolleyTest {
             }
             if (dealt >= WARDEN_HEALTH) {
                 return tick;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * The tick on which lasers, all holding the target from the first tick and firing on their interval, take its health to 0. Each hit is
+     * the laser's damage after the target's armour, taken straight from the health as the turret does, with no armour applied again.
+     */
+    private static int ticksToKillByHealth(int lasers, double health, double armour) {
+        double remaining = health;
+        int[] cooldown = new int[lasers];
+        for (int tick = 0; tick < MAX_TICKS; tick++) {
+            for (int laser = 0; laser < lasers; laser++) {
+                if (cooldown[laser] > 0) {
+                    cooldown[laser]--;
+                }
+                if (cooldown[laser] == 0) {
+                    remaining = Math.max(0.0, remaining - LaserRules.damageAfterArmour(LEVEL_FIVE_HIT, armour, 0.0, 1.0));
+                    cooldown[laser] = FireRate.intervalTicks(LEVEL_FIVE_INTERVAL, 1.0).getAsInt();
+                    if (remaining == 0.0) {
+                        return tick;
+                    }
+                }
             }
         }
         return -1;

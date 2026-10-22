@@ -97,6 +97,8 @@ public final class TurretService implements EnergyService.ConsumerSource {
     private static final int TEXT_TICKS = 10;
     /** The power an idle turret draws, in W: enough to keep it in the assignment, far below a firing turret's demand. */
     private static final int STANDBY_DEMAND_W = 1;
+    /** The damage of a killing blow: far above any mob's health, so armour cannot save it. */
+    private static final double KILL_BLOW_DAMAGE = 1000.0;
     private static final int ROTATE_SOUND_TICKS = 12;
     private static final int FIRE_SOUND_TICKS = 3;
     private static final int CHARGE_SOUND_TICKS = 20;
@@ -787,7 +789,10 @@ public final class TurretService implements EnergyService.ConsumerSource {
         if (!mayHarm(verdict)) {
             return;
         }
-        strike(struck, ArmourBypass.adjustedDamage(damage, armourOf(struck), toughnessOf(struck), round.armourBypass()));
+        double dealt = strike(struck, ArmourBypass.finalDamage(damage, armourOf(struck), toughnessOf(struck), round.armourBypass()));
+        if (dealt > 0.0) {
+            turret.countHit(ticks, dealt);
+        }
         if (round.fireTicks() > 0) {
             struck.setFireTicks(Math.max(struck.getFireTicks(), round.fireTicks()));
         }
@@ -830,18 +835,54 @@ public final class TurretService implements EnergyService.ConsumerSource {
         if (!mayHarm(verdictOf(turret, struck, barrel, view))) {
             return;
         }
-        strike(struck, LaserRules.damageAfterArmour(damage, armourOf(struck), toughnessOf(struck), stats.laser().armourBypass()));
+        double dealt = strike(struck, LaserRules.damageAfterArmour(damage, armourOf(struck), toughnessOf(struck),
+                stats.laser().armourBypass()));
+        if (dealt > 0.0) {
+            turret.countHit(ticks, dealt);
+        }
     }
 
     /**
-     * Deals one turret hit through the normal damage call, so armour, damage events and protection apply. The mob's invulnerability window
-     * is cleared first: after an accepted hit, vanilla discards any hit no stronger than the last one for its first ten ticks, whoever dealt
-     * it, so without this a turret's shot could be dropped after another turret's, after fire, or after the mob's own hurt. The turret's own
-     * fire interval stays the only delay between its shots.
+     * Removes one turret hit from an entity's health: the absorption first, then the health. The hit is already the damage left after the
+     * entity's armour, so no hurt animation, invulnerability window, damage event or armour acts on it. A health of 0 is dead, as the Bukkit
+     * API documents for {@code setHealth}.
+     *
+     * @return the damage removed, which is less than the hit when the entity has less absorption and health than the hit
      */
-    private static void strike(LivingEntity struck, double amount) {
+    private static double strike(LivingEntity struck, double amount) {
+        if (!(amount > 0.0)) {
+            return 0.0;
+        }
+        double absorption = Math.max(0.0, struck.getAbsorptionAmount());
+        double fromAbsorption = Math.min(absorption, amount);
+        if (fromAbsorption > 0.0) {
+            struck.setAbsorptionAmount(absorption - fromAbsorption);
+        }
+        double remaining = amount - fromAbsorption;
+        double health = struck.getHealth();
+        double fromHealth = Math.min(health, remaining);
+        if (fromHealth > 0.0 && health - remaining > 0.0) {
+            struck.setHealth(Math.min(struck.getMaxHealth(), health - remaining));
+        } else if (fromHealth > 0.0) {
+            killBlow(struck);
+        }
+        return fromAbsorption + Math.max(0.0, fromHealth);
+    }
+
+    /**
+     * The blow that ends a mob goes through the server's own damage path. Setting health to zero only writes the value: the mob would not
+     * fire its death event or drop its loot. So the mob is left at one health and a blow far above its health is dealt, which armour can
+     * reduce by at most 80 per cent, and the server kills it normally.
+     */
+    private static void killBlow(LivingEntity struck) {
+        struck.setHealth(1.0);
         struck.setNoDamageTicks(0);
-        struck.damage(amount);
+        struck.damage(KILL_BLOW_DAMAGE);
+    }
+
+    /** The server ticks the turrets have run, which times the damage counter of each turret. */
+    long currentTick() {
+        return ticks;
     }
 
     /**

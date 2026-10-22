@@ -8,97 +8,66 @@ import static org.assertj.core.api.Assertions.within;
 class ArmourBypassTest {
 
     @Test
-    void aRoundWithNoBypassIsDealtItsDamage() {
-        assertThat(ArmourBypass.adjustedDamage(8.0, 12.0, 0.0, 0.0)).isEqualTo(8.0);
+    void aRoundWithNoBypassMeetsTheArmourByTheGamesFormula() {
+        // Reduction: max(10 / 5, 10 - 8 / 2) = 6 points of 25, so 8 keeps 76 per cent.
+        assertThat(ArmourBypass.finalDamage(8.0, 10.0, 0.0, 0.0)).isCloseTo(6.08, within(1e-9));
     }
 
     @Test
-    void noArmourNeedsNoAdjustment() {
-        assertThat(ArmourBypass.adjustedDamage(8.0, 0.0, 0.0, 0.5)).isEqualTo(8.0);
+    void noArmourLeavesTheDamageWhole() {
+        assertThat(ArmourBypass.finalDamage(8.0, 0.0, 0.0, 0.5)).isEqualTo(8.0);
+        assertThat(ArmourBypass.finalDamage(8.0, 0.0, 8.0, 0.0)).isEqualTo(8.0);
     }
 
     @Test
     void aNonPositiveDamageIsDealtNothing() {
-        assertThat(ArmourBypass.adjustedDamage(0.0, 10.0, 0.0, 1.0)).isZero();
-        assertThat(ArmourBypass.adjustedDamage(-3.0, 10.0, 0.0, 1.0)).isZero();
+        assertThat(ArmourBypass.finalDamage(0.0, 10.0, 0.0, 1.0)).isZero();
+        assertThat(ArmourBypass.finalDamage(-3.0, 10.0, 0.0, 1.0)).isZero();
     }
 
     @Test
     void theReductionNeverPassesTwentyPointsOfArmour() {
-        assertThat(ArmourBypass.afterArmour(10.0, 40.0, 0.0)).isCloseTo(2.0, within(1e-9));
-        assertThat(ArmourBypass.afterArmour(10.0, 100.0, 0.0)).isCloseTo(2.0, within(1e-9));
+        assertThat(ArmourBypass.finalDamage(10.0, 40.0, 0.0, 0.0)).isCloseTo(2.0, within(1e-9));
+        assertThat(ArmourBypass.finalDamage(10.0, 100.0, 0.0, 0.0)).isCloseTo(2.0, within(1e-9));
     }
 
     @Test
-    void aFullBypassOfTenArmourTakesTheHandedDamageToTheWantedEighteenAfterTheServersArmour() {
-        double handed = ArmourBypass.adjustedDamage(18.0, 10.0, 0.0, 1.0);
-
-        assertThat(handed).isCloseTo(18.0 / 0.92, within(1e-6));
-        assertThat(ArmourBypass.afterArmour(handed, 10.0, 0.0)).isCloseTo(18.0, within(1e-9));
-    }
-
-    @Test
-    void aHandOverOfThirtyLeavesTwentySevenPointSixAfterTenArmour() {
-        assertThat(ArmourBypass.afterArmour(30.0, 10.0, 0.0)).isCloseTo(27.6, within(1e-9));
-    }
-
-    @Test
-    void aTwentyArmourTargetIsHandedTheSolvedDamageNotTheLinearNinety() {
-        double handed = ArmourBypass.adjustedDamage(18.0, 20.0, 0.0, 1.0);
-
-        assertThat(handed).isCloseTo(25.4138, within(1e-3));
-        assertThat(ArmourBypass.afterArmour(handed, 20.0, 0.0)).isCloseTo(18.0, within(1e-9));
-    }
-
-    @Test
-    void theToughnessAddsToTheDivisorAsVanillaDoes() {
-        double withToughness = ArmourBypass.adjustedDamage(18.0, 10.0, 8.0, 1.0);
-
-        assertThat(withToughness).isCloseTo(21.9615, within(1e-3));
-        assertThat(withToughness).isNotCloseTo(ArmourBypass.adjustedDamage(18.0, 10.0, 0.0, 1.0), within(1e-3));
-        assertThat(ArmourBypass.afterArmour(withToughness, 10.0, 8.0)).isCloseTo(18.0, within(1e-9));
-    }
-
-    @Test
-    void theServerAppliesTheWantedDamageForEveryArmourToughnessAndBypass() {
-        double[] armours = {2.0, 10.0, 20.0, 30.0};
-        double[] toughnesses = {0.0, 4.0, 8.0};
-        double[] bypasses = {0.5, 1.0};
-        double[] damages = {6.0, 12.0, 18.0};
-        for (double armour : armours) {
-            for (double toughness : toughnesses) {
-                for (double bypass : bypasses) {
-                    for (double damage : damages) {
-                        double handed = ArmourBypass.adjustedDamage(damage, armour, toughness, bypass);
-                        double served = ArmourBypass.afterArmour(handed, armour, toughness);
-                        double wanted = ArmourBypass.afterArmour(damage, armour * (1.0 - bypass), toughness);
-
-                        assertThat(served)
-                                .as("damage %s, armour %s, toughness %s, bypass %s", damage, armour, toughness, bypass)
-                                .isCloseTo(wanted, within(1e-9));
-                    }
-                }
-            }
-        }
-    }
-
-    @Test
-    void aFullBypassDeliversTheConfiguredDamageAfterAnyArmour() {
-        double[] armours = {1.0, 5.0, 10.0, 20.0, 40.0};
+    void aLaserWithAFullBypassDealsItsConfiguredDamageAfterAnyArmour() {
+        double[] armours = {0.0, 1.0, 5.0, 10.0, 20.0, 40.0};
         double[] toughnesses = {0.0, 8.0};
         for (double armour : armours) {
             for (double toughness : toughnesses) {
-                double handed = ArmourBypass.adjustedDamage(18.0, armour, toughness, 1.0);
-
-                assertThat(ArmourBypass.afterArmour(handed, armour, toughness))
+                assertThat(ArmourBypass.finalDamage(18.0, armour, toughness, 1.0))
                         .as("armour %s, toughness %s", armour, toughness)
-                        .isCloseTo(18.0, within(1e-9));
+                        .isEqualTo(18.0);
             }
         }
     }
 
     @Test
-    void aBypassedShareOfTheArmourRaisesTheDamageHandedOver() {
-        assertThat(ArmourBypass.adjustedDamage(8.0, 20.0, 0.0, 0.5)).isGreaterThan(8.0);
+    void aWardenWithTwentyArmourTakesTenPointOhEightFromAHitOfEighteenWithNoBypass() {
+        assertThat(ArmourBypass.finalDamage(18.0, 20.0, 0.0, 0.0)).isCloseTo(10.08, within(1e-9));
+    }
+
+    @Test
+    void theToughnessCountsWhenTheRoundDoesNotBypass() {
+        // With toughness 8 the divisor is 4, so the reduction is max(2, 10 - 4.5) = 5.5 points: 18 keeps 78 per cent.
+        double withToughness = ArmourBypass.finalDamage(18.0, 10.0, 8.0, 0.0);
+        double withoutToughness = ArmourBypass.finalDamage(18.0, 10.0, 0.0, 0.0);
+
+        assertThat(withToughness).isCloseTo(14.04, within(1e-9));
+        assertThat(withoutToughness).isCloseTo(16.56, within(1e-9));
+        assertThat(withToughness).isLessThan(withoutToughness);
+    }
+
+    @Test
+    void aFullBypassRemovesTheArmoursEffectWhateverItsToughness() {
+        assertThat(ArmourBypass.finalDamage(18.0, 20.0, 8.0, 1.0)).isEqualTo(18.0);
+    }
+
+    @Test
+    void aHalfBypassMeetsOnlyTheHalfOfTheArmourThatIsLeft() {
+        // Ten armour is left: max(2, 10 - 9) = 2 points, so 18 keeps 92 per cent.
+        assertThat(ArmourBypass.finalDamage(18.0, 20.0, 0.0, 0.5)).isCloseTo(16.56, within(1e-9));
     }
 }

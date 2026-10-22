@@ -121,8 +121,8 @@ class LaserSuspectsTest {
                 "WARDEN", Relation.NONE, null, false, clearShot);
     }
 
-    // (e) Armour. A Warden with no armour takes the full 18. With armour and the laser's bypass at 1 (the shipped default) the damage handed
-    // over is raised so that the server's armour leaves exactly 18. With the bypass at 0 the armour cuts the hit.
+    // (e) Armour. A Warden with no armour takes the full 18. With the laser's bypass at 1 (the shipped default) the armour takes nothing, so
+    // any armour leaves the full 18. With the bypass at 0 the armour cuts the hit by the game's formula.
     @Test
     void aWardenWithNoArmourTakesTheFullEighteen() {
         assertThat(LaserRules.damageAfterArmour(18.0, 0.0, 0.0, 1.0)).isEqualTo(18.0);
@@ -130,22 +130,17 @@ class LaserSuspectsTest {
 
     @Test
     void withTheShippedBypassArmourTwentyStillLeavesEighteen() {
-        double handed = LaserRules.damageAfterArmour(18.0, 20.0, 0.0, 1.0);
-
-        assertThat(ArmourBypass.afterArmour(handed, 20.0, 0.0)).isCloseTo(18.0, within(1e-6));
+        assertThat(LaserRules.damageAfterArmour(18.0, 20.0, 0.0, 1.0)).isEqualTo(18.0);
     }
 
     @Test
     void withoutTheBypassArmourTwentyLeavesTenPointOhEight() {
-        double handed = LaserRules.damageAfterArmour(18.0, 20.0, 0.0, 0.0);
-
-        assertThat(handed).isEqualTo(18.0);
-        assertThat(ArmourBypass.afterArmour(handed, 20.0, 0.0)).isCloseTo(10.08, within(1e-9));
+        assertThat(LaserRules.damageAfterArmour(18.0, 20.0, 0.0, 0.0)).isCloseTo(10.08, within(1e-9));
     }
 
     // (f) The invulnerability window. Vanilla refuses a hit no stronger than the last while the window is above 10 ticks, and a hit sets
-    // the window to 20. The turret clears the window before each hit (TurretService.strike), so every shot lands. This model is of
-    // vanilla as it is generally documented, not a test against a server.
+    // the window to 20. The turret removes its hits from health with no window at all (TurretService.strike), so every shot lands. This
+    // model is of vanilla as it is generally documented, not a test against a server.
     @Test
     void withTheWindowClearedEveryShotLandsAndTheWardenTakesNinetyPerSecond() {
         int accepted = acceptedHitsInFourSeconds(true);

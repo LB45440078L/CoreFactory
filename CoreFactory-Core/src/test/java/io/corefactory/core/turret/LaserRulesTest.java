@@ -15,11 +15,9 @@ class LaserRulesTest {
     }
 
     @Test
-    void aFullShareOfTheArmourIgnoredHandsOverTheDamageThatArmourLeavesAsTheConfiguredOne() {
-        double handed = LaserRules.damageAfterArmour(12.0, 10.0, 0.0, 1.0);
-
-        assertThat(handed).isCloseTo(13.7228, within(1e-3));
-        assertThat(ArmourBypass.afterArmour(handed, 10.0, 0.0)).isCloseTo(12.0, within(1e-9));
+    void aFullShareOfTheArmourIgnoredLeavesTheConfiguredDamageAfterAnyArmour() {
+        assertThat(LaserRules.damageAfterArmour(12.0, 10.0, 0.0, 1.0)).isEqualTo(12.0);
+        assertThat(LaserRules.damageAfterArmour(12.0, 40.0, 8.0, 1.0)).isEqualTo(12.0);
     }
 
     @Test
@@ -29,15 +27,15 @@ class LaserRulesTest {
 
     @Test
     void aZeroShareLeavesTheArmourToTakeItsUsualShare() {
-        assertThat(LaserRules.damageAfterArmour(12.0, 10.0, 0.0, 0.0)).isCloseTo(12.0, within(1e-9));
+        // Reduction: max(10 / 5, 10 - 12 / 2) = 4 points of 25, so 12 keeps 84 per cent.
+        assertThat(LaserRules.damageAfterArmour(12.0, 10.0, 0.0, 0.0)).isCloseTo(10.08, within(1e-9));
     }
 
     @Test
-    void aLevelFiveLaserTakesItsEighteenAfterTheArmourOfATwentyArmourTarget() {
+    void aLevelFiveLaserDeals18AfterTheArmourOfATwentyArmourTarget() {
         double damage = TurretLevels.LASER.level(5).effectiveDamage();
-        double handed = LaserRules.damageAfterArmour(damage, 20.0, 0.0, 1.0);
 
         assertThat(damage).isCloseTo(18.0, within(1e-9));
-        assertThat(ArmourBypass.afterArmour(handed, 20.0, 0.0)).isCloseTo(18.0, within(1e-9));
+        assertThat(LaserRules.damageAfterArmour(damage, 20.0, 0.0, 1.0)).isCloseTo(18.0, within(1e-9));
     }
 }

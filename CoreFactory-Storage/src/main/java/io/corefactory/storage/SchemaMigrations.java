@@ -64,7 +64,10 @@ final class SchemaMigrations {
                     )""",
                     """
                     CREATE INDEX IF NOT EXISTS corefactory_deposits_centre
-                        ON corefactory_deposits (world, centre_x, centre_z)""")));
+                        ON corefactory_deposits (world, centre_x, centre_z)""")),
+            new Migration(4, List.of(
+                    "DROP TABLE IF EXISTS corefactory_mining_ledger",
+                    "DROP TABLE IF EXISTS corefactory_chunk_budget")));
 
     private SchemaMigrations() {
     }

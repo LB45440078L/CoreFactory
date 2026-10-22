@@ -71,7 +71,7 @@ public final class DrillTicker {
 
     /**
      * @param deposits the store of the planned deposits, which the drills take from
-     * @param settings the deposit settings, whose largest radius sets how far a drill searches
+     * @param settings the deposit settings; the search reach is the largest radius a deposit may have, so it does not read this
      * @param yield    the items per second of each level at full power
      * @param ores     the ore definitions by id, which give a deposit's drop
      */
@@ -152,7 +152,8 @@ public final class DrillTicker {
 
     /**
      * Looks up the deposits in reach of the drill, and keeps the one it works on while that one is still mineable and has something
-     * left. When it must move on, the items it made for the old deposit are taken from it first.
+     * left. When it must move on, the items it made for the old deposit are taken from it first, and it keeps the old deposit until
+     * those items are in the outputs, so no item the outputs had no room for is dropped.
      */
     private void search(PlacedMachine placed, long tick) {
         DrillMining mining = placed.mining();
@@ -166,7 +167,7 @@ public final class DrillTicker {
         List<Deposit> found;
         try {
             found = deposits.overlapping(world.getName(), site.getBlockX(), site.getBlockZ(),
-                    DrillDeposits.reach(definition.spec(), settings.maxRadius()));
+                    DrillDeposits.reach(definition.spec()));
         } catch (RuntimeException e) {
             log.warning("Could not search the deposits of the drill at " + site.getBlockX() + " " + site.getBlockY() + " "
                     + site.getBlockZ() + ": " + e.getMessage());
@@ -179,11 +180,15 @@ public final class DrillTicker {
         OptionalLong oldId = old == null ? OptionalLong.empty() : OptionalLong.of(old.id());
         Optional<Deposit> chosen = DrillDeposits.choose(mineable, oldId);
         boolean moving = old != null && (chosen.isEmpty() || chosen.get().id() != old.id());
+        Optional<Deposit> next = chosen;
         if (moving) {
             take(placed, tick);
-            mining.batch().discard();
+            if (mining.current() == null) {
+                mining.batch().discard();
+            }
+            next = DrillDeposits.afterBatch(chosen, mining.current(), mining.batch().pending());
         }
-        mining.searched(tick, listed, !mineable.isEmpty(), chosen.orElse(null));
+        mining.searched(tick, listed, !mineable.isEmpty(), next.orElse(null));
     }
 
     /**

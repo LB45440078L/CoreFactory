@@ -94,6 +94,22 @@ public final class TargetAssignment {
      * @return the targets of each turret, by its id, unmodifiable
      */
     public static Map<String, List<UUID>> assign(List<TurretSlot> turrets, double spacing, Function<UUID, TargetRules.Point> positions) {
+        return assign(turrets, Set.of(), spacing, positions);
+    }
+
+    /**
+     * The targets each turret's cannons take, as {@link #assign(List, double, Function)}, with the targets that turrets outside the pass hold.
+     * A reserved target is taken by no cannon of the pass while another candidate is free, and a cannon of the pass that holds one loses it.
+     * A reserved target is taken only as the last candidate a cannon can take, so a cannon is never left empty for want of one.
+     *
+     * @param turrets   the turrets given targets in this pass; the ids are unique
+     * @param reserved  the targets the cannons of the turrets outside the pass hold; empty when every turret of the world is in the pass
+     * @param spacing   the most a second target may lie from the turret's first target, in blocks, inclusive; a negative value counts as zero
+     * @param positions the place of each candidate; a null answer means no place is known
+     * @return the targets of each turret, by its id, unmodifiable
+     */
+    public static Map<String, List<UUID>> assign(List<TurretSlot> turrets, Set<UUID> reserved, double spacing,
+                                                 Function<UUID, TargetRules.Point> positions) {
         double limit = Math.max(0.0, spacing);
         List<TurretSlot> ordered = new ArrayList<>(turrets);
         ordered.sort(Comparator.comparing(TurretSlot::turret));
@@ -105,7 +121,7 @@ public final class TargetAssignment {
 
         for (Plan plan : plans) {
             for (UUID id : plan.slot.claimed()) {
-                if (!plan.full() && plan.reachable.contains(id) && !holders.containsKey(id)) {
+                if (!plan.full() && plan.reachable.contains(id) && !holders.containsKey(id) && !reserved.contains(id)) {
                     hold(plan, id, holders);
                 }
             }
@@ -118,14 +134,14 @@ public final class TargetAssignment {
         for (int round = 0; round < rounds; round++) {
             for (Plan plan : plans) {
                 if (!plan.full() && plan.held.size() <= round) {
-                    nextUnclaimed(plan, holders, limit, positions).ifPresent(id -> hold(plan, id, holders));
+                    nextUnclaimed(plan, holders, reserved, limit, positions).ifPresent(id -> hold(plan, id, holders));
                 }
             }
         }
 
         for (Plan plan : plans) {
             while (!plan.full()) {
-                Optional<UUID> shared = leastHeldShare(plan, holders);
+                Optional<UUID> shared = leastHeldShare(plan, holders, reserved);
                 if (shared.isEmpty()) {
                     break;
                 }
@@ -149,22 +165,22 @@ public final class TargetAssignment {
      * The target of the next cannon of a turret in the spread. A first cannon takes the nearest unclaimed candidate. A second cannon takes the
      * unclaimed candidate within the spacing of the turret's first target when there is one, and the nearest unclaimed candidate otherwise.
      */
-    private static Optional<UUID> nextUnclaimed(Plan plan, Map<UUID, Integer> holders, double limit,
+    private static Optional<UUID> nextUnclaimed(Plan plan, Map<UUID, Integer> holders, Set<UUID> reserved, double limit,
                                                 Function<UUID, TargetRules.Point> positions) {
         if (!plan.held.isEmpty()) {
-            Optional<UUID> within = nearestUnclaimedWithin(plan, holders, limit, positions);
+            Optional<UUID> within = nearestUnclaimedWithin(plan, holders, reserved, limit, positions);
             if (within.isPresent()) {
                 return within;
             }
         }
-        return nearestUnclaimed(plan, holders);
+        return nearestUnclaimed(plan, holders, reserved);
     }
 
     /**
      * The unclaimed candidate that lies within the spacing of the turret's first target, inclusive, and lies nearest to that target. Empty when
      * none does, or when the first target has no known place.
      */
-    private static Optional<UUID> nearestUnclaimedWithin(Plan plan, Map<UUID, Integer> holders, double limit,
+    private static Optional<UUID> nearestUnclaimedWithin(Plan plan, Map<UUID, Integer> holders, Set<UUID> reserved, double limit,
                                                          Function<UUID, TargetRules.Point> positions) {
         TargetRules.Point first = positions.apply(plan.held.get(0));
         if (first == null) {
@@ -174,7 +190,7 @@ public final class TargetAssignment {
         UUID best = null;
         double bestSquared = Double.POSITIVE_INFINITY;
         for (UUID id : plan.slot.candidates()) {
-            if (holders.containsKey(id)) {
+            if (holders.containsKey(id) || reserved.contains(id)) {
                 continue;
             }
             TargetRules.Point at = positions.apply(id);
@@ -190,10 +206,12 @@ public final class TargetAssignment {
         return Optional.ofNullable(best);
     }
 
-    /** The nearest candidate that no turret holds in this pass, or empty when every candidate is held. */
-    private static Optional<UUID> nearestUnclaimed(Plan plan, Map<UUID, Integer> holders) {
+    /**
+     * The nearest candidate that no turret holds in this pass and that is not reserved, or empty when every candidate is held or reserved.
+     */
+    private static Optional<UUID> nearestUnclaimed(Plan plan, Map<UUID, Integer> holders, Set<UUID> reserved) {
         for (UUID id : plan.slot.candidates()) {
-            if (!holders.containsKey(id)) {
+            if (!holders.containsKey(id) && !reserved.contains(id)) {
                 return Optional.of(id);
             }
         }
@@ -201,19 +219,23 @@ public final class TargetAssignment {
     }
 
     /**
-     * The candidate that the fewest turrets hold, nearest first, that the turret does not already hold. Empty when the turret has no such
-     * candidate.
+     * The candidate that the fewest turrets hold, nearest first, that the turret does not already hold. A reserved candidate comes after every
+     * other one. Empty when the turret has no such candidate.
      */
-    private static Optional<UUID> leastHeldShare(Plan plan, Map<UUID, Integer> holders) {
+    private static Optional<UUID> leastHeldShare(Plan plan, Map<UUID, Integer> holders, Set<UUID> reserved) {
         UUID best = null;
+        boolean bestReserved = false;
         int bestHolders = Integer.MAX_VALUE;
         for (UUID id : plan.slot.candidates()) {
             if (plan.held.contains(id)) {
                 continue;
             }
+            boolean isReserved = reserved.contains(id);
             int count = holders.getOrDefault(id, 0);
-            if (count < bestHolders) {
+            boolean better = best == null || (bestReserved != isReserved ? bestReserved : count < bestHolders);
+            if (better) {
                 best = id;
+                bestReserved = isReserved;
                 bestHolders = count;
             }
         }

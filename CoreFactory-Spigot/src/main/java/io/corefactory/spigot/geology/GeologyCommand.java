@@ -3,20 +3,23 @@ package io.corefactory.spigot.geology;
 import io.corefactory.core.CoreFactoryCore;
 import io.corefactory.core.config.Messages;
 import io.corefactory.core.deposit.Deposit;
+import io.corefactory.core.deposit.DepositFilter;
+import io.corefactory.core.deposit.DepositScan;
 import io.corefactory.core.deposit.DepositSettings;
 import io.corefactory.core.deposit.DepositStore;
+import io.corefactory.core.deposit.DepositText;
 import io.corefactory.core.geology.OreDefinition;
 import io.corefactory.spigot.command.Style;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
 /**
- * {@code /cf geology deposits [radius]} lists the deposits whose circle reaches within the radius of the player, each with
- * its ore, the amount left of the amount it started with, its centre and its radius. Players only.
+ * {@code /cf geology deposits [radius]} lists the deposits whose circle reaches within the radius of the player, nearest first,
+ * in the same chat line as the scanner: the ore, the direction and distance, the tier and the share left. Players only. The
+ * deposit map ({@code /cf deposits}) is the menu of the same list.
  */
 public final class GeologyCommand {
 
@@ -73,10 +76,8 @@ public final class GeologyCommand {
         // The store needs a reach of at least the largest radius it holds, so it is asked with that, and the list is
         // then cut down to the radius the player asked for.
         int reach = Math.max(radius, settings.maxRadius());
-        List<Deposit> found = store.overlapping(world, x, z, reach).stream()
-                .filter(deposit -> DepositStore.reaches(deposit, x, z, radius))
-                .sorted(Comparator.comparingLong((Deposit deposit) -> squared(deposit.centreX() - x, deposit.centreZ() - z)))
-                .toList();
+        List<Deposit> found = DepositScan.nearest(store.overlapping(world, x, z, reach), x, z, radius, DepositFilter.ALL,
+                Integer.MAX_VALUE);
         sender.sendMessage(Messages.color("&6Deposits within &f" + radius + " &6blocks of you in &f" + world + "&6: &f"
                 + found.size()));
         if (found.isEmpty()) {
@@ -84,9 +85,7 @@ public final class GeologyCommand {
             return;
         }
         for (Deposit deposit : found) {
-            sender.sendMessage(Messages.color("&8 - " + nameOf(deposit.ore()) + "&7: &f" + deposit.remaining()
-                    + " &7of &f" + deposit.initialAmount() + " &7left, centre &f" + deposit.centreX() + ", "
-                    + deposit.centreZ() + "&7, radius &f" + deposit.radius()));
+            sender.sendMessage(Messages.color(DepositText.listLine(nameOf(deposit.ore()), deposit, x, z)));
         }
     }
 
@@ -106,9 +105,5 @@ public final class GeologyCommand {
             }
         }
         return id;
-    }
-
-    private static long squared(long dx, long dz) {
-        return dx * dx + dz * dz;
     }
 }

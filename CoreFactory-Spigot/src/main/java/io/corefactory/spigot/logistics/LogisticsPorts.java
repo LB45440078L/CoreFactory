@@ -64,7 +64,7 @@ final class LogisticsPorts {
         if (machine.isPresent()) {
             return machine;
         }
-        Optional<Port> turret = turrets.at(block).map(TurretPort::new);
+        Optional<Port> turret = turrets.at(block).map(device -> new TurretPort(device, turrets::persist));
         if (turret.isPresent()) {
             return turret;
         }

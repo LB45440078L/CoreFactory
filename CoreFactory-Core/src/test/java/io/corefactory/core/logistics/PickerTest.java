@@ -134,6 +134,11 @@ class PickerTest {
     }
 
     @Test
+    void aPartlyPoweredPickerKeepsItsRateOverALongRun() {
+        assertThat(movesIn(LogisticsLevel.III, 0.7, 2000)).isBetween(277, 280);
+    }
+
+    @Test
     void zeroSatisfactionStopsThePicker() {
         assertThat(movesIn(LogisticsLevel.III, 0.0, 400)).isZero();
     }

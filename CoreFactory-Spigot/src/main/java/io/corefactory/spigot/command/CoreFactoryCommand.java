@@ -13,6 +13,7 @@ import io.corefactory.spigot.energy.EnergyEffects;
 import io.corefactory.spigot.energy.EnergyService;
 import io.corefactory.spigot.friends.FriendsCommand;
 import io.corefactory.spigot.geology.GeologyCommand;
+import io.corefactory.spigot.scanner.DepositScanner;
 import io.corefactory.spigot.gui.AchievementGui;
 import io.corefactory.spigot.research.ResearchCommand;
 import io.corefactory.spigot.pack.BundledPack;
@@ -67,6 +68,7 @@ public final class CoreFactoryCommand implements CommandExecutor, TabCompleter {
             new Completion.Candidate("unlink", PERMISSION_CONFIGURE), new Completion.Candidate("count", null),
             new Completion.Candidate("reload", PERMISSION_RELOAD),
             new Completion.Candidate("geology", GeologyCommand.PERMISSION),
+            new Completion.Candidate("deposits", GeologyCommand.PERMISSION),
             new Completion.Candidate("research", ResearchCommand.PERMISSION),
             new Completion.Candidate("pylons", PERMISSION_PYLONS), new Completion.Candidate("grid", null),
             new Completion.Candidate("friends", FriendsCommand.PERMISSION),
@@ -83,12 +85,15 @@ public final class CoreFactoryCommand implements CommandExecutor, TabCompleter {
     private final ChartCommand charts;
     private final FriendsCommand friends;
     private final TurretCommand turret;
+    private final DepositScanner scanner;
 
     public CoreFactoryCommand(CoreFactoryPlugin plugin, CoreFactoryCore core, AchievementTracker achievements,
                           GeologyCommand geology, ResearchCommand research, GuideBook guide, EnergyService energy,
-                          EnergyEffects effects, ChartCommand charts, FriendsCommand friends, TurretCommand turret) {
+                          EnergyEffects effects, ChartCommand charts, FriendsCommand friends, TurretCommand turret,
+                          DepositScanner scanner) {
         this.friends = friends;
         this.turret = turret;
+        this.scanner = scanner;
         this.plugin = plugin;
         this.core = core;
         this.achievements = achievements;
@@ -118,6 +123,7 @@ public final class CoreFactoryCommand implements CommandExecutor, TabCompleter {
             case "count" -> sender.sendMessage(core.messages().get("placed-count", "count", core.placedTnts().size()));
             case "reload" -> reload(sender);
             case "geology" -> geology.run(sender, args);
+            case "deposits" -> deposits(sender);
             case "research" -> research.run(sender, args);
             case "pylons" -> pylons(sender, args);
             case "grid" -> charts.run(sender, args);
@@ -146,7 +152,8 @@ public final class CoreFactoryCommand implements CommandExecutor, TabCompleter {
                 "show the resource pack version, or install a newer one now"));
         sender.sendMessage(Style.COMMAND.of("/cf count") + Style.HINT.of(" | ") + Style.COMMAND.of("/cf reload"));
         sender.sendMessage(Style.usage("/cf geology deposits", "[radius]",
-                "the deposits within radius blocks of you, with what each has left"));
+                "the deposits within radius blocks of you, nearest first"));
+        sender.sendMessage(Style.usage("/cf deposits", "", "the deposit map: the nearest deposits, click one for a waypoint"));
         sender.sendMessage(Style.usage("/cf research max", "[player]", "finish every node (admins)"));
         sender.sendMessage(Style.usage("/cf friends", "add|remove <player> | list",
                 "your friends: a turret never fires at them while friendly fire is off"));
@@ -167,6 +174,20 @@ public final class CoreFactoryCommand implements CommandExecutor, TabCompleter {
         for (String line : ChartCommand.USAGE) {
             sender.sendMessage(line);
         }
+    }
+
+    /** {@code /cf deposits} opens the deposit map for the player who typed it. */
+    private void deposits(CommandSender sender) {
+        Player player = asPlayer(sender);
+        if (player == null) {
+            sender.sendMessage(core.messages().get("player-only"));
+            return;
+        }
+        if (!player.hasPermission(GeologyCommand.PERMISSION)) {
+            player.sendMessage(core.messages().get("no-permission"));
+            return;
+        }
+        scanner.openMap(player);
     }
 
     /** {@code /cf pylons show [seconds]} draws the outlines of the grids near the player, in their colours, for the given seconds. */

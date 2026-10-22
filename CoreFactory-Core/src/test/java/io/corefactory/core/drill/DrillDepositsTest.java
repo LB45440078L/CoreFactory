@@ -1,6 +1,7 @@
 package io.corefactory.core.drill;
 
 import io.corefactory.core.deposit.Deposit;
+import io.corefactory.core.deposit.DepositSettings;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -117,9 +118,44 @@ class DrillDepositsTest {
     }
 
     @Test
-    void theSearchReachCoversARadiusPlusTheSideOfTheSquare() {
-        assertThat(DrillDeposits.reach(DrillTable.level(5), 48)).isEqualTo(88);
-        assertThat(DrillDeposits.reach(DrillTable.level(1), 24)).isEqualTo(34);
+    void theSearchReachCoversTheLargestRadiusPlusTheSideOfTheSquare() {
+        assertThat(DrillDeposits.reach(DrillTable.level(5))).isEqualTo(DepositSettings.MAX_RADIUS + 40);
+        assertThat(DrillDeposits.reach(DrillTable.level(1))).isEqualTo(DepositSettings.MAX_RADIUS + 10);
+    }
+
+    @Test
+    void theSearchReachFindsADepositOfTheLargestRadiusAtTheFarEdgeOfTheLargestSquare() {
+        DrillSpec largest = DrillTable.level(5);
+        DrillBox box = DrillBox.around(0, 60, 0, largest);
+        int reach = DrillDeposits.reach(largest);
+        // The square runs from x -20 to x +19. A deposit of the largest radius touches it from either side at 256 blocks out.
+        Deposit east = deposit(1, box.maxX() + DepositSettings.MAX_RADIUS, 0, DepositSettings.MAX_RADIUS, GALENA, 50);
+        Deposit west = deposit(2, box.minX() - DepositSettings.MAX_RADIUS, 0, DepositSettings.MAX_RADIUS, GALENA, 50);
+        assertThat(DrillDeposits.touches(east, box)).isTrue();
+        assertThat(DrillDeposits.touches(west, box)).isTrue();
+        assertThat(Math.abs(east.centreX())).isLessThanOrEqualTo(reach);
+        assertThat(Math.abs(west.centreX())).isLessThanOrEqualTo(reach);
+    }
+
+    @Test
+    void aDrillKeepsItsOldDepositWhileItsBatchWaitsForAnOutput() {
+        Deposit old = deposit(1, 0, 0, 5, GALENA, 100);
+        Deposit chosen = deposit(2, 0, 0, 5, GALENA, 300);
+        assertThat(DrillDeposits.afterBatch(Optional.of(chosen), old, 4)).contains(old);
+    }
+
+    @Test
+    void aDrillMovesOnOnceItsBatchIsInTheOutputs() {
+        Deposit old = deposit(1, 0, 0, 5, GALENA, 100);
+        Deposit chosen = deposit(2, 0, 0, 5, GALENA, 300);
+        assertThat(DrillDeposits.afterBatch(Optional.of(chosen), old, 0)).contains(chosen);
+        assertThat(DrillDeposits.afterBatch(Optional.empty(), old, 0)).isEmpty();
+    }
+
+    @Test
+    void aDrillMovesOnWhenItsOldDepositIsGone() {
+        Deposit chosen = deposit(2, 0, 0, 5, GALENA, 300);
+        assertThat(DrillDeposits.afterBatch(Optional.of(chosen), null, 4)).contains(chosen);
     }
 
     @Test

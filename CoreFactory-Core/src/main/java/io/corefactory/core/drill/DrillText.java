@@ -53,6 +53,18 @@ public final class DrillText {
         return (value / MILLION) + "M";
     }
 
+    /**
+     * A distance in blocks, in metres under a kilometre and in kilometres above it, truncated to one decimal: {@code 999 m},
+     * {@code 1.0 km}, {@code 12.5 km}. Negative distances read as 0 m.
+     */
+    public static String distance(long blocks) {
+        long value = Math.max(0, blocks);
+        if (value < THOUSAND) {
+            return value + " m";
+        }
+        return tenths(value, THOUSAND) + " km";
+    }
+
     /** The share of a deposit's initial amount that is left, as a percentage such as {@code 48%}. A deposit with none planned reads 0%. */
     public static String share(Deposit deposit) {
         if (deposit.initialAmount() == 0) {

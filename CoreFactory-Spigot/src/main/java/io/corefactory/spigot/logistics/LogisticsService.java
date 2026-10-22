@@ -666,13 +666,20 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
                         + e.getMessage());
             }
         }
+        int dropped = 0;
         for (LogisticsDevice device : refused) {
+            dropped += itemsOf(previous, device);
             entities.destroy(device);
             byId.remove(device.id());
             byBlock.remove(device.blockKey());
         }
         if (refused.size() == here.size()) {
+            log.warning("Logistics: every device of a world is refused by its network, so the network is removed"
+                    + (dropped > 0 ? " and " + dropped + " item(s) on it are lost." : "."));
             return null;
+        }
+        if (dropped > 0) {
+            log.warning("Logistics: " + dropped + " item(s) on the refused devices were lost.");
         }
         Set<Pos> belts = new HashSet<>();
         Set<String> splitters = new HashSet<>();
@@ -688,6 +695,20 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
             carry(previous, built);
         }
         return built;
+    }
+
+    /** The items a device holds in a network: the items on a belt, or the one a splitter holds. Zero when there is no network. */
+    private static int itemsOf(Built network, LogisticsDevice device) {
+        if (network == null) {
+            return 0;
+        }
+        if (device.kind() == LogisticsIds.Kind.BELT) {
+            return network.network().itemsOn(device.pos()).size();
+        }
+        if (device.kind() == LogisticsIds.Kind.SPLITTER) {
+            return network.network().heldBy(device.id()).isPresent() ? 1 : 0;
+        }
+        return 0;
     }
 
     private void carry(Built from, Built to) {

@@ -3,6 +3,7 @@ package io.corefactory.spigot;
 import io.corefactory.api.CoreFactoryProvider;
 import io.corefactory.core.CoreFactoryCore;
 import io.corefactory.core.deposit.DepositSettings;
+import io.corefactory.core.deposit.ScannerSettings;
 import io.corefactory.core.deposit.DepositStore;
 import io.corefactory.core.deposit.DrillYield;
 import io.corefactory.core.drill.DrillCatalog;
@@ -70,6 +71,7 @@ import io.corefactory.spigot.pack.BundledPack;
 import io.corefactory.spigot.radiation.GeigerDisplay;
 import io.corefactory.spigot.research.ResearchGateListener;
 import io.corefactory.spigot.research.ResearchRuntime;
+import io.corefactory.spigot.scanner.DepositScanner;
 import io.corefactory.spigot.turret.TurretCommand;
 import io.corefactory.spigot.turret.TurretIds;
 import io.corefactory.spigot.turret.TurretRuntime;
@@ -220,7 +222,7 @@ public final class CoreFactoryPlugin extends JavaPlugin {
         }
         manager.registerEvents(new DepositChunkListener(new DepositGenerator(deposits, depositSettings, oreDefinitions)), this);
         GeologyWorker geology = new GeologyWorker(core, new GeologyService(oreDefinitions), getLogger());
-        manager.registerEvents(new GeologyListener(core, geology, achievements, sprites), this);
+        manager.registerEvents(new GeologyListener(core, geology, deposits, depositSettings, achievements, sprites), this);
 
         ProcessCatalog processes = processCatalog;
         ItemRefs itemRefs = new ItemRefs(core);
@@ -286,10 +288,14 @@ public final class CoreFactoryPlugin extends JavaPlugin {
         DrillTicker drillTicker = new DrillTicker(machines, holograms, deposits, depositSettings, drillYield, oreById, energy,
                 getLogger());
 
+        DepositScanner depositScanner = new DepositScanner(this, core, deposits, depositSettings,
+                ScannerSettings.from(getConfig(), getLogger()));
+        manager.registerEvents(depositScanner, this);
+
         GuideBook guide = new GuideBook(core, researchTree, processCatalog, oreDefinitions);
         CoreFactoryCommand command = new CoreFactoryCommand(this, core, achievements, new GeologyCommand(core, deposits, depositSettings),
                 new ResearchCommand(core, research.service()), guide, energy, energyEffects, new ChartCommand(charts),
-                new FriendsCommand(turrets.friends()), new TurretCommand(turrets.service(), turrets.registry()));
+                new FriendsCommand(turrets.friends()), new TurretCommand(turrets.service(), turrets.registry()), depositScanner);
         if (getCommand("cf") != null) {
             getCommand("cf").setExecutor(command);
             getCommand("cf").setTabCompleter(command);

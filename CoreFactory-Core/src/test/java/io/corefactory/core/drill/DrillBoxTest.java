@@ -14,6 +14,15 @@ class DrillBoxTest {
     }
 
     @Test
+    void anOddSquareIsAsWideAsItsAreaAndCentred() {
+        DrillBox box = DrillBox.around(0, 0, 0, new DrillSpec(1, 9, 48, 100));
+        assertThat(box.maxX() - box.minX() + 1).isEqualTo(9);
+        assertThat(box.maxZ() - box.minZ() + 1).isEqualTo(9);
+        assertThat(box.minX()).isEqualTo(-4);
+        assertThat(box.maxX()).isEqualTo(4);
+    }
+
+    @Test
     void theDepthGoesDownFromTheDrillsOwnLayer() {
         DrillBox box = DrillBox.around(0, 50, 0, DrillTable.level(1));
         assertThat(box.maxY()).isEqualTo(50);

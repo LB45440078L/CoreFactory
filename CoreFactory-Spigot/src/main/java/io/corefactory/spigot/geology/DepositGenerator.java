@@ -90,8 +90,9 @@ public final class DepositGenerator {
 
     /**
      * Lays the deposits of a chunk, once. A chunk whose marker is set is left alone. Otherwise the deposits that touch
-     * it are planned and stored, their ore blocks are placed, and the marker is set last, so a chunk that failed part way
-     * is laid again on its next load. Does nothing when there is no solid ore to plan.
+     * it are planned and stored, their ore blocks are placed, the host blocks that were already there are excluded from
+     * being patch blocks (see {@link PatchExclusions}), and the marker is set last, so a chunk that failed part way is laid
+     * again on its next load. Does nothing when there is no solid ore to plan.
      *
      * @param chunk a loaded chunk
      */
@@ -104,23 +105,30 @@ public final class DepositGenerator {
         List<Deposit> planned = DepositPlanner.planChunk(world.getSeed(), world.getName(), chunk.getX(), chunk.getZ(),
                 solidOres, OIL_ORE, settings);
         int writes = 0;
+        Set<Integer> laid = new HashSet<>();
+        List<Integer> preexisting = new ArrayList<>();
         for (Deposit deposit : planned) {
             store.insertIfAbsent(deposit);
             Deposit stored = store.find(deposit.id()).orElse(null);
             Layer layer = stored == null ? null : layers.get(stored.ore());
-            if (layer != null && writes < MAX_WRITES_PER_CHUNK) {
-                writes += place(world, chunk, stored, layer, MAX_WRITES_PER_CHUNK - writes);
+            if (layer != null) {
+                writes += place(world, chunk, stored, layer, MAX_WRITES_PER_CHUNK - writes, laid, preexisting);
             }
         }
+        PatchExclusions.addAll(chunk, preexisting.stream().mapToInt(Integer::intValue).toArray());
         data.set(MARKER, PersistentDataType.BYTE, (byte) 1);
     }
 
     /**
-     * Turns the footprint's replaceable blocks of one deposit into its ore, column by column, up to the budget.
+     * Turns the footprint's replaceable blocks of one deposit into its ore, column by column, up to the budget. Every
+     * site of the deposit is visited, also past the budget, so a host block that was already there is always excluded.
      *
+     * @param laid        the entries of the blocks this laying turned into ore, so another deposit does not exclude them
+     * @param preexisting receives the entries of the sites that already held the host block when the chunk was laid
      * @return the number of blocks written
      */
-    private int place(World world, Chunk chunk, Deposit deposit, Layer layer, int budget) {
+    private int place(World world, Chunk chunk, Deposit deposit, Layer layer, int budget, Set<Integer> laid,
+                      List<Integer> preexisting) {
         int minX = chunk.getX() * 16;
         int minZ = chunk.getZ() * 16;
         int fromX = Math.max(minX, deposit.centreX() - deposit.radius());
@@ -137,12 +145,20 @@ public final class DepositGenerator {
                     continue;
                 }
                 for (int y = fromY; y <= toY; y++) {
+                    if (!OreBlocks.shows(deposit.id(), x, y, z, density)) {
+                        continue;
+                    }
                     Block block = world.getBlockAt(x, y, z);
-                    if (layer.replace().contains(block.getType()) && OreBlocks.shows(deposit.id(), x, y, z, density)) {
-                        block.setType(layer.host(), false);
-                        if (++written >= budget) {
-                            return written;
+                    Material type = block.getType();
+                    int key = PatchExclusions.pack(x, y, z);
+                    if (type == layer.host()) {
+                        if (!laid.contains(key)) {
+                            preexisting.add(key);
                         }
+                    } else if (written < budget && layer.replace().contains(type)) {
+                        block.setType(layer.host(), false);
+                        laid.add(key);
+                        written++;
                     }
                 }
             }

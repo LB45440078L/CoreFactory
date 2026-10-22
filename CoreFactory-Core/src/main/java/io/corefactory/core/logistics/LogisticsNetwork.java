@@ -253,7 +253,7 @@ public final class LogisticsNetwork {
         }
         source.take();
         target.put(item);
-        state.wait = 1.0 / LogisticsTable.pickerItemsPerSecond(picker.level());
+        state.wait = 1.0 / LogisticsTable.pickerItemsPerSecond(picker.level()) + Math.min(0.0, state.wait);
         return 1;
     }
 
@@ -289,7 +289,7 @@ public final class LogisticsNetwork {
         }
         target.put(state.held);
         state.held = null;
-        state.wait = 1.0 / LogisticsTable.splitterItemsPerSecond(splitter.level());
+        state.wait = 1.0 / LogisticsTable.splitterItemsPerSecond(splitter.level()) + Math.min(0.0, state.wait);
         return 1;
     }
 

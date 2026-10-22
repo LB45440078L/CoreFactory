@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -224,6 +225,40 @@ class TargetAssignmentTest {
     void withoutPlacesTheSpacingIsNotPreferred() {
         Map<String, List<UUID>> answer = TargetAssignment.assign(
                 List.of(slot("a", 2, List.of(), List.of(NEAR, FAR, MIDDLE))), 6.0, id -> null);
+
+        assertThat(answer.get("a")).containsExactly(NEAR, FAR);
+    }
+
+    @Test
+    void aReservedMobIsNotGivenWhileAnotherCandidateIsFree() {
+        Map<String, List<UUID>> answer = TargetAssignment.assign(
+                List.of(slot("a", 1, List.of(), List.of(NEAR, MIDDLE))), Set.of(NEAR), 0.0, id -> null);
+
+        assertThat(answer.get("a")).containsExactly(MIDDLE);
+    }
+
+    @Test
+    void aReservedMobIsGivenWhenItIsTheOnlyCandidate() {
+        Map<String, List<UUID>> answer = TargetAssignment.assign(
+                List.of(slot("a", 1, List.of(), List.of(NEAR))), Set.of(NEAR), 0.0, id -> null);
+
+        assertThat(answer.get("a")).containsExactly(NEAR);
+    }
+
+    @Test
+    void aCannonLosesAClaimOnAReservedMobForAFreeOne() {
+        Map<String, List<UUID>> answer = TargetAssignment.assign(
+                List.of(slot("a", 1, List.of(NEAR), List.of(NEAR, MIDDLE))), Set.of(NEAR), 0.0, id -> null);
+
+        assertThat(answer.get("a")).containsExactly(MIDDLE);
+    }
+
+    @Test
+    void aSecondCannonDoesNotTakeAReservedMobWithinTheSpacing() {
+        Map<UUID, Point> places = Map.of(NEAR, new Point(0, 0, 0), MIDDLE, new Point(2, 0, 0), FAR, new Point(4, 0, 0));
+
+        Map<String, List<UUID>> answer = TargetAssignment.assign(
+                List.of(slot("a", 2, List.of(), List.of(NEAR, MIDDLE, FAR))), Set.of(MIDDLE), 6.0, places::get);
 
         assertThat(answer.get("a")).containsExactly(NEAR, FAR);
     }

@@ -19,10 +19,15 @@ import java.util.Optional;
 public final class TurretPort implements Port {
 
     private final TurretDevice turret;
+    private final Runnable save;
 
-    /** @param turret the turret whose magazine the port fills */
-    public TurretPort(TurretDevice turret) {
+    /**
+     * @param turret the turret whose magazine the port fills
+     * @param save   what saves the turret after a round is taken in, the same save the turret service makes after every other change
+     */
+    public TurretPort(TurretDevice turret, Runnable save) {
         this.turret = Objects.requireNonNull(turret, "turret");
+        this.save = Objects.requireNonNull(save, "save");
     }
 
     @Override
@@ -41,6 +46,7 @@ public final class TurretPort implements Port {
             throw new IllegalStateException("the turret has no room for " + item.id());
         }
         turret.setMagazine(magazine.add(type, 1));
+        save.run();
     }
 
     @Override

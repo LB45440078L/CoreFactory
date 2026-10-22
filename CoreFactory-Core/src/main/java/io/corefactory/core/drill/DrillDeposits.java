@@ -1,6 +1,7 @@
 package io.corefactory.core.drill;
 
 import io.corefactory.core.deposit.Deposit;
+import io.corefactory.core.deposit.DepositSettings;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -21,14 +22,30 @@ public final class DrillDeposits {
 
     /**
      * How far from a drill's centre the store is searched for deposits. A deposit touches the square when its centre lies within
-     * its radius of the square, and the square lies within {@code area} blocks of its centre, so the largest radius plus the
-     * area reaches every deposit that touches the square.
+     * its radius of the square, and the square lies within {@code area} blocks of its centre, so the largest radius a deposit may
+     * have plus the area reaches every deposit that touches the square. The largest radius is the constant, not the setting, so
+     * a lowered setting never shortens the search past a deposit planned with a larger radius.
      *
-     * @param spec      the drill's level, whose area is the side of its square
-     * @param maxRadius the largest radius a stored deposit has
+     * @param spec the drill's level, whose area is the side of its square
      */
-    public static int reach(DrillSpec spec, int maxRadius) {
-        return maxRadius + spec.area();
+    public static int reach(DrillSpec spec) {
+        return DepositSettings.MAX_RADIUS + spec.area();
+    }
+
+    /**
+     * The deposit a drill works on after a search that picked another one. The drill moves to the chosen deposit only once the batch
+     * of its old deposit is all in the outputs: while items wait for a take, it keeps the old deposit, so they are taken from it and
+     * never dropped.
+     *
+     * @param chosen  the deposit the search picked, if any
+     * @param current the deposit the drill works on after its take, or null when that deposit is gone
+     * @param pending the items of the batch not yet taken from the deposit
+     */
+    public static Optional<Deposit> afterBatch(Optional<Deposit> chosen, Deposit current, long pending) {
+        if (current != null && pending > 0) {
+            return Optional.of(current);
+        }
+        return chosen;
     }
 
     /** True when the deposit's circle touches the drill's square: its nearest block column to the deposit's centre is within its radius. */

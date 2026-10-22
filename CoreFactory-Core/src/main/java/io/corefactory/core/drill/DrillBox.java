@@ -5,7 +5,7 @@ import io.corefactory.core.geology.Placement;
 /**
  * The block region a drill works in: a square centred on the drill, measured on x and z, and a depth that goes down
  * from the drill's own layer. An even area puts the extra block on the low side, so a 10 wide square runs from x - 5
- * to x + 4.
+ * to x + 4, and an odd area is centred, so a 9 wide square runs from x - 4 to x + 4.
  *
  * @param minX the lowest x
  * @param minY the lowest y
@@ -18,8 +18,9 @@ public record DrillBox(int minX, int minY, int minZ, int maxX, int maxY, int max
 
     /** The region of a drill at this block, with the area and depth of its spec. */
     public static DrillBox around(int x, int y, int z, DrillSpec spec) {
-        int half = spec.area() / 2;
-        return new DrillBox(x - half, y - spec.depth() + 1, z - half, x + half - 1, y, z + half - 1);
+        int low = spec.area() / 2;
+        int high = spec.area() - 1 - low;
+        return new DrillBox(x - low, y - spec.depth() + 1, z - low, x + high, y, z + high);
     }
 
     /** True when the block lies inside the region. */

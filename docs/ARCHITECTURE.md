@@ -382,8 +382,8 @@ The `CoreFactory-Storage` module holds the research store and the deposit store,
   - `corefactory_deposits` (migration 3): `id` (primary key), `world`, `centre_x`, `centre_z`, `radius`, `ore`,
     `initial_amount`, and `remaining` (which must not be negative), with the index `corefactory_deposits_centre` on
     (`world`, `centre_x`, `centre_z`). A take lowers `remaining` in one conditional update.
-  - `corefactory_mining_ledger` and `corefactory_chunk_budget` (migration 2) are still created on install, but no code
-    reads or writes them. They are legacy tables: `corefactory_deposits` replaced the chunk budgets.
+  - `corefactory_mining_ledger` and `corefactory_chunk_budget` (migration 2) are dropped by migration 4. No code reads or
+    writes them: `corefactory_deposits` replaced the chunk budgets.
 - `JdbcResearchStore` implements `unlocked`, `unlock`, `progress` and `setProgress`. It reads and writes through
   `Database.query` and `Database.execute`. `JdbcDepositStore` does the same for the deposits.
 

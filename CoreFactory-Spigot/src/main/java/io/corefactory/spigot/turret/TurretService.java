@@ -62,12 +62,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -138,6 +140,7 @@ public final class TurretService implements EnergyService.ConsumerSource {
                          Friends friends, TurretStore store, Random random, TurretStats stats) {
         this.core = core;
         this.registry = registry;
+        registry.onPersist(this::save);
         this.energy = energy;
         this.protection = protection;
         this.friends = friends;
@@ -578,13 +581,36 @@ public final class TurretService implements EnergyService.ConsumerSource {
             }
             slots.add(new TurretSlot(turret.id(), stats.cannons(turret.kind(), turret.level()), claimed, candidates));
         }
-        Map<String, List<UUID>> answer = TargetAssignment.assign(slots, stats.spacing(), places::get);
+        Map<String, List<UUID>> answer = TargetAssignment.assign(slots, claimsOutside(turrets), stats.spacing(), places::get);
         for (TurretDevice turret : turrets) {
             List<UUID> assigned = answer.getOrDefault(turret.id(), List.of());
             for (int cannon = 0; cannon < TurretDevice.CANNONS; cannon++) {
                 turret.setTarget(cannon, cannon < assigned.size() ? assigned.get(cannon) : null);
             }
         }
+    }
+
+    /**
+     * The targets the loaded turrets of the pass's world hold outside the pass. A laser pass leaves the machine guns' targets
+     * alone, so a mob they hold is reserved: the pass gives it to a laser only when no other mob is free.
+     */
+    private Set<UUID> claimsOutside(List<TurretDevice> turrets) {
+        UUID world = turrets.get(0).world();
+        Set<String> passed = new HashSet<>();
+        for (TurretDevice turret : turrets) {
+            passed.add(turret.id());
+        }
+        Set<UUID> reserved = new HashSet<>();
+        for (TurretDevice other : registry.all()) {
+            if (other.isLoaded() && other.world().equals(world) && !passed.contains(other.id())) {
+                for (int cannon = 0; cannon < TurretDevice.CANNONS; cannon++) {
+                    if (other.target(cannon) != null) {
+                        reserved.add(other.target(cannon));
+                    }
+                }
+            }
+        }
+        return reserved;
     }
 
     /**
@@ -847,7 +873,8 @@ public final class TurretService implements EnergyService.ConsumerSource {
      * entity's armour, so no hurt animation, invulnerability window, damage event or armour acts on it. A health of 0 is dead, as the Bukkit
      * API documents for {@code setHealth}.
      *
-     * @return the damage removed, which is less than the hit when the entity has less absorption and health than the hit
+     * @return the damage removed, which is less than the hit when the entity has less absorption and health than the hit, or when the
+     *         server's damage path left the entity standing
      */
     private static double strike(LivingEntity struck, double amount) {
         if (!(amount > 0.0)) {
@@ -860,24 +887,30 @@ public final class TurretService implements EnergyService.ConsumerSource {
         }
         double remaining = amount - fromAbsorption;
         double health = struck.getHealth();
-        double fromHealth = Math.min(health, remaining);
-        if (fromHealth > 0.0 && health - remaining > 0.0) {
-            struck.setHealth(Math.min(struck.getMaxHealth(), health - remaining));
-        } else if (fromHealth > 0.0) {
-            killBlow(struck);
+        if (remaining <= 0.0 || health <= 0.0) {
+            return fromAbsorption;
         }
-        return fromAbsorption + Math.max(0.0, fromHealth);
+        if (health - remaining > 0.0) {
+            struck.setHealth(Math.min(struck.getMaxHealth(), health - remaining));
+            return fromAbsorption + Math.max(0.0, health - struck.getHealth());
+        }
+        return fromAbsorption + killBlow(struck, health);
     }
 
     /**
      * The blow that ends a mob goes through the server's own damage path. Setting health to zero only writes the value: the mob would not
      * fire its death event or drop its loot. So the mob is left at one health and a blow far above its health is dealt, which armour can
-     * reduce by at most 80 per cent, and the server kills it normally.
+     * reduce by at most 80 per cent, and the server kills it normally. A cancelled event or a resistance can leave the mob standing, so the
+     * damage counted is the health it lost, read after the blow.
+     *
+     * @param health the health the mob had before the blow
+     * @return the health the mob lost: all of it when the blow killed the mob, less when it is still standing
      */
-    private static void killBlow(LivingEntity struck) {
+    private static double killBlow(LivingEntity struck, double health) {
         struck.setHealth(1.0);
         struck.setNoDamageTicks(0);
         struck.damage(KILL_BLOW_DAMAGE);
+        return Math.max(0.0, health - Math.max(0.0, struck.getHealth()));
     }
 
     /** The server ticks the turrets have run, which times the damage counter of each turret. */

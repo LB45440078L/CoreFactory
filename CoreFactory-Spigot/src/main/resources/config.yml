@@ -331,6 +331,13 @@ deposits:
   # Share of the stone blocks in a deposit's footprint that show as its ore block, from 0 to 1. Only blocks in the
   # ore's height range that it may replace are changed. Each chunk changes at most 4096 blocks.
   ore-block-density: 0.3
+  # Radius, in blocks, that a scan of the ore density scanner searches around the player. A deposit counts when its circle
+  # reaches within this radius. From 1 to 512.
+  scanner-radius: 96
+  # Ticks between two scans of the same scanner, so a held scanner cannot scan every tick. 20 ticks is one second. From 0 to 1200.
+  scan-cooldown-ticks: 60
+  # Seconds that a scan's outline of deposits stays drawn around the player. From 1 to 120.
+  outline-seconds: 20
 
 
 persistence:

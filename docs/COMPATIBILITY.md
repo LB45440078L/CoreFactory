@@ -159,8 +159,8 @@ what was placed before, and what it cannot convert is listed here.
   upgrade. The vein ore blocks that the old code placed in those chunks stay where they are. A deposit that is not in the
   store yet is planned and stored when its chunk is laid.
 - **Old tables and data are not used.** The chunk budgets and the mining ledger are not read or written any more. Their
-  tables (`corefactory_chunk_budget` and `corefactory_mining_ledger`) are still created on install, but they stay empty
-  and unused. The petroleum volumes that the old code kept per chunk are not used by drills or deposits. They are read
+  tables (`corefactory_chunk_budget` and `corefactory_mining_ledger`) are dropped by schema migration 4, so none is left
+  after the plugin opens its database. The petroleum volumes that the old code kept per chunk are not used by drills or deposits. They are read
   only for crude petroleum ore blocks that a player placed.
 - **The Ore Density Scanner does nothing.** It can still be crafted after Laboratory Basics, and it has no right-click
   action: no map and no summary. `/cf geology status` and `/cf geology retrofit` are removed, and `/cf geology deposits`

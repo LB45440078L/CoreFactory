@@ -49,6 +49,8 @@ import java.util.logging.Logger;
 public final class TurretRegistry {
 
     private final CoreFactoryCore core;
+
+    private Runnable persister = () -> { };
     private final HologramService holograms;
     private final Logger log;
     private final Map<String, TurretDevice> byId = new LinkedHashMap<>();
@@ -66,6 +68,16 @@ public final class TurretRegistry {
         this.core = core;
         this.holograms = holograms;
         this.log = log;
+    }
+
+    /** Sets what saves the turrets. The service sets it when it is built; a port calls {@link #persist()} after it changes a turret. */
+    void onPersist(Runnable save) {
+        this.persister = save;
+    }
+
+    /** Saves the turrets through the service that owns them. */
+    public void persist() {
+        persister.run();
     }
 
     /** Every turret, in the order they were added. */

@@ -55,6 +55,16 @@ class DrillTextTest {
     }
 
     @Test
+    void aDistanceReadsInMetresThenKilometres() {
+        assertThat(DrillText.distance(0)).isEqualTo("0 m");
+        assertThat(DrillText.distance(999)).isEqualTo("999 m");
+        assertThat(DrillText.distance(1_000)).isEqualTo("1.0 km");
+        assertThat(DrillText.distance(12_500)).isEqualTo("12.5 km");
+        assertThat(DrillText.distance(12_999)).isEqualTo("12.9 km");
+        assertThat(DrillText.distance(-4)).isEqualTo("0 m");
+    }
+
+    @Test
     void aDepositReadsWhatIsLeftOfWhatItStartedWithAndTheShareLeft() {
         assertThat(DrillText.remaining(deposit(1_200_000, 2_500_000))).isEqualTo("1.2M / 2.5M (48%)");
         assertThat(DrillText.remaining(deposit(0, 500_000))).isEqualTo("0 / 500k (0%)");

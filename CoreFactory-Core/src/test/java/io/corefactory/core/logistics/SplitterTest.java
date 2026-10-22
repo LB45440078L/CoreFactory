@@ -251,6 +251,24 @@ class SplitterTest {
         assertThat(network.itemsOn(at(0, 0))).isEmpty();
     }
 
+    @Test
+    void aLevelThreeSplitterPassesEightItemsPerSecondOverALongRun() {
+        LogisticsLevel top = LogisticsLevel.III;
+        LogisticsNetwork.Builder builder = LogisticsNetwork.builder();
+        for (int x = 0; x < 12; x++) {
+            builder.belt(at(x, 0), Dir.EAST, top);
+        }
+        LogisticsNetwork network = builder.splitter("s", at(12, 0), Dir.EAST, Set.of(), Set.of(), top).build();
+        for (int x = 0; x < 12; x++) {
+            for (double position : new double[] {0.0, 0.25, 0.5, 0.75}) {
+                assertThat(network.insertAt(at(x, 0), A, position)).isTrue();
+            }
+        }
+        MemoryPort straight = MemoryPort.sink();
+        tickTimes(network, 80, DT, ports(at(13, 0), straight));
+        assertThat(straight.accepted()).isBetween(31, 33);
+    }
+
     private static Item[] alternate(Item first, Item second, int pairs) {
         Item[] items = new Item[pairs * 2];
         for (int i = 0; i < pairs; i++) {

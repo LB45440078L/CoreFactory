@@ -6,6 +6,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Logger;
 
@@ -23,10 +24,10 @@ class DatabaseTest {
         StorageSettings settings = sqlite(dir.resolve("corefactory.db"));
 
         try (Database first = Database.open(settings, LOG)) {
-            assertThat(schemaVersion(first)).isEqualTo(3);
+            assertThat(schemaVersion(first)).isEqualTo(4);
         }
         try (Database second = Database.open(settings, LOG)) {
-            assertThat(schemaVersion(second)).isEqualTo(3);
+            assertThat(schemaVersion(second)).isEqualTo(4);
             assertThat(schemaRowCount(second)).isEqualTo(1);
         }
     }
@@ -36,9 +37,29 @@ class DatabaseTest {
         Path file = dir.resolve("nested/data/corefactory.db");
 
         try (Database database = Database.open(sqlite(file), LOG)) {
-            assertThat(schemaVersion(database)).isEqualTo(3);
+            assertThat(schemaVersion(database)).isEqualTo(4);
         }
         assertThat(Files.isRegularFile(file)).isTrue();
+    }
+
+    @Test
+    void theLegacyLedgerTablesAreNotLeftBehind() {
+        try (Database database = Database.open(sqlite(dir.resolve("legacy.db")), LOG)) {
+            assertThat(tableExists(database, "corefactory_mining_ledger")).isFalse();
+            assertThat(tableExists(database, "corefactory_chunk_budget")).isFalse();
+            assertThat(tableExists(database, "corefactory_deposits")).isTrue();
+        }
+    }
+
+    private static boolean tableExists(Database database, String table) {
+        return database.query(connection -> {
+            try (Statement statement = connection.createStatement();
+                 ResultSet rows = statement.executeQuery("SELECT COUNT(*) FROM " + table)) {
+                return rows.next();
+            } catch (SQLException e) {
+                return false;
+            }
+        });
     }
 
     private static int schemaVersion(Database database) {

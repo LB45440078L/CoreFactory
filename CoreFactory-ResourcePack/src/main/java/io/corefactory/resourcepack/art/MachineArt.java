@@ -123,10 +123,10 @@ public final class MachineArt {
 
     /**
      * Every machine: the modelled machines above, the generators and solar panel, the drills of levels 4 and 5, the
-     * large lab tools and the turrets, each in its own class.
+     * large lab tools, the turrets, the water system and the vertical belts, each in its own class.
      */
     public static final List<Spec> ALL = Stream.of(BASE, GeneratorArt.ALL, DrillArt.ALL, BigLabArt.ALL, TurretArt.ALL,
-                    TurretLevelArt.ALL)
+                    TurretLevelArt.ALL, WaterArt.ALL, VerticalBeltArt.ALL)
             .flatMap(List::stream).toList();
 
     private MachineArt() {

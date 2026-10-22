@@ -101,6 +101,22 @@ logistics:
   # on shutdown.
   save-interval-ticks: 300
 
+vertical-belt:
+  # The carry speed of each vertical belt level, level I, II and III, in blocks per second. The same speeds as the regular belt levels.
+  # Each speed is finite and above zero. Read at startup, so a change needs a restart.
+  speed:
+    - 1.875
+    - 3.75
+    - 7.5
+  # The items a block of tower holds at each level, level I, II and III. Each is a whole number of at least 1.
+  capacity:
+    - 4
+    - 8
+    - 12
+  # The most item displays on towers at once. Past this cap the items are still carried, but not shown, and one warning is logged.
+  # Read at startup, so a change needs a restart.
+  max-item-displays: 600
+
 turrets:
   # Machine gun turrets. A turret is placed on air like a generator and fires at hostile mobs in its range. Read at startup, so a change
   # needs a restart. Turn off to stop every turret: none searches, aims or fires, and none asks the network for power.
@@ -272,6 +288,35 @@ laser-turret:
       cannons: 1
       power-demand-w: 120000
       rotation-degrees-per-tick: 12
+
+# The water network: pipes, splitters and pumps. A pump stands on a water block and feeds the pipes joined to it. Lab machines and
+# nuclear generators that have a pipe on one of their faces take water from the network. Read at startup, so a change needs a restart.
+water:
+  # The water blocks a pump's source needs, counted 6-connected from the pump's block. A pump below this count is refused when placed,
+  # and stops while its source is below it.
+  source-min-blocks: 100
+  # Ticks between two checks of a pump's source. A source that drops is noticed within this many ticks (200 is ten seconds).
+  source-check-ticks: 200
+  # Ticks between two solves of the water network, which share the water among the consumers. Lower follows changes sooner and costs more.
+  solve-ticks: 5
+  # Units of water per second each pump level delivers, level I to V. Each value is finite and 0 or more.
+  pump-flow:
+    - 2
+    - 4
+    - 8
+    - 12
+    - 16
+  # Power each pump level draws in W, level I to V. Levels I and II burn fuel instead (coal or charcoal, then diesel), so they draw none.
+  # Each value is 0 or more.
+  pump-power-w:
+    - 0
+    - 0
+    - 60000
+    - 120000
+    - 240000
+  # Units of water one run of a process takes from its network, in place of the water bucket it would take. The machine asks for this
+  # many units spread over the run's length, so a longer run asks for less water per second. At least 1.
+  unit-per-process-run: 1
 
 concealment:
   # Hides the barrel under each lab tool and drill from nearby players, so they see the custom model instead. The barrel

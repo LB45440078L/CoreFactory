@@ -383,7 +383,7 @@ class ResourcePackBuilderTest {
                 Map<String, Object> meta = new Yaml().load(read(file, "assets/corefactory/textures/" + path + ".png.mcmeta"));
                 assertThat(((Map<String, Object>) meta.get("animation")).get("frametime")).as(id)
                         .isEqualTo(clip.frametime());
-                assertThat(clip.frametime()).as(id).isBetween(2, 4);
+                assertThat(clip.frametime()).as(id).isBetween(1, 4);
 
                 BufferedImage strip;
                 try (var in = file.getInputStream(file.getEntry("assets/corefactory/textures/" + path + ".png"))) {

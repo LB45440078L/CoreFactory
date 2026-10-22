@@ -11,8 +11,10 @@ import io.corefactory.spigot.audio.MachineSounds;
 import io.corefactory.spigot.energy.EnergyService;
 import io.corefactory.spigot.energy.EnergyText;
 import io.corefactory.spigot.hologram.HologramService;
+import io.corefactory.spigot.water.WaterFeed;
 import org.bukkit.Location;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -37,13 +39,14 @@ public final class MachineTicker implements Runnable {
     private final HologramService holograms;
     private final EnergyService energy;
     private final LabLevels levels;
+    private final WaterFeed water;
     private final Random random = new Random();
     private final int saveIntervalTicks;
     private long tick;
 
     public MachineTicker(MachineStore store, ProcessCatalog catalog, ProcessEngine engine, DrillTicker drills,
                          Visuals visuals, HologramService holograms, EnergyService energy, LabLevels levels,
-                         int saveIntervalTicks) {
+                         int saveIntervalTicks, WaterFeed water) {
         this.store = store;
         this.catalog = catalog;
         this.engine = engine;
@@ -53,6 +56,7 @@ public final class MachineTicker implements Runnable {
         this.energy = energy;
         this.levels = levels;
         this.saveIntervalTicks = Math.max(1, saveIntervalTicks);
+        this.water = water;
     }
 
     @Override
@@ -82,13 +86,15 @@ public final class MachineTicker implements Runnable {
             double grid = reading.satisfaction();
             LabLevels.Pace pace = LabLevels.pace(placed.workCredit(), grid, levels.speed(placed.level()));
             placed.setWorkCredit(pace.credit());
-            ProcessEngine.Step step = runProcess(placed, pace.runs());
+            ProcessDefinition waterProcess = waterProcess(placed);
+            boolean watered = waterProcess != null && water.canSupply(placed.block(), waterProcess.ticks());
+            ProcessEngine.Step step = runProcess(placed, pace.runs(), watered);
             int total = placed.state().processId() == null ? 0 : catalog.process(placed.state().processId())
                     .map(ProcessDefinition::ticks).orElse(0);
             placed.menu().refresh(placed.state().progress(), total, step == ProcessEngine.Step.BLOCKED);
             placed.menu().showFirebox(Firebox.lit(step == ProcessEngine.Step.RUNNING,
                     Firebox.fuelItems(placed.state().fuel(), ProcessEngine.FUEL)));
-            updateHologram(placed, total, reading);
+            updateHologram(placed, total, reading, waterWait(placed, waterProcess, watered));
             if (open && tick % MENU_PULL_TICKS == 0) {
                 placed.menu().pull();
             }
@@ -104,14 +110,34 @@ public final class MachineTicker implements Runnable {
     }
 
     /**
+     * The process of the machine that takes water from its bucket input: the current one, or else the first one of the machine that
+     * takes water. Null when the machine has none.
+     */
+    private ProcessDefinition waterProcess(PlacedMachine placed) {
+        if (placed.state().processId() != null) {
+            return catalog.process(placed.state().processId()).filter(ProcessEngine::takesWater).orElse(null);
+        }
+        return catalog.processesFor(placed.machine().id()).stream().filter(ProcessEngine::takesWater).findFirst().orElse(null);
+    }
+
+    /** The water line of a machine that waits for water only: its bucket is the one input it lacks, and a pipe joins it. */
+    private Optional<String> waterWait(PlacedMachine placed, ProcessDefinition waterProcess, boolean watered) {
+        if (waterProcess == null || watered || !engine.supplied(waterProcess, placed.state(), true)
+                || engine.supplied(waterProcess, placed.state())) {
+            return Optional.empty();
+        }
+        return water.waterLine(placed.block());
+    }
+
+    /**
      * Runs the process ticks of one server tick. A machine of a higher level runs more than one in a tick. Stops early when the
      * machine goes idle or its outputs are full. The step is COMPLETED when any of the ticks finished a pass.
      */
-    private ProcessEngine.Step runProcess(PlacedMachine placed, int runs) {
+    private ProcessEngine.Step runProcess(PlacedMachine placed, int runs, boolean watered) {
         ProcessEngine.Step step = ProcessEngine.Step.IDLE;
         boolean completed = false;
         for (int run = 0; run < runs; run++) {
-            step = engine.tick(placed.state(), random);
+            step = engine.tick(placed.state(), random, watered);
             completed |= step == ProcessEngine.Step.COMPLETED;
             if (step == ProcessEngine.Step.IDLE || step == ProcessEngine.Step.BLOCKED) {
                 break;
@@ -128,14 +154,15 @@ public final class MachineTicker implements Runnable {
     /**
      * Shows the machine's hologram while it is active, with its progress and its network line, and removes it once it is idle again.
      */
-    private void updateHologram(PlacedMachine placed, int total, EnergyService.Reading reading) {
-        if (!HologramRules.shouldShow(engine, placed.state())) {
+    private void updateHologram(PlacedMachine placed, int total, EnergyService.Reading reading, Optional<String> waterWait) {
+        if (!HologramRules.shouldShow(engine, placed.state()) && waterWait.isEmpty()) {
             store.releaseHologram(placed);
             return;
         }
         String title = placed.machine().name() + " &7Level " + LabLevels.numeral(placed.level());
-        List<String> lines = EnergyText.withGrid(HologramText.forMachine(title, placed.state(), total),
-                reading.voltageV(), reading.demandW(), reading.satisfaction());
+        List<String> lines = new ArrayList<>(EnergyText.withGrid(HologramText.forMachine(title, placed.state(), total),
+                reading.voltageV(), reading.demandW(), reading.satisfaction()));
+        waterWait.ifPresent(lines::add);
         if (placed.hologram() == null) {
             holograms.create(HologramService.spotAbove(placed.block()), lines).ifPresent(placed::setHologram);
         }

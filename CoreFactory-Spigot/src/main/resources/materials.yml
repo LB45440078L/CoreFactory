@@ -1250,3 +1250,94 @@ components:
     recipe:
       type: shapeless
       ingredients: [item:splitter_2, item:neutron_flux_cell, material:DIAMOND]
+  # ----------------------------------------------------------------- Water system (processed)
+
+  # The pump is placed on water and fuelled. Its kits step it up one level: right-click a pump you own with a kit.
+  # The pipes and splitters carry its water. All of them are made by process only.
+  water_pump:
+    name: "&bWater Pump"
+    lore:
+      - "&7Pumps water from a source of at least the minimum number of connected water blocks."
+      - "&7Level I burns coal or charcoal, level II burns diesel, and level III and up draw electricity."
+      - "&8Made on the component assembly machine, never by hand."
+    material: PRISMARINE_CRYSTALS
+
+  # A kit steps a water pump up one level: right-click a pump you own with it. Made by process only.
+  water_pump_upgrade_2:
+    name: "&bPump Upgrade II"
+    lore:
+      - "&7Upgrades a level I pump to level II: twice the flow, and it burns diesel."
+      - "&7Right-click a water pump you own to fit it."
+      - "&8Made on the component assembly machine, never by hand."
+    material: BLUE_ICE
+
+  water_pump_upgrade_3:
+    name: "&3Pump Upgrade III"
+    lore:
+      - "&7Upgrades a level II pump to level III: twice the flow again. It draws electricity."
+      - "&7Right-click a water pump you own to fit it."
+      - "&8Made on the component assembly machine, never by hand."
+    material: PACKED_ICE
+
+  water_pump_upgrade_4:
+    name: "&9Pump Upgrade IV"
+    lore:
+      - "&7Upgrades a level III pump to level IV, with more flow and more power."
+      - "&7Right-click a water pump you own to fit it."
+      - "&8Made on the heavy weapons assembly, never by hand."
+    material: PRISMARINE
+
+  water_pump_upgrade_5:
+    name: "&6Pump Upgrade V"
+    lore:
+      - "&7Upgrades a level IV pump to level V, the last level."
+      - "&7Right-click a water pump you own to fit it."
+      - "&8Made on the heavy weapons assembly, never by hand."
+    material: DIAMOND_BLOCK
+
+  water_pipe:
+    name: "&bWater Pipe"
+    lore:
+      - "&7Connects to pumps, splitters, machines and generators on any of its six faces."
+      - "&7Bends and runs vertically by itself."
+      - "&8Made on the component assembly machine, never by hand."
+    material: COPPER_GRATE
+
+  water_splitter_t:
+    name: "&bWater Splitter T"
+    lore:
+      - "&7One water line in, two out: the faces left and right of the input."
+      - "&8Made on the component assembly machine, never by hand."
+    material: PRISMARINE_SHARD
+
+  water_splitter_x:
+    name: "&bWater Splitter X"
+    lore:
+      - "&7One water line in, three out, for a cross of pipes."
+      - "&8Made on the component assembly machine, never by hand."
+    material: PRISMARINE_BRICKS
+
+  # ----------------------------------------------------------------- Vertical transport belts (processed)
+
+  # A vertical belt is one block of a tower. Its level sets the carry speed and the items it holds per block.
+  vertical_belt_1:
+    name: "&bVertical Transport Belt I"
+    lore:
+      - "&7Carries items up or down a tower at 1.875 blocks a second, four items to a block."
+      - "&7A regular belt feeds it from the side. Its direction is set in its panel, for the whole tower."
+      - "&8Made on the component assembly machine, never by hand."
+    material: LADDER
+
+  vertical_belt_2:
+    name: "&bVertical Transport Belt II"
+    lore:
+      - "&7Carries items up or down a tower at 3.75 blocks a second, eight items to a block."
+      - "&8Made on the component assembly machine, never by hand."
+    material: SCAFFOLDING
+
+  vertical_belt_3:
+    name: "&bVertical Transport Belt III"
+    lore:
+      - "&7Carries items up or down a tower at 7.5 blocks a second, twelve items to a block."
+      - "&8Made on the component assembly machine, never by hand."
+    material: POINTED_DRIPSTONE

@@ -29,14 +29,14 @@ public final class MachineAnimation {
      *
      * @param id        the machine id, such as {@code pylon_1}
      * @param face      the side that is animated
-     * @param frametime the ticks each frame is shown, from 2 to 4
+     * @param frametime the ticks each frame is shown, from 1 to 4
      */
     public record Clip(String id, MachineArt.Face face, int frametime) {
     }
 
     /**
      * Every animated face: the beacons and the charge meters, which are painted here, and the generators, drills, lab
-     * tools and turrets, which their own classes list and paint.
+     * tools, turrets, pumps and vertical belts, which their own classes list and paint.
      */
     public static final List<Clip> ALL = Stream.of(
                     List.of(
@@ -46,7 +46,8 @@ public final class MachineAnimation {
                             new Clip("accumulator_1", MachineArt.Face.NORTH, 3),
                             new Clip("accumulator_2", MachineArt.Face.NORTH, 3),
                             new Clip("accumulator_3", MachineArt.Face.NORTH, 3)),
-                    GeneratorArt.CLIPS, DrillArt.CLIPS, BigLabArt.CLIPS, TurretArt.CLIPS, TurretLevelArt.CLIPS)
+                    GeneratorArt.CLIPS, DrillArt.CLIPS, BigLabArt.CLIPS, TurretArt.CLIPS, TurretLevelArt.CLIPS,
+                    WaterArt.CLIPS, VerticalBeltArt.CLIPS)
             .flatMap(List::stream).toList();
 
     private MachineAnimation() {
@@ -94,6 +95,10 @@ public final class MachineAnimation {
                     TurretArt.paintFrame(c, spec, frame);
                 } else if (TurretLevelArt.owns(spec.id())) {
                     TurretLevelArt.paintFrame(c, spec, frame);
+                } else if (WaterArt.owns(spec.id())) {
+                    WaterArt.paintFrame(c, spec, frame);
+                } else if (VerticalBeltArt.owns(spec.id())) {
+                    VerticalBeltArt.paintFrame(c, spec, frame);
                 } else {
                     BigLabArt.paintFrame(c, spec, frame);
                 }

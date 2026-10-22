@@ -301,12 +301,13 @@ class ArtTest {
                 "petroleum_drill_5_top", "solar_panel", "crude_oil_refinery", "particle_accelerator",
                 "antimatter_condenser", "machine_gun_turret", "laser_turret", "machine_gun_turret_2",
                 "machine_gun_turret_3", "machine_gun_turret_4", "machine_gun_turret_5", "laser_turret_2",
-                "laser_turret_3_top", "laser_turret_4_top", "laser_turret_5_top");
+                "laser_turret_3_top", "laser_turret_4_top", "laser_turret_5_top", "water_pump", "water_pump_2",
+                "water_pump_3", "water_pump_4", "water_pump_5", "vertical_belt_1", "vertical_belt_2", "vertical_belt_3");
         assertThat(MachineAnimation.FRAMES).isEqualTo(8);
         for (MachineAnimation.Clip clip : MachineAnimation.ALL) {
             MachineArt.Spec spec = MachineArt.ALL.stream().filter(s -> s.id().equals(clip.id())).findFirst().orElseThrow();
             assertThat(MachineAnimation.animates(spec, clip.face())).as(clip.id()).isTrue();
-            assertThat(clip.frametime()).as(clip.id()).isBetween(2, 4);
+            assertThat(clip.frametime()).as(clip.id()).isBetween(1, 4);
             BufferedImage strip = MachineAnimation.strip(spec, clip.face());
             assertThat(strip.getWidth()).as(clip.id()).isEqualTo(MachineAnimation.FRAME);
             assertThat(strip.getHeight()).as(clip.id()).isEqualTo(MachineAnimation.FRAMES * strip.getWidth());
@@ -440,10 +441,14 @@ class ArtTest {
                 "machine_gun_turret_2", "machine_gun_turret_3", "machine_gun_turret_3_top", "machine_gun_turret_4",
                 "machine_gun_turret_4_top", "machine_gun_turret_5", "machine_gun_turret_5_top", "laser_turret_2",
                 "laser_turret_3", "laser_turret_3_top", "laser_turret_4", "laser_turret_4_top", "laser_turret_5",
-                "laser_turret_5_top");
+                "laser_turret_5_top", "water_pump", "water_pump_2", "water_pump_3", "water_pump_4", "water_pump_5",
+                "water_pipe", "water_pipe_bend", "water_splitter_t", "water_splitter_x", "vertical_belt_1",
+                "vertical_belt_2", "vertical_belt_3");
         // The upgraded turrets keep the item sprites of machine_gun_turret and laser_turret, so their lower halves have none.
+        // The upgraded pumps keep the sprite of water_pump, and the pipe bend that of water_pipe.
         List<String> upgrades = List.of("machine_gun_turret_2", "machine_gun_turret_3", "machine_gun_turret_4",
-                "machine_gun_turret_5", "laser_turret_2", "laser_turret_3", "laser_turret_4", "laser_turret_5");
+                "machine_gun_turret_5", "laser_turret_2", "laser_turret_3", "laser_turret_4", "laser_turret_5",
+                "water_pump_2", "water_pump_3", "water_pump_4", "water_pump_5", "water_pipe_bend");
         List<String> sprites = machines.stream().filter(id -> !id.endsWith("_top") && !upgrades.contains(id)).toList();
         assertThat(ComponentArt.ALL.stream().map(ComponentArt.Spec::id).toList()).containsAll(sprites);
         for (MachineArt.Spec spec : MachineArt.ALL) {

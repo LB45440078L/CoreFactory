@@ -193,7 +193,7 @@ public final class ComponentArt {
      * {@link ProcessMachineArt#SPRITES}, then the turrets' sprites from {@link TurretArt#SPRITES}.
      */
     public static final List<Spec> ALL = Stream.of(LISTED, ProcessMachineArt.SPRITES, TurretArt.SPRITES,
-                    TurretLevelArt.SPRITES, LevelArt.SPRITES)
+                    TurretLevelArt.SPRITES, LevelArt.SPRITES, WaterArt.SPRITES, VerticalBeltArt.SPRITES)
             .flatMap(List::stream).toList();
 
     private ComponentArt() {

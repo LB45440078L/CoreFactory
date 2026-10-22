@@ -71,7 +71,8 @@ nodes:
     requires: [hydrogen_processes]
     cost: {research_pack_chemical: 12, research_pack_nuclear: 6}
     unlocks: [neutron_flux_cell, ore_drill_3, petroleum_drill_5, metal_lathe, component_assembly, optical_lens, laser_emitter,
-              turret_upgrade_2, turret_upgrade_3, machine_upgrade_2]
+              turret_upgrade_2, turret_upgrade_3, machine_upgrade_2, water_pump, water_pipe, water_pump_upgrade_2,
+              water_pump_upgrade_3, water_splitter_t, water_splitter_x, vertical_belt_1, vertical_belt_2]
 
   plasma_physics:
     name: "&bPlasma Physics"
@@ -121,4 +122,5 @@ nodes:
     requires: [exotic_matter]
     cost: {research_pack_exotic: 16, research_pack_plasma: 10}
     unlocks: [tesseract_lattice, four_dimensional_tnt, heavy_weapons_assembly, machine_gun_turret, laser_turret,
-              turret_upgrade_4, turret_upgrade_5, machine_upgrade_3]
+              turret_upgrade_4, turret_upgrade_5, machine_upgrade_3, water_pump_upgrade_4, water_pump_upgrade_5,
+              vertical_belt_3]

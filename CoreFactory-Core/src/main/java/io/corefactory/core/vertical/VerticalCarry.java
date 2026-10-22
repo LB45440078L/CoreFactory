@@ -70,21 +70,52 @@ public final class VerticalCarry {
         if (block < 0 || block >= blocks) {
             throw new IllegalArgumentException("block must be 0 to " + (blocks - 1) + ": " + block);
         }
+        return place(block, capacityPerBlock) >= 0;
+    }
+
+    /**
+     * The index in the item order where an item at a coordinate would sit, or -1 when it would be closer than
+     * {@code 1 / capacityPerBlock} to a neighbour. Nothing changes. Asked before a port accepts an item, so the answer is the
+     * same as {@link #place} would give.
+     *
+     * @param entry the coordinate, 0 to {@link #blocks()}
+     * @param capacityPerBlock the items per block at this tower's level
+     * @throws IllegalArgumentException when the coordinate is outside 0 to the length, or the capacity is below 1
+     */
+    public int slotFor(double entry, int capacityPerBlock) {
+        if (!Double.isFinite(entry) || entry < 0.0 || entry > blocks) {
+            throw new IllegalArgumentException("entry must be 0 to " + blocks + ": " + entry);
+        }
         checkCapacity(capacityPerBlock);
         double gap = 1.0 / capacityPerBlock;
-        double entry = block;
         int index = 0;
         while (index < positions.size() && positions.get(index) > entry) {
             index++;
         }
         if (index > 0 && positions.get(index - 1) - entry < gap - EPS) {
-            return false;
+            return -1;
         }
         if (index < positions.size() && entry - positions.get(index) < gap - EPS) {
-            return false;
+            return -1;
         }
-        positions.add(index, entry);
-        return true;
+        return index;
+    }
+
+    /**
+     * Puts an item at a coordinate: the entry of a block, or a place an item had on a tower before the tower was rebuilt. The
+     * item is kept in order with the others.
+     *
+     * @param entry the coordinate, 0 to {@link #blocks()}; the output end is {@link #blocks()}
+     * @param capacityPerBlock the items per block at this tower's level
+     * @return the index the item was put at, or -1, and nothing changes, when there is no room
+     * @throws IllegalArgumentException when the coordinate is outside 0 to the length, or the capacity is below 1
+     */
+    public int place(double entry, int capacityPerBlock) {
+        int index = slotFor(entry, capacityPerBlock);
+        if (index >= 0) {
+            positions.add(index, entry);
+        }
+        return index;
     }
 
     /**

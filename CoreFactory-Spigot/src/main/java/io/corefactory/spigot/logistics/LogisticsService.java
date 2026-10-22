@@ -30,6 +30,8 @@ import io.corefactory.spigot.machine.ItemRefs;
 import io.corefactory.spigot.machine.MachineStore;
 import io.corefactory.spigot.machine.PlacedMachine;
 import io.corefactory.spigot.turret.TurretRegistry;
+import io.corefactory.spigot.vertical.TowerNeighbours;
+import io.corefactory.spigot.vertical.VerticalService;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -88,6 +90,7 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
     private final LogisticsStore store;
     private final LogisticsEntities entities;
     private final LogisticsPorts ports;
+    private final VerticalService vertical;
     private final DisplayBudget budget;
     private final int saveIntervalTicks;
     private final Logger log;
@@ -101,6 +104,33 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
     private final Map<ItemKey, UUID> displays = new HashMap<>();
     private long tick;
 
+    /** What a vertical tower finds at its output cell: a regular belt of this network, or the port of a machine or storage. */
+    private final TowerNeighbours towerNeighbours = new TowerNeighbours() {
+        @Override
+        public boolean isRegularBelt(UUID world, Pos cell) {
+            Built built = networks.get(world);
+            return built != null && built.belts().contains(cell);
+        }
+
+        @Override
+        public boolean putOnRegularBelt(UUID world, Pos cell, Item item) {
+            Built built = networks.get(world);
+            LogisticsDevice belt = byBlock.get(key(world, cell.x(), cell.y(), cell.z()));
+            if (built == null || belt == null || belt.kind() != LogisticsIds.Kind.BELT || !built.belts().contains(cell)) {
+                return false;
+            }
+            if (vertical.contains(world, belt.dir().step(belt.pos()))) {
+                return false;
+            }
+            return built.network().insertAtEntry(cell, item);
+        }
+
+        @Override
+        public Optional<Port> portAt(UUID world, Pos cell, UUID owner) {
+            return ports.at(world, cell, owner, null);
+        }
+    };
+
     /**
      * @param core              the core, which builds the component items
      * @param machines          the lab tools, whose barrels are ports
@@ -109,6 +139,8 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
      * @param holograms         the hologram service, for the pickers' and splitters' lines
      * @param refs              converts items to stacks
      * @param containers        the claim systems that decide whether a belt, picker or splitter may fill a protected container
+     * @param vertical          the vertical belts: their towers take items from a belt that flows into them, and give items to the
+     *                          cell beyond their output end
      * @param file              {@code logistics.yml}
      * @param maxDisplays       the most item displays on belts at once
      * @param saveIntervalTicks ticks between saves, at least 1
@@ -116,7 +148,7 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
      */
     public LogisticsService(CoreFactoryCore core, MachineStore machines, DeviceRegistry energyDevices, EnergyService energy,
                             HologramService holograms, TurretRegistry turrets, ItemRefs refs, ContainerProtection containers,
-                            File file, int maxDisplays, int saveIntervalTicks, Logger log) {
+                            VerticalService vertical, File file, int maxDisplays, int saveIntervalTicks, Logger log) {
         this.core = core;
         this.machines = machines;
         this.energyDevices = energyDevices;
@@ -124,6 +156,7 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
         this.store = new LogisticsStore(file, log);
         this.entities = new LogisticsEntities(core, holograms, refs);
         this.ports = new LogisticsPorts(machines, energyDevices, turrets, refs, containers);
+        this.vertical = vertical;
         this.budget = new DisplayBudget(maxDisplays);
         this.saveIntervalTicks = Math.max(1, saveIntervalTicks);
         this.log = log;
@@ -178,6 +211,7 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
         if (lost > 0) {
             log.warning("Logistics: " + lost + " item(s) saved on a belt or splitter could not be put back and are not kept.");
         }
+        vertical.load();
     }
 
     /** One server tick of the logistics. Call after the energy service has solved this tick. */
@@ -195,6 +229,11 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
             } catch (RuntimeException e) {
                 log.severe("The logistics of a world failed this tick and will run again next tick: " + e);
             }
+        }
+        try {
+            vertical.tick(towerNeighbours);
+        } catch (RuntimeException e) {
+            log.severe("The vertical belts failed this tick and will run again next tick: " + e);
         }
         if (tick % HOLOGRAM_TICKS == 0) {
             updateHolograms();
@@ -223,6 +262,7 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
         for (LogisticsDevice device : byId.values()) {
             entities.destroy(device);
         }
+        vertical.shutdown();
         for (ItemKey key : List.copyOf(displays.keySet())) {
             removeDisplay(key);
         }
@@ -257,6 +297,7 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
             }
         }
         store.write(new LogisticsFile.State(belts, pickers, splitters, items));
+        vertical.save();
     }
 
     /** The device whose block is at this location, if any. */
@@ -446,7 +487,9 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
         for (LogisticsDevice device : here) {
             for (Pos cell : cellsOf(device)) {
                 if (!occupied.contains(cell) && !portMap.containsKey(cell)) {
-                    ports.at(world, cell, owners.get(cell), takers.get(cell)).ifPresent(port -> portMap.put(cell, port));
+                    Optional<Port> tower = vertical.inputPort(world, cell);
+                    (tower.isPresent() ? tower : ports.at(world, cell, owners.get(cell), takers.get(cell)))
+                            .ifPresent(port -> portMap.put(cell, port));
                 }
             }
         }

@@ -1,4 +1,4 @@
-# data-version: 5
+# data-version: 6
 # =====================================================================================================
 #  CoreFactory processes and machines
 #
@@ -656,6 +656,88 @@ processes:
     inputs: ["item:targeting_unit:1", "item:optical_lens:2", "item:laser_emitter:1", "item:brass_ingot:2"]
     outputs:
       - {item: item:machine_upgrade_3, amount: 1}
+
+  # ----------------------------------------------------------------- Water system and vertical belts (processed)
+
+  # The pump and its kits, the pipes and splitters, and the vertical belts. The last pump kits and the third belt
+  # take the late parts. Each entry names six or fewer distinct inputs for its assembly machine.
+  assemble_water_pump:
+    machine: component_assembly
+    ticks: 500
+    inputs: ["item:steel_frame:1", "item:circuit_board:2", "item:iron_gear:2", "item:brass_ingot:1"]
+    outputs:
+      - {item: item:water_pump, amount: 1}
+
+  assemble_water_pump_upgrade_2:
+    machine: component_assembly
+    ticks: 600
+    inputs: ["item:circuit_board:2", "item:iron_gear:2", "item:brass_ingot:2"]
+    outputs:
+      - {item: item:water_pump_upgrade_2, amount: 1}
+
+  assemble_water_pump_upgrade_3:
+    machine: component_assembly
+    ticks: 900
+    inputs: ["item:steel_frame:1", "item:iron_gear:3", "item:circuit_board:2", "item:precision_barrel:1"]
+    outputs:
+      - {item: item:water_pump_upgrade_3, amount: 1}
+
+  assemble_water_pump_upgrade_4:
+    machine: heavy_weapons_assembly
+    ticks: 1200
+    inputs: ["item:targeting_unit:1", "item:optical_lens:2", "item:precision_barrel:1", "item:steel_frame:1"]
+    outputs:
+      - {item: item:water_pump_upgrade_4, amount: 1}
+
+  assemble_water_pump_upgrade_5:
+    machine: heavy_weapons_assembly
+    ticks: 1800
+    inputs: ["item:targeting_unit:1", "item:laser_emitter:2", "item:optical_lens:2", "item:superconducting_magnet:1"]
+    outputs:
+      - {item: item:water_pump_upgrade_5, amount: 1}
+
+  # The pipe is made two at a time: a copper ingot, two iron plates and a circuit board.
+  assemble_water_pipe:
+    machine: component_assembly
+    ticks: 200
+    inputs: ["item:iron_plate:2", "material:COPPER_INGOT:1", "item:circuit_board:1"]
+    outputs:
+      - {item: item:water_pipe, amount: 2}
+
+  assemble_water_splitter_t:
+    machine: component_assembly
+    ticks: 300
+    inputs: ["item:water_pipe:2", "item:iron_plate:1"]
+    outputs:
+      - {item: item:water_splitter_t, amount: 1}
+
+  assemble_water_splitter_x:
+    machine: component_assembly
+    ticks: 400
+    inputs: ["item:water_pipe:3", "item:iron_plate:1"]
+    outputs:
+      - {item: item:water_splitter_x, amount: 1}
+
+  assemble_vertical_belt_1:
+    machine: component_assembly
+    ticks: 300
+    inputs: ["item:iron_gear:2", "item:iron_plate:2", "item:circuit_board:1"]
+    outputs:
+      - {item: item:vertical_belt_1, amount: 1}
+
+  assemble_vertical_belt_2:
+    machine: component_assembly
+    ticks: 400
+    inputs: ["item:vertical_belt_1:1", "item:brass_ingot:1"]
+    outputs:
+      - {item: item:vertical_belt_2, amount: 1}
+
+  assemble_vertical_belt_3:
+    machine: component_assembly
+    ticks: 600
+    inputs: ["item:vertical_belt_2:1", "item:optical_lens:1", "item:circuit_board:2"]
+    outputs:
+      - {item: item:vertical_belt_3, amount: 1}
 
 # =====================================================================================================
 #  Drills

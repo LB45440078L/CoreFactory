@@ -17,26 +17,27 @@ class DataVersionTest {
 
     @Test
     void aFileWithNoVersionIsReplaced() {
-        assertThat(DataVersion.decide(OptionalInt.empty(), 5)).isEqualTo(REPLACE);
+        assertThat(DataVersion.decide(OptionalInt.empty(), 6)).isEqualTo(REPLACE);
     }
 
     @Test
     void aFileWithAnOlderVersionIsReplaced() {
-        assertThat(DataVersion.decide(OptionalInt.of(4), 5)).isEqualTo(REPLACE);
-        assertThat(DataVersion.decide(OptionalInt.of(3), 5)).isEqualTo(REPLACE);
-        assertThat(DataVersion.decide(OptionalInt.of(2), 5)).isEqualTo(REPLACE);
-        assertThat(DataVersion.decide(OptionalInt.of(1), 5)).isEqualTo(REPLACE);
-        assertThat(DataVersion.decide(OptionalInt.of(0), 5)).isEqualTo(REPLACE);
+        assertThat(DataVersion.decide(OptionalInt.of(5), 6)).isEqualTo(REPLACE);
+        assertThat(DataVersion.decide(OptionalInt.of(4), 6)).isEqualTo(REPLACE);
+        assertThat(DataVersion.decide(OptionalInt.of(3), 6)).isEqualTo(REPLACE);
+        assertThat(DataVersion.decide(OptionalInt.of(2), 6)).isEqualTo(REPLACE);
+        assertThat(DataVersion.decide(OptionalInt.of(1), 6)).isEqualTo(REPLACE);
+        assertThat(DataVersion.decide(OptionalInt.of(0), 6)).isEqualTo(REPLACE);
     }
 
     @Test
     void aFileWithTheSameVersionIsKept() {
-        assertThat(DataVersion.decide(OptionalInt.of(5), 5)).isEqualTo(KEEP);
+        assertThat(DataVersion.decide(OptionalInt.of(6), 6)).isEqualTo(KEEP);
     }
 
     @Test
     void aFileWithANewerVersionIsLeftAlone() {
-        assertThat(DataVersion.decide(OptionalInt.of(6), 5)).isEqualTo(NEWER);
+        assertThat(DataVersion.decide(OptionalInt.of(7), 6)).isEqualTo(NEWER);
     }
 
     @Test

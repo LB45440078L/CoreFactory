@@ -34,6 +34,9 @@ public final class PlaceableItems {
     public static final Set<String> LOGISTICS_DEVICES = Set.of(
             "belt_1", "belt_2", "belt_3", "picker_1", "picker_2", "picker_3", "splitter_1", "splitter_2", "splitter_3");
 
+    /** The component ids of the vertical transport belts, placed on air by the vertical belt listener. */
+    public static final Set<String> VERTICAL_DEVICES = Set.of("vertical_belt_1", "vertical_belt_2", "vertical_belt_3");
+
     private PlaceableItems() {
     }
 
@@ -44,7 +47,7 @@ public final class PlaceableItems {
      * @param id the component id
      */
     public static boolean isDevice(String id) {
-        return ENERGY_DEVICES.contains(id) || LOGISTICS_DEVICES.contains(id);
+        return ENERGY_DEVICES.contains(id) || LOGISTICS_DEVICES.contains(id) || VERTICAL_DEVICES.contains(id);
     }
 
     /** The identity kind of a plugin item. A null kind stands for a plain item with no plugin identity. */

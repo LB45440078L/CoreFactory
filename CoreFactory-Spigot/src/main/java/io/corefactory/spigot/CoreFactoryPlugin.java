@@ -77,6 +77,15 @@ import io.corefactory.spigot.scanner.DepositScanner;
 import io.corefactory.spigot.turret.TurretCommand;
 import io.corefactory.spigot.turret.TurretIds;
 import io.corefactory.spigot.turret.TurretRuntime;
+import io.corefactory.spigot.water.WaterListener;
+import io.corefactory.spigot.water.WaterService;
+import io.corefactory.spigot.water.WaterStore;
+import io.corefactory.core.water.WaterPart;
+import io.corefactory.core.water.WaterSettings;
+import io.corefactory.spigot.vertical.VerticalListener;
+import io.corefactory.spigot.vertical.VerticalService;
+import io.corefactory.spigot.vertical.VerticalSettings;
+import io.corefactory.spigot.vertical.VerticalStore;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -126,9 +135,12 @@ public final class CoreFactoryPlugin extends JavaPlugin {
     private EnergyService energy;
     private ChartService charts;
     private LogisticsService logistics;
+    private VerticalService vertical;
     private ContainerProtection containers;
     private EnergyEffects energyEffects;
     private BukkitTask energyTicker;
+    private WaterService water;
+    private BukkitTask waterTicker;
 
     @Override
     public void onLoad() {
@@ -263,16 +275,25 @@ public final class CoreFactoryPlugin extends JavaPlugin {
         manager.registerEvents(turrets.listener(), this);
         turretTicker = turrets.start(this);
         containers = ContainerProtection.of(this, getConfig(), getLogger());
+        vertical = new VerticalService(core, itemRefs, new VerticalStore(new File(getDataFolder(), "vertical.yml"), getLogger()),
+                VerticalSettings.from(getConfig(), getLogger()), getLogger());
         logistics = new LogisticsService(core, machines, devices, energy, holograms, turrets.registry(), itemRefs, containers,
-                new File(getDataFolder(), "logistics.yml"), getConfig().getInt("logistics.max-item-displays", 2000),
+                vertical, new File(getDataFolder(), "logistics.yml"), getConfig().getInt("logistics.max-item-displays", 2000),
                 getConfig().getInt("logistics.save-interval-ticks", 300), getLogger());
         logistics.load();
         energy.addConsumerSource(logistics);
+        water = new WaterService(core, machines, devices, energy, holograms,
+                new WaterStore(new File(getDataFolder(), "water.yml"), getLogger()), WaterSettings.from(getConfig()), getLogger());
+        water.load();
+        energy.addConsumerSource(water);
+        energy.useWater(water);
+        manager.registerEvents(new WaterListener(core, water, machines, devices, research.service()), this);
         charts = new ChartService(energy, holograms, this, getConfig().getInt("charts.charts-per-grid", 1),
                 getConfig().getInt("charts.charts-total", 5), getConfig().getInt("charts.refresh-ticks", 10), getLogger());
         manager.registerEvents(charts, this);
         manager.registerEvents(new LogisticsListener(core, logistics, machines, devices,
                 new LogisticsPlacement(core, logistics, research.service()), itemRefs), this);
+        manager.registerEvents(new VerticalListener(core, vertical, logistics, machines, research.service()), this);
         DeviceBlast deviceBlast = new DeviceBlast(core, machines, devices, energy, logistics);
         manager.registerEvents(deviceBlast, this);
         core.addDetonationObserver(deviceBlast);
@@ -287,7 +308,7 @@ public final class CoreFactoryPlugin extends JavaPlugin {
         // The turrets place through their own listener, which fires the same placement check; this lets that check through.
         manager.registerEvents(new PlaceableItemGuard(core, id ->
                 processes.machine(id).isPresent() || drills.machine(id).isPresent() || TurretIds.ITEM.equals(id)
-                        || TurretIds.LASER_ITEM.equals(id)), this);
+                        || TurretIds.LASER_ITEM.equals(id) || WaterPart.ofComponent(id).isPresent()), this);
         DrillTicker drillTicker = new DrillTicker(machines, holograms, deposits, depositSettings, drillYield, oreById, energy,
                 getLogger());
 
@@ -314,12 +335,14 @@ public final class CoreFactoryPlugin extends JavaPlugin {
             energy.tick();
             logistics.tick();
         }, 1L, 1L);
+        waterTicker = Bukkit.getScheduler().runTaskTimer(this, water::tick, 1L, 1L);
         machineTicker = Bukkit.getScheduler().runTaskTimer(this,
                 new MachineTicker(machines, processes, engine, drillTicker, sprites, holograms, energy, labLevels,
-                        core.settings().saveIntervalTicks()),
+                        core.settings().saveIntervalTicks(), water),
                 1L, 1L);
         sprites.start();
         holograms.start();
+        water.start();
         charts.start();
         concealment.start();
         getLogger().info("CoreFactory enabled: " + core.definitions().size() + " TNT types, "
@@ -351,6 +374,14 @@ public final class CoreFactoryPlugin extends JavaPlugin {
         if (energyTicker != null) {
             energyTicker.cancel();
             energyTicker = null;
+        }
+        if (waterTicker != null) {
+            waterTicker.cancel();
+            waterTicker = null;
+        }
+        if (water != null) {
+            water.shutdown();
+            water = null;
         }
         if (logistics != null) {
             logistics.shutdown();

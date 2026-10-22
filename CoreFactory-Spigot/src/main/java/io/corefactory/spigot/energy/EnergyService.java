@@ -31,6 +31,7 @@ import io.corefactory.spigot.energy.StoredEnergy.StoredPylon;
 import io.corefactory.spigot.energy.StoredEnergy.StoredWire;
 import io.corefactory.spigot.machine.MachineStore;
 import io.corefactory.spigot.machine.PlacedMachine;
+import io.corefactory.spigot.water.WaterFeed;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -120,6 +121,7 @@ public final class EnergyService {
     private Map<Integer, GridResult> gridResults = Map.of();
     private Map<Integer, ChartSamples.Storage> storage = Map.of();
     private Map<UUID, List<GeneratorOutput>> generatorOutputs = Map.of();
+    private WaterFeed water = WaterFeed.NONE;
     private long tick;
 
     /**
@@ -239,6 +241,14 @@ public final class EnergyService {
      */
     public void addConsumerSource(ConsumerSource source) {
         sources.add(Objects.requireNonNull(source, "source"));
+    }
+
+    /**
+     * Sets the water network a nuclear generator may run on, when it has a pipe and the network delivers water. Without one a nuclear
+     * generator keeps the underwater rule alone.
+     */
+    public void useWater(WaterFeed feed) {
+        water = Objects.requireNonNull(feed, "feed");
     }
 
     /**
@@ -497,7 +507,7 @@ public final class EnergyService {
             World world = generator.loadedWorld();
             GeneratorKind kind = generator.generatorKind();
             OpenAir air = kind == GeneratorKind.WIND ? GeneratorSites.openAir(block) : new OpenAir(0, block.getBlockY());
-            boolean underwater = kind == GeneratorKind.NUCLEAR && GeneratorSites.underwater(block);
+            boolean underwater = kind == GeneratorKind.NUCLEAR && water.nuclearMayRun(block, GeneratorSites.underwater(block));
             GeneratorEnvironment env = GeneratorEnvironment.at(world.getFullTime(), world.getSeed(), air, underwater);
             generator.tick(env, TICK_SECONDS);
             MachineSounds.generatorHum(generator.producing(), kind, block, tick);

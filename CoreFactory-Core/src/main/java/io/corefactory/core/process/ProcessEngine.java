@@ -26,6 +26,9 @@ public final class ProcessEngine {
     public static final Set<ItemRef> FUEL = Set.of(ItemRef.material("COAL"), ItemRef.material("CHARCOAL"),
             ItemRef.item("charcoal"));
 
+    /** The water bucket input of a process. A run takes its water from a connected water network instead, when that delivers. */
+    public static final ItemRef WATER_BUCKET = ItemRef.material("WATER_BUCKET");
+
     /** What one tick of a machine did. */
     public enum Step {
         /** No process can run. */
@@ -56,10 +59,23 @@ public final class ProcessEngine {
         this.stackLimit = stackLimit;
     }
 
+    /** True when a process takes water from its input: its inputs name the water bucket. */
+    public static boolean takesWater(ProcessDefinition process) {
+        return process.inputs().stream().anyMatch(input -> WATER_BUCKET.equals(input.ref()));
+    }
+
     /** The first process of the machine, in file order, whose inputs and fuel are all present. */
     public Optional<ProcessDefinition> select(MachineState state) {
+        return select(state, false);
+    }
+
+    /**
+     * The first process of the machine, in file order, that can run. When {@code watered} is true, a water bucket input is taken as
+     * supplied, since the water network delivers the water.
+     */
+    public Optional<ProcessDefinition> select(MachineState state, boolean watered) {
         for (ProcessDefinition process : catalog.processesFor(state.machineId())) {
-            if (supplied(process, state)) {
+            if (supplied(process, state, watered)) {
                 return Optional.of(process);
             }
         }
@@ -68,7 +84,18 @@ public final class ProcessEngine {
 
     /** True when the inputs of the process are all present in full, and its fuel is present when it burns fuel. */
     public boolean supplied(ProcessDefinition process, MachineState state) {
+        return supplied(process, state, false);
+    }
+
+    /**
+     * True when the inputs of the process are present, and its fuel is present when it burns fuel. When {@code watered} is true, the
+     * water bucket input is not needed: the network delivers the water for the run.
+     */
+    public boolean supplied(ProcessDefinition process, MachineState state, boolean watered) {
         for (Map.Entry<ItemRef, Integer> need : required(process).entrySet()) {
+            if (watered && WATER_BUCKET.equals(need.getKey())) {
+                continue;
+            }
             if (count(state.inputs(), need.getKey()) < need.getValue()) {
                 return false;
             }
@@ -100,15 +127,27 @@ public final class ProcessEngine {
      * @return what the tick did
      */
     public Step tick(MachineState state, Random random) {
+        return tick(state, random, false);
+    }
+
+    /**
+     * Advances the machine by one tick, with the water supply the network gives it this tick.
+     *
+     * @param state   the machine; its slots and process are updated
+     * @param random  the source of chance rolls
+     * @param watered true when the water network delivers the water a run of a process takes from its bucket input
+     * @return what the tick did
+     */
+    public Step tick(MachineState state, Random random, boolean watered) {
         if (state.processId() == null) {
-            Optional<ProcessDefinition> next = select(state);
+            Optional<ProcessDefinition> next = select(state, watered);
             if (next.isEmpty()) {
                 return Step.IDLE;
             }
             state.start(next.get().id());
         }
         Optional<ProcessDefinition> current = catalog.process(state.processId());
-        if (current.isEmpty() || !supplied(current.get(), state)) {
+        if (current.isEmpty() || !supplied(current.get(), state, watered)) {
             state.stop();
             return Step.IDLE;
         }
@@ -125,7 +164,7 @@ public final class ProcessEngine {
         if (!fits(state.outputs(), state.pending())) {
             return Step.BLOCKED;
         }
-        consume(process, state);
+        consume(process, state, watered);
         deposit(state.outputs(), state.pending());
         state.stop();
         return Step.COMPLETED;
@@ -139,8 +178,11 @@ public final class ProcessEngine {
         return need;
     }
 
-    private void consume(ProcessDefinition process, MachineState state) {
+    private void consume(ProcessDefinition process, MachineState state, boolean watered) {
         for (Map.Entry<ItemRef, Integer> need : required(process).entrySet()) {
+            if (watered && WATER_BUCKET.equals(need.getKey())) {
+                continue;
+            }
             take(state.inputs(), need.getKey(), need.getValue());
         }
         if (process.fuel()) {

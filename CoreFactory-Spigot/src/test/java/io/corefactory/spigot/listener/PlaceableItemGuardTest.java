@@ -63,7 +63,8 @@ class PlaceableItemGuardTest {
     void everyShippedComponentThatIsNotAMachineOrTheSolarPanelIsRefused() {
         for (String id : content.definitions().components().keySet()) {
             boolean placeable = machines.contains(id) || PlaceableItems.SOLAR_PANEL.equals(id)
-                    || PlaceableItems.ENERGY_DEVICES.contains(id) || PlaceableItems.LOGISTICS_DEVICES.contains(id);
+                    || PlaceableItems.ENERGY_DEVICES.contains(id) || PlaceableItems.LOGISTICS_DEVICES.contains(id)
+                    || PlaceableItems.VERTICAL_DEVICES.contains(id);
             assertThat(allowed(id)).as(id).isEqualTo(placeable);
         }
     }

@@ -33,6 +33,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.entity.AbstractCubeMob;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.AbstractVillager;
 import org.bukkit.entity.Animals;
@@ -45,7 +46,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Slime;
 import org.bukkit.entity.Tameable;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -672,7 +672,7 @@ public final class TurretService implements EnergyService.ConsumerSource {
         if (living instanceof Phantom) {
             return TargetKind.PHANTOM;
         }
-        if (living instanceof Slime) {
+        if (living instanceof AbstractCubeMob) {
             return TargetKind.SLIME;
         }
         if (living instanceof Ghast) {

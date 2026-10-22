@@ -270,6 +270,8 @@ All notable changes to CoreFactory. The format follows Keep a Changelog; version
 
 ### Fixed
 
+- Turrets target magma cubes when their magma cube toggle or the slimes category is on. A magma cube is not a slime in the server API (it is a cube mob of its own), so the turret had classed it as "other" and never fired at it.
+
 - Turret upgrades from level 3 to 4 and from 4 to 5 now work. The block above a tall turret belongs to the turret, so the upgrade
   no longer counts it as blocked. Level III (kit III) still needs the block above it free.
 - Belt corners: the 90-degree arc on a corner's top texture now starts at the input side and ends at the output side, which is the front, the bottom edge of the top texture. The arrows follow the arc. The check in game is still pending (see `docs/COMPATIBILITY.md`).

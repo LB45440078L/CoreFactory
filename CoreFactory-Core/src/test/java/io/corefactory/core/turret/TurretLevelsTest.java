@@ -111,6 +111,27 @@ class TurretLevelsTest {
     }
 
     @Test
+    void theLaserLevelsTurnFasterFromLevelThreeAndTheMachineGunKeepsTheSharedSpeed() {
+        assertThat(TurretLevels.LASER.level(1).rotationDegreesPerTick()).isEqualTo(6.0);
+        assertThat(TurretLevels.LASER.level(2).rotationDegreesPerTick()).isEqualTo(6.0);
+        assertThat(TurretLevels.LASER.level(3).rotationDegreesPerTick()).isEqualTo(8.0);
+        assertThat(TurretLevels.LASER.level(5).rotationDegreesPerTick()).isEqualTo(12.0);
+        assertThat(TurretLevels.LASER.level(5).rotationDegreesOr(6.0)).isEqualTo(12.0);
+        assertThat(TurretLevels.MACHINE_GUN.levels())
+                .allSatisfy(level -> assertThat(level.rotationDegreesOr(6.0)).isEqualTo(6.0));
+    }
+
+    @Test
+    void aLaserLevelsRotationIsReadFromItsSectionAndAMachineGunLevelDoesNotReadIt() {
+        MemoryConfiguration config = new MemoryConfiguration();
+        config.set("laser-turret.levels.5.rotation-degrees-per-tick", 15);
+        config.set("turrets.levels.5.rotation-degrees-per-tick", 15);
+
+        assertThat(TurretLevels.from(TurretType.LASER, config).level(5).rotationDegreesPerTick()).isEqualTo(15.0);
+        assertThat(TurretLevels.from(TurretType.MACHINE_GUN, config).level(5).rotationDegreesPerTick()).isZero();
+    }
+
+    @Test
     void everyStatOfALevelCanBeOverridden() {
         MemoryConfiguration config = new MemoryConfiguration();
         config.set("turrets.levels.2.damage", 7.5);

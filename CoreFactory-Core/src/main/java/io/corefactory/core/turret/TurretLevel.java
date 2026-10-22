@@ -13,6 +13,7 @@ package io.corefactory.core.turret;
  * @param cannons            the cannons that fire, from 1 to 2; a machine gun has two from level 4, a laser has one
  * @param powerDemandW       the power the level asks for, in W
  * @param tall               true when the turret is two blocks high, as a door: levels 3 and up
+ * @param rotationDegreesPerTick the most the level turns in one tick, in degrees; 0 keeps the turrets' shared rotation speed
  */
 public record TurretLevel(
         int level,
@@ -23,10 +24,22 @@ public record TurretLevel(
         int ammoCapacity,
         int cannons,
         int powerDemandW,
-        boolean tall) {
+        boolean tall,
+        double rotationDegreesPerTick) {
 
     /** The most base damage one hit may deal. */
     private static final double MAX_DAMAGE = 1000.0;
+
+    /** The most a level may turn in one tick. */
+    private static final double MAX_ROTATION_DEGREES = 90.0;
+
+    /**
+     * A level that keeps the turrets' shared rotation speed, with no rotation of its own.
+     */
+    public TurretLevel(int level, double damage, int damageBoostPercent, int fireIntervalTicks, double range, int ammoCapacity,
+                       int cannons, int powerDemandW, boolean tall) {
+        this(level, damage, damageBoostPercent, fireIntervalTicks, range, ammoCapacity, cannons, powerDemandW, tall, 0.0);
+    }
 
     public TurretLevel {
         level = Math.max(1, Math.min(level, TurretLevels.MAX_LEVEL));
@@ -37,11 +50,21 @@ public record TurretLevel(
         ammoCapacity = Math.max(0, Math.min(ammoCapacity, 4096));
         cannons = Math.max(1, Math.min(cannons, DualTargeting.MAX_CANNONS));
         powerDemandW = Math.max(0, Math.min(powerDemandW, 1_000_000));
+        rotationDegreesPerTick = clamp(rotationDegreesPerTick, 0.0, MAX_ROTATION_DEGREES);
     }
 
     /** The damage per hit with the boost applied: the base times one plus the boost in per cent. */
     public double effectiveDamage() {
         return damage * (100 + damageBoostPercent) / 100.0;
+    }
+
+    /**
+     * The most this level turns in one tick: its own rotation when it has one, and the given speed otherwise.
+     *
+     * @param shared the turrets' shared rotation speed, in degrees per tick
+     */
+    public double rotationDegreesOr(double shared) {
+        return rotationDegreesPerTick > 0.0 ? rotationDegreesPerTick : shared;
     }
 
     /** True when the level has an ammunition belt: a machine gun does, a laser does not. */

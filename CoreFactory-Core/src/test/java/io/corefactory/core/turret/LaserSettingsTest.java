@@ -22,6 +22,16 @@ class LaserSettingsTest {
     }
 
     @Test
+    void aLaserScansEveryFiveTicksUnlessTheSectionSaysOtherwise() {
+        MemoryConfiguration config = new MemoryConfiguration();
+        config.set("laser-turret.search-interval-ticks", 2);
+
+        assertThat(LaserSettings.from(new MemoryConfiguration()).searchIntervalTicks()).isEqualTo(5);
+        assertThat(LaserSettings.from(config).searchIntervalTicks()).isEqualTo(2);
+        assertThat(LaserSettings.defaults().searchIntervalTicks()).isEqualTo(LaserSettings.DEFAULT_SEARCH_INTERVAL_TICKS);
+    }
+
+    @Test
     void theValuesAreReadFromTheLaserSection() {
         MemoryConfiguration config = new MemoryConfiguration();
         config.set("laser-turret.armour-bypass", 0.25);

@@ -53,7 +53,10 @@ public final class TurretStats {
         return settings;
     }
 
-    /** The laser's own settings: the armour it ignores and its particles. Its range, damage, interval and power are per level. */
+    /**
+     * The laser's own settings: the armour it ignores, its particles and its scan interval. Its range, damage, interval, power and rotation are
+     * per level.
+     */
     public LaserSettings laser() {
         return laser;
     }
@@ -107,9 +110,9 @@ public final class TurretStats {
         return new TurretSettings(
                 settings.enabled(),
                 level.range(),
-                settings.searchIntervalTicks(),
+                lasing ? laser.searchIntervalTicks() : settings.searchIntervalTicks(),
                 level.fireIntervalTicks(),
-                settings.rotationSpeedDegrees(),
+                level.rotationDegreesOr(settings.rotationSpeedDegrees()),
                 settings.arcDegrees(),
                 settings.pitchLimitDegrees(),
                 settings.idleSweep(),

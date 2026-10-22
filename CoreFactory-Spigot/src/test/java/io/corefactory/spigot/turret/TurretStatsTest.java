@@ -65,9 +65,24 @@ class TurretStatsTest {
         for (TurretKind kind : TurretKind.values()) {
             TurretSettings view = stats.view(kind, 3);
             assertThat(view.arcDegrees()).isEqualTo(90.0);
-            assertThat(view.rotationSpeedDegrees()).isEqualTo(4.0);
             assertThat(view.targets(TargetKind.PHANTOM)).isTrue();
         }
+        assertThat(stats.view(TurretKind.MACHINE_GUN, 3).rotationSpeedDegrees()).isEqualTo(4.0);
+    }
+
+    @Test
+    void aLaserTurnsAtItsLevelsRotationAndScansAtItsOwnIntervalWhileTheMachineGunKeepsItsShared() {
+        MemoryConfiguration config = new MemoryConfiguration();
+        config.set("turrets.search-interval-ticks", 40);
+        config.set("laser-turret.search-interval-ticks", 3);
+        TurretStats stats = TurretStats.from(config);
+
+        assertThat(stats.view(TurretKind.LASER, 1).rotationSpeedDegrees()).isEqualTo(6.0);
+        assertThat(stats.view(TurretKind.LASER, 3).rotationSpeedDegrees()).isEqualTo(8.0);
+        assertThat(stats.view(TurretKind.LASER, 5).rotationSpeedDegrees()).isEqualTo(12.0);
+        assertThat(stats.view(TurretKind.LASER, 5).searchIntervalTicks()).isEqualTo(3);
+        assertThat(stats.view(TurretKind.MACHINE_GUN, 5).rotationSpeedDegrees()).isEqualTo(6.0);
+        assertThat(stats.view(TurretKind.MACHINE_GUN, 5).searchIntervalTicks()).isEqualTo(40);
     }
 
     @Test

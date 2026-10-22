@@ -12,7 +12,8 @@ import java.util.Objects;
  * follows the upgrade rule ({@link TurretUpgrade#TALL_FROM}), so a turret is two blocks high from level 3 on.
  *
  * <p>A laser has no ammunition belt, so its levels have no ammo capacity, and an {@code ammo-capacity} key under the laser's levels is
- * ignored. A machine gun's capacity is at least one round.
+ * ignored. A machine gun's capacity is at least one round. A laser's levels also read {@code rotation-degrees-per-tick}, the most the
+ * laser turns in one tick; a machine gun's levels keep the turrets' shared rotation speed.
  *
  * @param type   the kind the levels belong to
  * @param levels the five levels, level 1 first
@@ -82,6 +83,9 @@ public record TurretLevels(TurretType type, List<TurretLevel> levels) {
 
     private static TurretLevel readLevel(TurretType type, TurretLevel fallback, ConfigurationSection section) {
         int ammo = type == TurretType.LASER ? 0 : Math.max(1, section.getInt("ammo-capacity", fallback.ammoCapacity()));
+        double rotation = type == TurretType.LASER
+                ? section.getDouble("rotation-degrees-per-tick", fallback.rotationDegreesPerTick())
+                : fallback.rotationDegreesPerTick();
         return new TurretLevel(
                 fallback.level(),
                 section.getDouble("damage", fallback.damage()),
@@ -91,7 +95,8 @@ public record TurretLevels(TurretType type, List<TurretLevel> levels) {
                 ammo,
                 section.getInt("cannons", fallback.cannons()),
                 section.getInt("power-demand-w", fallback.powerDemandW()),
-                fallback.tall());
+                fallback.tall(),
+                rotation);
     }
 
     private static List<TurretLevel> machineGunDefaults() {
@@ -103,12 +108,13 @@ public record TurretLevels(TurretType type, List<TurretLevel> levels) {
                 new TurretLevel(5, 6.0, 50, 4, 32.0, 768, 2, 60_000, TurretUpgrade.TALL_FROM <= 5));
     }
 
+    /** The laser's levels. Levels 3 to 5 turn faster than the machine gun's shared speed, so a laser turns onto its next target sooner. */
     private static List<TurretLevel> laserDefaults() {
         return List.of(
-                new TurretLevel(1, 12.0, 0, 10, 40.0, 0, 1, 60_000, TurretUpgrade.TALL_FROM <= 1),
-                new TurretLevel(2, 12.0, 10, 8, 44.0, 0, 1, 75_000, TurretUpgrade.TALL_FROM <= 2),
-                new TurretLevel(3, 12.0, 20, 6, 48.0, 0, 1, 90_000, TurretUpgrade.TALL_FROM <= 3),
-                new TurretLevel(4, 12.0, 35, 5, 54.0, 0, 1, 105_000, TurretUpgrade.TALL_FROM <= 4),
-                new TurretLevel(5, 12.0, 50, 4, 60.0, 0, 1, 120_000, TurretUpgrade.TALL_FROM <= 5));
+                new TurretLevel(1, 12.0, 0, 10, 40.0, 0, 1, 60_000, TurretUpgrade.TALL_FROM <= 1, 6.0),
+                new TurretLevel(2, 12.0, 10, 8, 44.0, 0, 1, 75_000, TurretUpgrade.TALL_FROM <= 2, 6.0),
+                new TurretLevel(3, 12.0, 20, 6, 48.0, 0, 1, 90_000, TurretUpgrade.TALL_FROM <= 3, 8.0),
+                new TurretLevel(4, 12.0, 35, 5, 54.0, 0, 1, 105_000, TurretUpgrade.TALL_FROM <= 4, 10.0),
+                new TurretLevel(5, 12.0, 50, 4, 60.0, 0, 1, 120_000, TurretUpgrade.TALL_FROM <= 5, 12.0));
     }
 }

@@ -80,7 +80,8 @@ import java.util.UUID;
  * {@link TargetRules} allows, with the range measured as a sphere around the turret's head to the nearest point of the target's box.
  *
  * <p>The turrets of a world coordinate their targets. The coordinated pass ({@link #assignTargets}) runs every search interval, and on the
- * tick after a held target dies. It collects each turret's candidates, the entities it can fire at now, and gives all the turrets' cannons
+ * tick after a held target dies. Between those passes the laser turrets get a pass of their own every laser search interval, so a laser
+ * finds a new target within a few ticks rather than a second. It collects each turret's candidates, the entities it can fire at now, and gives all the turrets' cannons
  * to {@link TargetAssignment} together: each cannon keeps its target while it stays a candidate, the first cannons take the nearest mob that no
  * turret holds, and a second cannon prefers a free mob within the dual spacing of its first target. The turrets spread over the mobs before
  * any two share one. Between passes a cannon keeps its target while the target is
@@ -94,6 +95,8 @@ public final class TurretService implements EnergyService.ConsumerSource {
 
     private static final int ENSURE_TICKS = 20;
     private static final int TEXT_TICKS = 10;
+    /** The power an idle turret draws, in W: enough to keep it in the assignment, far below a firing turret's demand. */
+    private static final int STANDBY_DEMAND_W = 1;
     private static final int ROTATE_SOUND_TICKS = 12;
     private static final int FIRE_SOUND_TICKS = 3;
     private static final int CHARGE_SOUND_TICKS = 20;
@@ -170,10 +173,21 @@ public final class TurretService implements EnergyService.ConsumerSource {
             }
             Pos pos = turret.pos();
             String id = EnergySnapshots.consumerId(turret.world(), pos.x(), pos.y(), pos.z());
+            int demand = engaged(turret) ? viewOf(turret).powerDemandW() : STANDBY_DEMAND_W;
             byWorld.computeIfAbsent(turret.world(), key -> new ArrayList<>())
-                    .add(new Consumer(id, pos, viewOf(turret).powerDemandW()));
+                    .add(new Consumer(id, pos, demand));
         }
         return byWorld;
+    }
+
+    /** Whether any cannon of the turret holds a target. Only an engaged turret draws its full power. */
+    private static boolean engaged(TurretDevice turret) {
+        for (int cannon = 0; cannon < TurretDevice.CANNONS; cannon++) {
+            if (turret.target(cannon) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -193,7 +207,9 @@ public final class TurretService implements EnergyService.ConsumerSource {
         }
         if (reassignSoon || ticks % stats.settings().searchIntervalTicks() == 0) {
             reassignSoon = false;
-            assignTargets();
+            assignTargets(null);
+        } else if (ticks % stats.laser().searchIntervalTicks() == 0) {
+            assignTargets(TurretKind.LASER);
         }
         for (TurretDevice turret : registry.all()) {
             if (turret.isLoaded()) {
@@ -492,7 +508,7 @@ public final class TurretService implements EnergyService.ConsumerSource {
     /**
      * The held target of a cannon while it is still alive and valid; the target is dropped otherwise. A target that died or is gone asks
      * for a pass on the next tick, so its cannon is given another target at once; a target that left the reach of the turret waits for the
-     * next interval.
+     * next pass of its kind: the laser's scan interval for a laser, the search interval for a machine gun.
      */
     private LivingEntity keepTarget(TurretDevice turret, int cannon, Location barrel, TurretSettings view) {
         UUID id = turret.target(cannon);
@@ -528,11 +544,14 @@ public final class TurretService implements EnergyService.ConsumerSource {
      * nearest first, so a held target that is still valid is among them and keeps its place. The pass reads the entities in each turret's
      * range and their line of sight, and writes the target of each cannon. Its cost is one range query and one verdict per entity near each
      * turret, once per search interval, or on the tick after a held target dies.
+     *
+     * @param only the kind whose turrets are given targets, or null for every turret; a laser pass leaves the machine guns' targets alone
      */
-    private void assignTargets() {
+    private void assignTargets(TurretKind only) {
         Map<UUID, List<TurretDevice>> byWorld = new HashMap<>();
         for (TurretDevice turret : registry.all()) {
-            if (turret.isLoaded() && isArmed(turret) && energy.satisfaction(consumerId(turret)) > 0.0) {
+            if ((only == null || turret.kind() == only) && turret.isLoaded() && isArmed(turret)
+                    && energy.satisfaction(consumerId(turret)) > 0.0) {
                 byWorld.computeIfAbsent(turret.world(), key -> new ArrayList<>()).add(turret);
             }
         }
@@ -768,7 +787,7 @@ public final class TurretService implements EnergyService.ConsumerSource {
         if (!mayHarm(verdict)) {
             return;
         }
-        strike(struck, ArmourBypass.adjustedDamage(damage, armourOf(struck), round.armourBypass()));
+        strike(struck, ArmourBypass.adjustedDamage(damage, armourOf(struck), toughnessOf(struck), round.armourBypass()));
         if (round.fireTicks() > 0) {
             struck.setFireTicks(Math.max(struck.getFireTicks(), round.fireTicks()));
         }
@@ -811,7 +830,7 @@ public final class TurretService implements EnergyService.ConsumerSource {
         if (!mayHarm(verdictOf(turret, struck, barrel, view))) {
             return;
         }
-        strike(struck, LaserRules.damageAfterArmour(damage, armourOf(struck), stats.laser().armourBypass()));
+        strike(struck, LaserRules.damageAfterArmour(damage, armourOf(struck), toughnessOf(struck), stats.laser().armourBypass()));
     }
 
     /**
@@ -844,6 +863,12 @@ public final class TurretService implements EnergyService.ConsumerSource {
     private static double armourOf(LivingEntity living) {
         AttributeInstance armour = living.getAttribute(Attribute.ARMOR);
         return armour == null ? 0.0 : armour.getValue();
+    }
+
+    /** The armour toughness of an entity, which the server's armour formula reads with its armour. */
+    private static double toughnessOf(LivingEntity living) {
+        AttributeInstance toughness = living.getAttribute(Attribute.ARMOR_TOUGHNESS);
+        return toughness == null ? 0.0 : toughness.getValue();
     }
 
     /**

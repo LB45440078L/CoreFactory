@@ -30,6 +30,11 @@ class LaserConfigTest {
     }
 
     @Test
+    void theShippedLaserScansEveryFiveTicks() throws IOException {
+        assertThat(LaserSettings.from(shipped()).searchIntervalTicks()).isEqualTo(5);
+    }
+
+    @Test
     void theShippedLaserSectionHoldsNoStatThatALevelOwns() throws IOException {
         YamlConfiguration config = shipped();
 

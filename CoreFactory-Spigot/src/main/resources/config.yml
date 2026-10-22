@@ -90,7 +90,7 @@ turrets:
   # Lower scans more often and costs more server time; higher scans less often and reacts later. A turret keeps its target between
   # passes while the target stays alive, in range and in its line of fire, and a pass also runs straight after a target dies. Allowed: 1 to 1200.
   search-interval-ticks: 20
-  # The most a turret turns in one tick, in degrees.
+  # The most a machine gun turns in one tick, in degrees. A laser turns at its level's rotation-degrees-per-tick, under laser-turret.
   rotation-speed-degrees: 6
   # The total sweep of a turret in degrees, centred on the way it faced when it was placed. 360 turns all round, so a turret fires at every
   # hostile mob in its range whichever way it faces. A smaller value restricts it to a sector; a mob outside that sector is out of reach.
@@ -191,17 +191,22 @@ turrets:
 
 laser-turret:
   # Laser turrets. Electric: they hold no rounds and fire an instant beam at the mobs a machine gun turret fires at, with the same targets,
-  # the same rotation and arc, and the same per-turret menu (the turrets section above). They stop with the turrets when enabled is off.
-  # Read at startup, so a change needs a restart.
+  # the same arc, and the same per-turret menu (the turrets section above). Their turning and scan rate are their own, below. They stop
+  # with the turrets when enabled is off. Read at startup, so a change needs a restart.
   # The share of a target's armour the beam ignores, from 0 to 1. 1 ignores all of it, so armour takes none of the damage.
   armour-bypass: 1.0
   # Dust particles one beam draws at most, from 0 to 32. The beam is spread evenly along its length when it is longer than the cap allows.
   # A shot draws the beam's particles and, on a hit, a burst of six more: fewer than 40 in all.
   beam-particles: 24
+  # The laser scan rate: ticks between two passes that give each laser its target (5 is a quarter of a second). A laser that loses its
+  # target, or whose target leaves its reach, finds the next one within this many ticks. Lower scans more often and costs more server time.
+  # The machine guns keep turrets.search-interval-ticks. Allowed: 1 to 1200.
+  search-interval-ticks: 5
   # Upgrade levels, 1 to 5, as for the machine gun. A laser holds no rounds, so it has no ammo-capacity here, and an ammo-capacity key is
   # ignored. Every level has one cannon: one beam. Levels 3 and up are two blocks high, as a door, which the upgrade rule sets. Range,
-  # damage, interval and power are read from these levels only. At level 5 the beam and its impact are blue. damage-boost-percent raises
-  # the beam's damage, in per cent.
+  # damage, interval, power and rotation are read from these levels only. At level 5 the beam and its impact are blue. damage-boost-percent
+  # raises the beam's damage, in per cent. rotation-degrees-per-tick is the most the laser turns in one tick, in degrees: higher turns onto a
+  # new target sooner.
   levels:
     # The turret as placed.
     1:
@@ -211,6 +216,7 @@ laser-turret:
       range: 40
       cannons: 1
       power-demand-w: 60000
+      rotation-degrees-per-tick: 6
     # First upgrade.
     2:
       damage: 12
@@ -219,6 +225,7 @@ laser-turret:
       range: 44
       cannons: 1
       power-demand-w: 75000
+      rotation-degrees-per-tick: 6
     # Second upgrade. Two blocks high from here.
     3:
       damage: 12
@@ -227,6 +234,7 @@ laser-turret:
       range: 48
       cannons: 1
       power-demand-w: 90000
+      rotation-degrees-per-tick: 8
     # Third upgrade.
     4:
       damage: 12
@@ -235,6 +243,7 @@ laser-turret:
       range: 54
       cannons: 1
       power-demand-w: 105000
+      rotation-degrees-per-tick: 10
     # Fourth upgrade, the highest.
     5:
       damage: 12
@@ -243,6 +252,7 @@ laser-turret:
       range: 60
       cannons: 1
       power-demand-w: 120000
+      rotation-degrees-per-tick: 12
 
 concealment:
   # Hides the barrel under each lab tool and drill from nearby players, so they see the custom model instead. The barrel

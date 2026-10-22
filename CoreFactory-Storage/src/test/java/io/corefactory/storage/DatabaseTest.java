@@ -23,10 +23,10 @@ class DatabaseTest {
         StorageSettings settings = sqlite(dir.resolve("corefactory.db"));
 
         try (Database first = Database.open(settings, LOG)) {
-            assertThat(schemaVersion(first)).isEqualTo(2);
+            assertThat(schemaVersion(first)).isEqualTo(3);
         }
         try (Database second = Database.open(settings, LOG)) {
-            assertThat(schemaVersion(second)).isEqualTo(2);
+            assertThat(schemaVersion(second)).isEqualTo(3);
             assertThat(schemaRowCount(second)).isEqualTo(1);
         }
     }
@@ -36,7 +36,7 @@ class DatabaseTest {
         Path file = dir.resolve("nested/data/corefactory.db");
 
         try (Database database = Database.open(sqlite(file), LOG)) {
-            assertThat(schemaVersion(database)).isEqualTo(2);
+            assertThat(schemaVersion(database)).isEqualTo(3);
         }
         assertThat(Files.isRegularFile(file)).isTrue();
     }

@@ -23,8 +23,7 @@ class OreDefinitionTest {
                 replace: [STONE, DEEPSLATE]
                 min-y: -48
                 max-y: 24
-                veins-per-chunk: 1
-                vein-size: [5, 8]
+                volume: 400
               bad_range:
                 host: SMOOTH_BASALT
                 drop: raw_bad
@@ -32,8 +31,6 @@ class OreDefinitionTest {
                 replace: [STONE]
                 min-y: 24
                 max-y: -48
-                veins-per-chunk: 1.0
-                vein-size: [5, 8]
               unknown_block:
                 host: NOT_A_BLOCK
                 drop: raw_x
@@ -41,8 +38,6 @@ class OreDefinitionTest {
                 replace: [STONE]
                 min-y: 0
                 max-y: 10
-                veins-per-chunk: 1.0
-                vein-size: [1, 2]
               other_good:
                 host: MUD_BRICKS
                 drop: raw_other
@@ -51,7 +46,6 @@ class OreDefinitionTest {
                 min-y: 0
                 max-y: 80
                 veins-per-chunk: 0.5
-                vein-size: [3, 6]
             """;
 
     private static final Logger LOG = Logger.getLogger("ore-test");
@@ -69,9 +63,10 @@ class OreDefinitionTest {
         assertThat(good.replace()).containsExactlyInAnyOrder("STONE", "DEEPSLATE");
         assertThat(good.dropMin()).isEqualTo(2);
         assertThat(good.dropMax()).isEqualTo(4);
-        assertThat(good.veinsPerChunk()).isEqualTo(1.0);
-        assertThat(good.veinSizeMin()).isEqualTo(5);
-        assertThat(good.veinSizeMax()).isEqualTo(8);
+        assertThat(good.minY()).isEqualTo(-48);
+        assertThat(good.maxY()).isEqualTo(24);
+        assertThat(good.volume()).isEqualTo(400);
+        assertThat(ores.get(1).volume()).isZero();
     }
 
     @Test
@@ -81,7 +76,7 @@ class OreDefinitionTest {
 
     @Test
     void nameDefaultsToTheId() {
-        OreDefinition ore = new OreDefinition("ore_x", "", "STONE", "raw", 1, 1, Set.of("STONE"), 0, 10, 1.0, 1, 2);
+        OreDefinition ore = new OreDefinition("ore_x", "", "STONE", "raw", 1, 1, Set.of("STONE"), 0, 10);
 
         assertThat(ore.name()).isEqualTo("ore_x");
     }
@@ -90,21 +85,17 @@ class OreDefinitionTest {
     void constructorChecksTheRanges() {
         Set<String> stone = Set.of("STONE");
 
-        assertThatThrownBy(() -> new OreDefinition("o", "o", "STONE", "r", 1, 1, stone, 10, 10, 1.0, 1, 2))
+        assertThatThrownBy(() -> new OreDefinition("o", "o", "STONE", "r", 1, 1, stone, 10, 10))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new OreDefinition("o", "o", "STONE", "r", 3, 2, stone, 0, 10, 1.0, 1, 2))
+        assertThatThrownBy(() -> new OreDefinition("o", "o", "STONE", "r", 3, 2, stone, 0, 10))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new OreDefinition("o", "o", "STONE", "r", 1, 1, stone, 0, 10, 1.0, 0, 2))
+        assertThatThrownBy(() -> new OreDefinition("o", "o", "STONE", "r", 1, 1, stone, -65, 10))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new OreDefinition("o", "o", "STONE", "r", 1, 1, stone, 0, 10, 1.0, 5, 2))
+        assertThatThrownBy(() -> new OreDefinition("o", "o", "STONE", "r", 1, 1, stone, 0, 960))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new OreDefinition("o", "o", "STONE", "r", 1, 1, stone, -65, 10, 1.0, 1, 2))
+        assertThatThrownBy(() -> new OreDefinition("o", "o", "STONE", "r", 1, 1, stone, 0, 10, -1))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new OreDefinition("o", "o", "STONE", "r", 1, 1, stone, 0, 960, 1.0, 1, 2))
-                .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new OreDefinition("o", "o", "STONE", "r", 1, 1, stone, 0, 10, -0.5, 1, 2))
-                .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new OreDefinition("o", "o", "STONE", "r", 1, 1, Set.of(), 0, 10, 1.0, 1, 2))
+        assertThatThrownBy(() -> new OreDefinition("o", "o", "STONE", "r", 1, 1, Set.of(), 0, 10))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }

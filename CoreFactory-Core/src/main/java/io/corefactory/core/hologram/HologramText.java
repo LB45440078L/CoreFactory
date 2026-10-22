@@ -10,7 +10,7 @@ import io.corefactory.core.process.MachineState;
 import java.util.List;
 
 /**
- * The text of a machine's hologram, one string per line of the hologram. A lab tool shows three lines and a drill four.
+ * The text of a machine's hologram, one string per line of the hologram. A lab tool shows three lines and a drill five.
  * Each line is short, and the pure string work uses ampersand colour codes, as the messages in config.yml do, so it has no
  * Bukkit or PacketEvents types.
  */
@@ -22,8 +22,8 @@ public final class HologramText {
     /** The lines of a lab tool's hologram: the process, its bar, and its percentage with the time left. */
     public static final int MACHINE_LINES = 3;
 
-    /** The lines of a drill's hologram: its name and level, its power, its rate or status, and its storage and fuel. */
-    public static final int DRILL_LINES = 4;
+    /** The lines of a drill's hologram: its name and level, its power, its rate or status, its deposit, and its storage and fuel. */
+    public static final int DRILL_LINES = 5;
 
     private static final String FILLED = "&a";
     private static final String EMPTY = "&8";
@@ -99,26 +99,29 @@ public final class HologramText {
     }
 
     /**
-     * The lines of a drill's hologram: its level and kind, its power, its rate while it runs or else its status, and its
-     * storage and fuel.
+     * The lines of a drill's hologram: its level and kind, its power, its rate while it runs or else its status, its deposit,
+     * and its storage and fuel.
      *
-     * @param kind     the drill's kind
-     * @param spec     the drill's level
-     * @param power    the drill's power this cycle
-     * @param status   the drill's status
-     * @param stored   the items in its output slots
-     * @param capacity the most items its output slots can hold
-     * @param fuel     the fuel items in its fuel slot
+     * @param kind           the drill's kind
+     * @param spec           the drill's level
+     * @param power          the drill's power this moment
+     * @param status         the drill's status
+     * @param itemsPerSecond the items the drill yields per second now, shown while it runs
+     * @param depositLine    the deposit line from {@link DrillText#deposit}
+     * @param stored         the items in its output slots
+     * @param capacity       the most items its output slots can hold
+     * @param fuel           the fuel items in its fuel slot
      */
     public static List<String> drillLines(DrillKind kind, DrillSpec spec, DrillPower power, DrillStatus status,
-                                          int stored, int capacity, int fuel) {
+                                          double itemsPerSecond, String depositLine, int stored, int capacity, int fuel) {
         String state = status == DrillStatus.RUNNING
-                ? "&7Extracting &f" + DrillText.rate(power.efficiency(), spec.cycleTicks())
-                : "&7" + status.text(kind, spec);
+                ? "&7Extracting &f" + DrillText.rate(itemsPerSecond)
+                : "&7" + status.text(kind);
         return List.of(
                 "&bL" + spec.level() + " " + kind.label(),
                 "&7Power: &e" + DrillText.power(power),
                 state,
+                depositLine,
                 "&7Stored &f" + stored + "&7/" + capacity + " &7· fuel &f" + fuel);
     }
 }

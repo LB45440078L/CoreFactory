@@ -1,5 +1,6 @@
 package io.corefactory.core.drill;
 
+import io.corefactory.core.deposit.Deposit;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -15,11 +16,16 @@ class DrillTextTest {
         return COLOUR_CODE.matcher(line).replaceAll("");
     }
 
+    private static Deposit deposit(long remaining, long initial) {
+        return new Deposit(4, "world", 10, -3, 30, "galena_ore", initial, remaining);
+    }
+
     @Test
     void theRateReadsPerSecondAndPerMinute() {
-        assertThat(DrillText.rate(1.0, 600)).isEqualTo("0.03/s  (2.0/min)");
-        assertThat(DrillText.rate(1.0, 120)).isEqualTo("0.17/s  (10.0/min)");
-        assertThat(DrillText.rate(0.0, 600)).isEqualTo("0.00/s  (0.0/min)");
+        assertThat(DrillText.rate(1.5)).isEqualTo("1.50/s  (90.0/min)");
+        assertThat(DrillText.rate(0.05)).isEqualTo("0.05/s  (3.0/min)");
+        assertThat(DrillText.rate(0.0)).isEqualTo("0.00/s  (0.0/min)");
+        assertThat(DrillText.rate(-1.0)).isEqualTo("0.00/s  (0.0/min)");
     }
 
     @Test
@@ -31,11 +37,45 @@ class DrillTextTest {
     }
 
     @Test
+    void amountsReadWithAUnitAndTruncate() {
+        assertThat(DrillText.amount(0)).isEqualTo("0");
+        assertThat(DrillText.amount(999)).isEqualTo("999");
+        assertThat(DrillText.amount(1_000)).isEqualTo("1.0k");
+        assertThat(DrillText.amount(4_250)).isEqualTo("4.2k");
+        assertThat(DrillText.amount(9_999)).isEqualTo("9.9k");
+        assertThat(DrillText.amount(10_000)).isEqualTo("10k");
+        assertThat(DrillText.amount(850_000)).isEqualTo("850k");
+        assertThat(DrillText.amount(999_999)).isEqualTo("999k");
+        assertThat(DrillText.amount(1_000_000)).isEqualTo("1.0M");
+        assertThat(DrillText.amount(1_249_999)).isEqualTo("1.2M");
+        assertThat(DrillText.amount(9_999_999)).isEqualTo("9.9M");
+        assertThat(DrillText.amount(12_000_000)).isEqualTo("12M");
+        assertThat(DrillText.amount(25_000_000)).isEqualTo("25M");
+        assertThat(DrillText.amount(-5)).isEqualTo("0");
+    }
+
+    @Test
+    void aDepositReadsWhatIsLeftOfWhatItStartedWithAndTheShareLeft() {
+        assertThat(DrillText.remaining(deposit(1_200_000, 2_500_000))).isEqualTo("1.2M / 2.5M (48%)");
+        assertThat(DrillText.remaining(deposit(0, 500_000))).isEqualTo("0 / 500k (0%)");
+        assertThat(DrillText.remaining(deposit(500_000, 500_000))).isEqualTo("500k / 500k (100%)");
+        assertThat(DrillText.share(deposit(0, 0))).isEqualTo("0%");
+    }
+
+    @Test
+    void theDepositLineNamesTheOreAndItsAmounts() {
+        assertThat(DrillText.deposit("&7Galena Ore", deposit(1_200_000, 2_500_000)))
+                .isEqualTo("&7Deposit &f&7Galena Ore &71.2M / 2.5M (48%)");
+        assertThat(DrillText.deposit("&7Galena Ore", null)).isEqualTo("&7Deposit &cnone in range");
+    }
+
+    @Test
     void aRunningPetroleumDrillInfoShowsItsRateStatusPowerAndWhatPowersIt() {
         List<String> lines = DrillText.infoLines(DrillKind.PETROLEUM, DrillTable.level(1),
-                DrillRules.petroleumPower(15, List.of(), false), DrillStatus.RUNNING);
+                DrillRules.petroleumPower(15, List.of(), false), DrillStatus.RUNNING, 0.05, "&7Deposit &fnone");
 
-        assertThat(lines).contains("&7Status &aRunning", "&7Rate &f0.03/s  (2.0/min)", "&7Power: &fredstone 100%");
+        assertThat(lines).contains("&7Status &aRunning", "&7Rate &f0.05/s  (3.0/min)", "&7Power: &fredstone 100%");
+        assertThat(lines).contains("&7Deposit &fnone");
         assertThat(lines).contains("&8- a redstone block or wire next to it", "&8- a solar panel next to it",
                 "&8- charcoal in the fuel slot");
         assertThat(lines).doesNotContain("&8- petroleum in the fuel slot");
@@ -44,7 +84,7 @@ class DrillTextTest {
     @Test
     void aStoppedDrillInfoReadsStoppedAndItsStatus() {
         List<String> lines = DrillText.infoLines(DrillKind.PETROLEUM, DrillTable.level(1), DrillPower.NONE,
-                DrillStatus.NO_POWER);
+                DrillStatus.NO_POWER, 0.0, "&7Deposit &cnone in range");
 
         assertThat(lines).contains("&7Rate &cstopped", "&7Status &cNo power", "&7Power: &fnone 0%");
         assertThat(lines).noneMatch(line -> line.contains("/min"));
@@ -53,25 +93,24 @@ class DrillTextTest {
     @Test
     void anOreDrillInfoNamesPetroleumAsItsOnlySource() {
         List<String> lines = DrillText.infoLines(DrillKind.ORE, DrillTable.level(3), DrillRules.orePower(true),
-                DrillStatus.NO_TARGET);
+                DrillStatus.NO_TARGET, 0.0, "&7Deposit &cnone in range");
 
-        assertThat(lines).contains("&8- petroleum in the fuel slot", "&7Status &cNo special ore in range");
+        assertThat(lines).contains("&8- petroleum in the fuel slot", "&7Status &cNo deposit in range");
         assertThat(lines).noneMatch(line -> line.contains("charcoal") || line.contains("solar"));
     }
 
     @Test
-    void noTargetInRangeIsTheStatusOfAPetroleumDrillAndDescribesItsDepth() {
-        assertThat(DrillStatus.NO_TARGET.text(DrillKind.PETROLEUM, DrillTable.level(1)))
-                .isEqualTo("No deposit in range (depth 48)");
-        assertThat(DrillStatus.NO_TARGET.text(DrillKind.PETROLEUM, DrillTable.level(5)))
-                .isEqualTo("No deposit in range (depth 280)");
+    void noDepositInRangeReadsTheSameForEveryKind() {
+        assertThat(DrillStatus.NO_TARGET.text(DrillKind.PETROLEUM)).isEqualTo("No deposit in range");
+        assertThat(DrillStatus.NO_TARGET.text(DrillKind.ORE)).isEqualTo("No deposit in range");
     }
 
     @Test
     void noInfoLineLeavesAStrayAmpersandAfterItsColourCodes() {
         for (DrillKind kind : DrillKind.values()) {
             for (DrillStatus status : DrillStatus.values()) {
-                for (String line : DrillText.infoLines(kind, DrillTable.level(2), DrillRules.orePower(true), status)) {
+                for (String line : DrillText.infoLines(kind, DrillTable.level(2), DrillRules.orePower(true), status,
+                        0.2, DrillText.deposit("&7Galena Ore", deposit(10, 20)))) {
                     assertThat(visible(line)).as(line).doesNotContain("&");
                 }
             }

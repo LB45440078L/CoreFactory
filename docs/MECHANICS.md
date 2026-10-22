@@ -9,7 +9,7 @@ The values in brackets are the ones in the shipped `tnts.yml`. Remove a key to u
 Contents: [How ignition works](#how-ignition-works) · [Standard blast and effects](#standard-blast-and-effect-modifiers) ·
 [Structural](#structural--physics) · [Terrain](#terrain-morphing) · [Entity](#entity--status) ·
 [Logic](#timing--logic) · [Visual / audio](#visual--audio) · [Utility](#utility--economy) ·
-[Military](#military) · [Nuclear](#nuclear) · [Lab tools](#lab-tools-hoppers-and-barrels) · [Concealment](#barrel-concealment) · [Drills](#drills) · [Electricity and logistics](#electricity-and-logistics) · [Ore blocks](#ore-blocks) · [Chemistry and ammunition](#chemistry-and-ammunition) · [Machine gun turret](#machine-gun-turret) · [Holograms](#progress-holograms) · [Effects](#effects) · [Placement, timing and chains](#placement-timing-and-chains)
+[Military](#military) · [Nuclear](#nuclear) · [Lab tools](#lab-tools-hoppers-and-barrels) · [Concealment](#barrel-concealment) · [Drills](#drills) · [Electricity and logistics](#electricity-and-logistics) · [Deposits](#deposits) · [Ore blocks](#ore-blocks) · [Chemistry and ammunition](#chemistry-and-ammunition) · [Machine gun turret](#machine-gun-turret) · [Holograms](#progress-holograms) · [Effects](#effects) · [Placement, timing and chains](#placement-timing-and-chains)
 
 ## How ignition works
 
@@ -326,17 +326,17 @@ An entity left over from an earlier run is removed when its chunk loads. A missi
 
 The ten drills are `petroleum_drill_1` to `petroleum_drill_5` (kind `petroleum`) and `ore_drill_1` to `ore_drill_5` (kind `ore`). Their levels are set in `DrillTable`, and `processes.yml` names each drill's kind and level. Every drill stands on a barrel.
 
-| Level | Area (side, blocks) | Depth (layers, counting the drill's own) | Cycle (ticks, at full efficiency) | Items per minute at full efficiency | Items per minute at 0.35 (charcoal) |
-|---|---|---|---|---|---|
-| 1 | 10 | 48 | 600 | 2.0 | 0.70 |
-| 2 | 14 | 96 | 480 | 2.5 | 0.88 |
-| 3 | 20 | 144 | 360 | 3.33 | 1.17 |
-| 4 | 28 | 200 | 240 | 5.0 | 1.75 |
-| 5 | 40 | 280 | 120 | 10.0 | 3.50 |
+| Level | Area (side, blocks) | Depth (layers, shown on the info item) | Cycle (ticks, fuel clock) | Items per second at full power | Items per minute at full power | Items per minute at 0.35 (charcoal) |
+|---|---|---|---|---|---|---|
+| 1 | 10 | 48 | 600 | 1.0 | 60 | 21 |
+| 2 | 14 | 96 | 480 | 1.5 | 90 | 31.5 |
+| 3 | 20 | 144 | 360 | 2.5 | 150 | 52.5 |
+| 4 | 28 | 200 | 240 | 4.0 | 240 | 84 |
+| 5 | 40 | 280 | 120 | 6.0 | 360 | 126 |
 
-- **Rate.** The efficiency times 20, over the cycle ticks, gives items per second. Times 60 gives items per minute. Level 1 at full efficiency is 0.033/s (2.0/min), and level 5 is 0.167/s (10.0/min). The hologram and the info item print the rate as `%.2f/s  (%.1f/min)`.
+- **Rate.** The rates in the table are the shipped `drill-rates` in `config.yml` (see [CONFIGURATION.md](CONFIGURATION.md#drill-rates)). They are items per second at full power, and they apply to both kinds of drill. A drill yields its level's rate times its power efficiency, so a drill at 0.35 yields 0.35 of its rate. Fractions carry over, so the drill still makes whole items. The info item and the hologram print the rate as `%.2f/s  (%.1f/min)`, for example `1.50/s  (90.0/min)`.
 - **The square.** It is centred on the drill. An even side puts the extra block on the low side: a 10 wide square runs from x - 5 to x + 4.
-- **The depth.** The box runs down from the drill's own layer y to y - depth + 1. A level V drill at y 215 or lower has its box reach below y -64, the bottom of the overworld. Level I works 48 layers, level II 96, level III 144, level IV 200 and level V 280.
+- **The depth.** The depth (48, 96, 144, 200 and 280 layers for levels I to V) is shown on the info item, but it does not limit the search. Deposits are found on x and z only: a deposit whose circle touches the drill's square is in range, whatever its height.
 - **Placing.** The block under a drill must be hard base stone: stone, granite, diorite, andesite, tuff or deepslate. Any other block cancels the placement with the message "A drill needs hard stone under it: stone, granite, diorite, andesite, tuff or deepslate."
 - **Power.** The drill runs on its strongest source. The grid is one of the sources: its satisfaction is used when it is
   strictly stronger than the drill's own best source, so a tie keeps the local source (`DrillRules.withGrid`). A drill
@@ -354,16 +354,18 @@ The ten drills are `petroleum_drill_1` to `petroleum_drill_5` (kind `petroleum`)
 - **Choosing.** The highest efficiency wins. A tie goes to solar, then redstone, then charcoal: a later source must be strictly stronger to take over.
 - **Shown as a percentage.** The efficiency is truncated to a whole percent. Power 5 out of 15 shows 33%, and charcoal shows 35%.
 - **Fuel.** A finished cycle that burned fuel is counted. A petroleum drill burns one charcoal every 8 counted cycles, when charcoal is its source. An ore drill burns one petroleum every 2 counted cycles while it has power.
-- **Cycle.** The cycle advances by the efficiency each tick. When it is full, the drill yields one item and resets. It waits while the outputs have no room, or while no target is left in the square.
-- **Status.** Checked in this order, and the first that applies is shown: no power (`No power`, or `No petroleum` for an ore drill); output full (`Output full`); no target in the box (`No deposit in range (depth N)` for a petroleum drill, where N is the drill's depth: 48, 96, 144, 200 or 280 by level, or `No special ore in range` for an ore drill); otherwise `Running`. A drill that had targets and has none left in its box shows `Done in range: move the drill`. The info item shows the rate as `stopped` unless the drill is running.
-- **Targets.** A petroleum drill takes only crude petroleum deposits. An ore drill takes every registered special ore except a deposit. Coal is one of the ores it takes, and a coal block gives one vanilla charcoal (`DrillRules.mined`). The target must lie in the drill's box. Only loaded chunks are searched. The nearest target is taken first, by distance from the drill's block, with ties going to the lower y, then x, then z.
-- **Mining.** The ore block becomes air without physics, and its registry entry is removed. The raw mineral comes out in the drop range of the ore, chosen at random. If the block at the registry position is no longer the ore's host block, the entry is forgotten and the cycle waits for another target. The cycle also waits when the outputs cannot take a full drop.
-- **Pumping.** A petroleum drill adds one petroleum per cycle from the nearest deposit, and it never removes the deposit.
+- **Cycle.** The cycle no longer sets the output. It is the fuel clock: it counts the fuel use while the drill runs (see Fuel), and it drives the progress bar in the drill's menu. The cycles are 600, 480, 360, 240 and 120 ticks for levels I to V.
+- **Status.** Checked in this order, and the first that applies is shown: `No power` (petroleum drill) or `No petroleum` (ore drill); `Output full`; `No deposit in range` (no deposit that the drill's kind and selection allow touches its square); `Deposit exhausted: no items left in range` (some deposits touch the square, but all are empty, and the drill stays there until it is moved); otherwise `Running`. The info item shows the rate as `stopped` unless the drill is running.
+- **Targets.** A drill works one deposit at a time. A petroleum drill takes crude petroleum deposits, and an ore drill takes the solid ore deposits that its mine and ignore selection allows (see Resources menu below). A deposit is in range when its circle touches the drill's square: the nearest point of the square to the deposit's centre lies within the radius. The drill keeps its current deposit while that deposit is still mineable and has something left. Otherwise it takes the mineable deposit in its square with the most remaining, and a tie goes to the lower id. Empty deposits are never chosen. The drill searches every 20 ticks (one second), and at once when its deposit runs out or stops being mineable.
+- **Mining.** A drill takes units from its deposit, and each unit is one item: a solid ore gives its raw mineral (raw galena, for example), coal gives vanilla charcoal, and crude petroleum gives petroleum. So a deposit of N units yields N items in all. The drill takes in batches: a take runs when 10 items are waiting, or when the oldest has waited one second, and a take never exceeds what the output slots can hold. The items go to the drill's nine output slots. A full output stops the drill: it makes nothing and takes nothing, and the deposit keeps its amount.
+- **Pumping.** A petroleum drill draws its deposit down by the same rule: each unit taken is one petroleum, and the deposit's remaining amount falls by one. A deposit with nothing left is not chosen, so the drill moves on to another deposit in its square when there is one.
 - **The solar panel.** A solar panel placed before the electrical system is a daylight detector. The drill reads the six blocks around it, and the best daylight detector power counts. Several panels do not add up. Breaking any daylight detector drops a solar panel item, except in creative mode.
 - **Size.** Levels IV and V of both kinds are two blocks tall, like a door. The anchor is the lower block, which keeps the drill's barrel, status and hologram. The block above must be free, and breaking either half breaks the drill (see [Placing and breaking the energy devices](#placing-and-breaking-the-energy-devices)). The placement also asks the protection plugins about the block above: a refusal stops the placement with "This spot is protected.", and a break fires a break event for both blocks, so a refused one keeps the drill. Levels I to III are one block.
 - **Animation.** While the drill is running, its model moves up and down into the ground: four keyframes per stroke, changed every 5 ticks and interpolated between them. A drill that is not running goes back to its rest height and stays still (`DrillAnimation`).
 - **Output.** The drill's barrel holds its items. A picker or a hopper may take them out, as described in [Belts, pickers and splitters](#belts-pickers-and-splitters).
-- **Hologram.** A drill shows its four-line hologram while it has power and room in its outputs, and a fifth `Grid` line for the network. Otherwise the hologram is removed. See [Progress holograms](#progress-holograms).
+- **Hologram.** A drill shows its hologram while it has power and room in its outputs: five lines (its level and kind, its power, its rate or its status, its deposit line, and its storage and fuel), and a sixth `Grid` line for the network. Otherwise the hologram is removed. See [Progress holograms](#progress-holograms).
+- **Info item and deposit line.** The info item lists the level, area, depth, status, rate, deposit, power and what powers the drill. The deposit line reads `Deposit <ore name> <remaining> / <initial> (<percent>%)`, for example `Deposit Galena Ore 1.2M / 2.5M (48%)`, or `Deposit none in range`. The hologram shows the same line.
+- **Resources menu.** The drill's resources book lists one entry per deposit in its square that its kind may mine, as the last search saw it. Each entry shows the ore's icon, the deposit's amounts in its lore, and a toggle, `Mining` or `Ignoring`, which applies to every deposit of that ore. The menu shows six entries a page (two rows of three), with previous and next arrows and a back button. An exhausted deposit shows a grey glass pane. With no deposit in range, it reads `No deposits in range`.
 
 ## Electricity and logistics
 
@@ -737,34 +739,52 @@ which the new footprint overlaps; there is no migration.
 - A belt, picker or splitter in an unloaded chunk has satisfaction 0, so its items wait.
 - A pylon and an accumulator take part in the solve whether or not their chunk is loaded.
 
+## Deposits
+
+A deposit is a circular patch of one ore on the surface, with an amount that is left in it. Its ore is one of the eleven solid ores, or crude petroleum. Drills take the amount down, one unit for each item, and it never goes below zero. The numbers that shape deposits are in the `deposits` section of `config.yml` (see [CONFIGURATION.md](CONFIGURATION.md#deposits)).
+
+- **Cells.** The surface is cut into square cells of 160 blocks (`cell-size`). Each cell holds at most one deposit, with a chance of 0.6 (`density`). A deposit's circle lies inside its cell, so deposits never overlap.
+- **Kind.** A deposit is crude petroleum with a chance of 0.25 (`oil-share`). Otherwise it is one of the eleven solid ores, picked evenly.
+- **Size.** The radius is from 24 to 48 blocks (`min-radius` and `max-radius`). The initial amount is from 500,000 to 25,000,000 (`min-amount` and `max-amount`), drawn on a log scale, so small deposits are more common than large ones.
+- **Repeatable.** Every choice is a hash of the world seed, the world name and the cell. The same world always has the same deposits, and no stored state is needed to plan them.
+- **Laying.** When a chunk of 16 by 16 blocks first loads, every deposit whose circle touches it is planned and laid into it. In each block of the patch that lies in the ore's height range (`min-y` to `max-y` in `ores.yml`) and is one of the ore's replace blocks, mostly stone, the ore's host block is placed with a chance of 0.3 (`ore-block-density`). So the patch shows as host blocks over stone, about 30 percent of them ore blocks. The choice is fixed by a hash of the deposit and the position, so it never changes.
+- **Once per chunk.** The chunk is marked `corefactory:deposits` in its persistent data, so a chunk is laid once, and a restart adds no ore blocks. Chunks generated before this version have no marker, so they are laid the first time they load after the upgrade. There is no retrofit command.
+- **Listing.** `/cf geology deposits [radius]` lists the deposits whose circle comes within the radius (64 blocks by default, up to 512) of the player, nearest first, with what each has left.
+- **Database.** The remaining amount of each deposit is kept in the `corefactory_deposits` table of the research database: SQLite (`research.db`), or PostgreSQL when `storage.type` is set to it. The amounts survive a restart. A take is one conditional update, so a deposit never goes below zero.
+- **Without the database.** The deposits are kept in memory, and they are lost when the server stops (a warning is logged). Chunks laid before a restart keep their ore blocks, but no deposit is in the store for them, so drills find nothing there. This is the current behaviour, and it is on the pending in-game checks (see [COMPATIBILITY.md](COMPATIBILITY.md#pending-in-game-checks)).
+- **Drills.** Drills are the source of raw minerals and petroleum from deposits. Each drill's square, rates, status and resources menu are in [Drills](#drills).
+
 ## Ore blocks
 
-The ore overlay is in `ores.yml`. Twelve entries are shipped: seven special ores, the crude petroleum deposit, the saltpeter, sulfur and zinc deposits, and coal ore.
-Coal ore drops `charcoal`, the component in `items.yml` that is the vanilla charcoal item.
+The ore blocks are the vanilla host blocks that a deposit's patch shows, and the placeable ore block item. They are defined in `ores.yml`, which has twelve entries: eleven solid ores, coal included, and crude petroleum. Each entry has a host block, a drop and a height range. The world lays the patches (see [Deposits](#deposits)), and drills take the raw minerals and petroleum from them. The table gives each ore's host block, the item a placed ore block gives, and its height range.
 
-| Ore | Host block | Drop | Drop amount | Y range | Veins per chunk | Vein size |
-|---|---|---|---|---|---|---|
-| uraninite_ore | BLACK_GLAZED_TERRACOTTA | raw_uraninite | 2 to 4 | -48 to 24 | 0.8 | 5 to 8 |
-| pitchblende_ore | BROWN_GLAZED_TERRACOTTA | raw_pitchblende | 1 to 3 | -64 to -8 | 0.4 | 4 to 7 |
-| monazite_ore | YELLOW_GLAZED_TERRACOTTA | raw_monazite | 2 to 4 | 0 to 80 | 0.6 | 6 to 10 |
-| thorite_ore | GRAY_GLAZED_TERRACOTTA | raw_thorite | 1 to 3 | -64 to -16 | 0.3 | 3 to 6 |
-| galena_ore | LIGHT_GRAY_GLAZED_TERRACOTTA | raw_galena | 2 to 5 | -32 to 40 | 1.2 | 4 to 8 |
-| cinnabar_ore | RED_GLAZED_TERRACOTTA | raw_cinnabar | 2 to 4 | -32 to 24 | 0.6 | 4 to 7 |
-| fluorite_ore | PURPLE_GLAZED_TERRACOTTA | raw_fluorite | 3 to 6 | -48 to 64 | 1.0 | 6 to 12 |
-| crude_petroleum_deposit | WHITE_GLAZED_TERRACOTTA | petroleum | 1 to 2 | -64 to 0 | 0.3 | 3 to 6 |
-| <img src="images/ores/saltpeter_deposit.png" width="24" height="24" align="absmiddle"> saltpeter_deposit | LIME_GLAZED_TERRACOTTA | <img src="images/components/raw_saltpeter.png" width="24" height="24" align="absmiddle"> raw_saltpeter | 2 to 4 | -32 to 80 | 0.5 | 4 to 7 |
-| <img src="images/ores/sulfur_deposit.png" width="24" height="24" align="absmiddle"> sulfur_deposit | ORANGE_GLAZED_TERRACOTTA | <img src="images/components/raw_sulfur.png" width="24" height="24" align="absmiddle"> raw_sulfur | 2 to 4 | -48 to 32 | 0.5 | 4 to 6 |
-| <img src="images/ores/zinc_deposit.png" width="24" height="24" align="absmiddle"> zinc_deposit | CYAN_GLAZED_TERRACOTTA | <img src="images/components/raw_sphalerite.png" width="24" height="24" align="absmiddle"> raw_sphalerite | 2 to 4 | -48 to 48 | 0.7 | 5 to 8 |
-| <img src="images/ores/coal_ore.png" width="24" height="24" align="absmiddle"> coal_ore | COAL_ORE | <img src="images/components/charcoal.png" width="24" height="24" align="absmiddle"> charcoal | 1 | -64 to 96 | 1.0 | 4 to 8 |
+| Ore | Host block | Drop | Drop amount | Y range |
+|---|---|---|---|---|
+| uraninite_ore | BLACK_GLAZED_TERRACOTTA | raw_uraninite | 2 to 4 | -48 to 24 |
+| pitchblende_ore | BROWN_GLAZED_TERRACOTTA | raw_pitchblende | 1 to 3 | -64 to -8 |
+| monazite_ore | YELLOW_GLAZED_TERRACOTTA | raw_monazite | 2 to 4 | 0 to 80 |
+| thorite_ore | GRAY_GLAZED_TERRACOTTA | raw_thorite | 1 to 3 | -64 to -16 |
+| galena_ore | LIGHT_GRAY_GLAZED_TERRACOTTA | raw_galena | 2 to 5 | -32 to 40 |
+| cinnabar_ore | RED_GLAZED_TERRACOTTA | raw_cinnabar | 2 to 4 | -32 to 24 |
+| fluorite_ore | PURPLE_GLAZED_TERRACOTTA | raw_fluorite | 3 to 6 | -48 to 64 |
+| crude_petroleum_deposit | WHITE_GLAZED_TERRACOTTA | petroleum | 1 to 2 | -64 to 0 |
+| <img src="images/ores/saltpeter_deposit.png" width="24" height="24" align="absmiddle"> saltpeter_deposit | LIME_GLAZED_TERRACOTTA | <img src="images/components/raw_saltpeter.png" width="24" height="24" align="absmiddle"> raw_saltpeter | 2 to 4 | -32 to 80 |
+| <img src="images/ores/sulfur_deposit.png" width="24" height="24" align="absmiddle"> sulfur_deposit | ORANGE_GLAZED_TERRACOTTA | <img src="images/components/raw_sulfur.png" width="24" height="24" align="absmiddle"> raw_sulfur | 2 to 4 | -48 to 32 |
+| <img src="images/ores/zinc_deposit.png" width="24" height="24" align="absmiddle"> zinc_deposit | CYAN_GLAZED_TERRACOTTA | <img src="images/components/raw_sphalerite.png" width="24" height="24" align="absmiddle"> raw_sphalerite | 2 to 4 | -48 to 48 |
+| <img src="images/ores/coal_ore.png" width="24" height="24" align="absmiddle"> coal_ore | COAL_ORE | <img src="images/components/charcoal.png" width="24" height="24" align="absmiddle"> charcoal | 1 | -64 to 96 |
 
-- **Mining a placed or laid ore.** The break is cancelled, and the block becomes air. Without silk touch in the main hand,
-  the drop amount is rolled at random and dropped. With silk touch, the ore's block item drops instead. The ore break
-  effect plays, and the achievement tracker is told.
+- **Mining a placed ore block.** Only an ore block item that a player placed is registered as an ore. Breaking a registered
+  block cancels the break, and the block becomes air. Without silk touch in the main hand, the drop amount is rolled at random
+  and dropped, which gives the raw mineral. With silk touch, the ore's block item drops instead. The ore break effect plays,
+  and the achievement tracker is told.
+- **A patch block dug by hand.** A block of a deposit's patch is not registered, so breaking it gives its vanilla drop, not raw
+  ore: glazed terracotta drops itself, and coal ore drops coal. Drills are the only source of raw minerals from deposits (see
+  [Drills](#drills)).
 - **The ore block item.** It is the host block, named after the ore, with the lore "Placeable. Mine it for raw ore; silk
   touch keeps the block." It carries the ore's id, so placing it registers the block as that ore. A placement is refused
   when the id is unknown, or when the height is outside y -64 to y 959.
-- **Explosions.** A blast removes a destroyed ore's registry entry. The block is destroyed as any block is, so it never
-  gives the custom raw mineral.
+- **Explosions.** A blast removes a destroyed ore block's registry entry. The block is destroyed as any block is, so it never
+  gives the custom raw mineral. A blast does not change a deposit's remaining amount.
 - **The host block and the pack.** An ore's host is a vanilla glazed terracotta, in the ore's colour. The resource pack
   re-textures that block type, so every glazed terracotta in the world takes the ore texture. This is a deliberate
   trade-off, and it changes all such blocks in the world, not only the placed ores.
@@ -1005,7 +1025,7 @@ The laser turret is the second turret. It is a placeable defence like the machin
 A hologram is a stack of short text lines that floats above a machine. Each line is its own invisible armour stand with a visible name. The server sends the lines by packet, so nothing is written to the world, and only the players who can see the hologram receive it.
 
 - **A lab tool: three lines.** The process name (the machine's name when idle), a bar of 20 segments, and the percentage with the time left. The percentage is truncated, so an unfinished run never reads 100 percent. The time left is shown as `about N s`, rounded up, or `finishing` when no ticks remain. An idle tool shows `idle` and an empty bar. A fourth line at the bottom, `Grid NN%`, shows the network (see [Electricity and logistics](#electricity-and-logistics)).
-- **A drill: four lines.** The level and kind, such as `L1 Petroleum drill`. The power, such as `Power: solar 33%`. The rate while it runs, such as `Extracting 0.03/s  (2.0/min)`, or else its status. The storage and fuel, such as `Stored 0/576 · fuel 0`, where 576 is nine stacks of 64.
+- **A drill: five lines.** The level and kind, such as `L1 Petroleum drill`. The power, such as `Power: solar 33%`. The rate while it runs, such as `Extracting 1.00/s  (60.0/min)`, or else its status, such as `No deposit in range`. The deposit it works on, such as `Deposit Galena Ore 1.2M / 2.5M (48%)`, or `Deposit none in range`. The storage and fuel, such as `Stored 0/576 · fuel 0`, where 576 is nine stacks of 64. A sixth line, the Grid line, follows.
 - **When it shows.** A lab tool's hologram shows while a process runs or can start on what the tool holds. A drill's shows while it has power and room in its outputs.
 - **Removal.** The hologram is removed when the lab tool is idle, when a drill has no power or its outputs are full, when its chunk unloads, and when the machine breaks.
 - **Where it stands.** 1.6 blocks above the centre of the host block. Each line below the first is 0.25 blocks lower.

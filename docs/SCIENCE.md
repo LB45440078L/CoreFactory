@@ -8,8 +8,12 @@ are in `processes.yml`, `materials.yml`, `research.yml` and `ores.yml`, which yo
 
 <img src="images/ores/uraninite_ore.png" width="48" height="48" align="absmiddle">
 
-Eight ore blocks are laid on top of the vanilla terrain: seven special ores, and a crude petroleum deposit. Each chunk is filled from the world seed, so the same seed always
-gives the same veins. Mining an ore block gives its raw mineral and nothing else. See `ores.yml` for depth and rarity.
+Ore is laid in deposits on top of the vanilla terrain. A deposit is a circular patch of one ore, with a remaining amount,
+and its blocks are that ore's host block, about 30 percent of the stone in the patch, so a patch shows as scattered ore
+blocks over stone. The deposits are planned from the world seed, so the same seed always gives the same deposits. Mining a
+placed ore block gives its raw mineral and nothing else. Drills take raw minerals from a deposit, one for each unit they
+take. The planning numbers are in the `deposits` section of `config.yml`, and `/cf geology deposits [radius]` lists the
+deposits near you. See `ores.yml` for the height band and the host block of each ore.
 
 | Ore | Found | Raw mineral | Why it matters |
 |---|---|---|---|
@@ -20,10 +24,10 @@ gives the same veins. Mining an ore block gives its raw mineral and nothing else
 | <img src="images/ores/galena_ore.png" width="24" height="24" align="absmiddle"> Galena | mid | <img src="images/components/raw_galena.png" width="24" height="24" align="absmiddle"> Raw galena | Lead, for shielding. |
 | <img src="images/ores/cinnabar_ore.png" width="24" height="24" align="absmiddle"> Cinnabar | mid | <img src="images/components/raw_cinnabar.png" width="24" height="24" align="absmiddle"> Raw cinnabar | Mercury. Roasting frees it. |
 | <img src="images/ores/fluorite_ore.png" width="24" height="24" align="absmiddle"> Fluorite | wide | <img src="images/components/raw_fluorite.png" width="24" height="24" align="absmiddle"> Raw fluorite | Fluorine, for converting uranium into a gas. |
-| <img src="images/ores/crude_petroleum_deposit.png" width="24" height="24" align="absmiddle"> Crude petroleum deposit | deep, from y -64 to y 0 | <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> Petroleum | Fuel for the ore drills. A petroleum drill pumps it without removing the deposit. |
+| <img src="images/ores/crude_petroleum_deposit.png" width="24" height="24" align="absmiddle"> Crude petroleum deposit | deep, from y -64 to y 0 | <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> Petroleum | Fuel for the ore drills. A petroleum drill draws the deposit down, one petroleum for each unit it takes. |
 
-Ores that were already in your world before the plugin was installed are not changed. To lay ores into them, an
-administrator runs `/cf geology retrofit <radius>` (chunks around you). Chunks that already have the ores are skipped.
+Ores that were already in your world before the plugin was installed are laid the first time their chunks load after the
+upgrade. Each chunk is laid once, so a restart adds no ore blocks. There is no retrofit command.
 
 ## 2. The uranium chain
 
@@ -156,26 +160,32 @@ fuel slot where a machine asks for it. Machines only work in loaded chunks. Each
 
 <img src="images/components/petroleum_drill_3.png" width="48" height="48" align="absmiddle">
 
-Crude petroleum is a second resource. The `crude_petroleum_deposit` ore is laid in stone and deepslate from y -64 to
-y 0, and each block gives 1 to 2 <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> petroleum. Mining a deposit gives the petroleum and removes the deposit. A
-petroleum drill pumps a deposit instead. It removes nothing, so the deposit works as a well, giving one petroleum per
-cycle.
+Crude petroleum is a second resource. Its deposits are patches of the `crude_petroleum_deposit` ore in the stone, planned and
+laid like the solid ores, each with a remaining amount. A petroleum drill draws a deposit down, one petroleum for each unit
+it takes, until the deposit is empty.
 
 Two kinds of drill work a square below themselves, and each kind has five levels. The levels are set in `DrillTable`
 in the code. `processes.yml` names each drill's kind and level, and `materials.yml` gives its name and host block.
 
-| Level | Square | Depth (layers) | Cycle (ticks) | Items per minute at full efficiency |
+| Level | Square | Depth (layers) | Cycle (ticks) | Items per minute at full power |
 |---|---|---|---|---|
-| 1 | 10 by 10 | 16 | 600 | 2 |
-| 2 | 14 by 14 | 24 | 480 | 2.5 |
-| 3 | 20 by 20 | 32 | 360 | 3.33 |
-| 4 | 28 by 28 | 48 | 240 | 5 |
-| 5 | 40 by 40 | 64 | 120 | 10 |
+| 1 | 10 by 10 | 48 | 600 | 60 |
+| 2 | 14 by 14 | 96 | 480 | 90 |
+| 3 | 20 by 20 | 144 | 360 | 150 |
+| 4 | 28 by 28 | 200 | 240 | 240 |
+| 5 | 40 by 40 | 280 | 120 | 360 |
 
+The rates are set by `drill-rates` in `config.yml`: 1.0, 1.5, 2.5, 4.0 and 6.0 items per second for levels 1 to 5. The
+square sets which deposits a drill finds. The depth is shown on the drill's info item, but it does not limit anything. The
+cycle no longer sets the output. It counts the fuel use while a drill runs, and it sets the menu's progress bar.
+
+- **Mining:** a drill works one deposit at a time. It keeps its current deposit while that has something left, and otherwise
+  moves to the deposit in its square with the most left. Each unit taken from a deposit is one item, and a full output stops
+  the drill.
 - **Petroleum drills** run on the strongest of a solar panel (its power over 15), redstone (its power over 15) or charcoal (0.35).
   Charcoal burns one item every 8 cycles, and only while charcoal is the source of power.
 - **Ore drills** run on petroleum. Efficiency is 1 while petroleum is in the fuel slot, and one petroleum burns every
-  2 cycles. Each cycle takes the nearest registered special ore in the square and removes it from the ground.
+  2 cycles while the drill runs. They mine the solid ore deposits in their square.
 
 The chain runs from deposit to petroleum, from petroleum to the fuel of the ore drills, and from the ore drills to the
 raw minerals that start the process chain above.
@@ -183,12 +193,13 @@ raw minerals that start the process chain above.
 ## 10. Ore blocks and the scanner
 
 Each special ore has a placeable block item: the host block, named after the ore. Placing it registers the block as that
-ore, so a placed ore is mined in the same way as a laid one. Mining gives the raw mineral, and silk touch gives the
-block item back.
+ore. Mining a placed ore block gives the raw mineral, and silk touch gives the block item back.
 
-The Ore Density Scanner uses the same planner that lays veins at generation. It plans the veins over the blocks of the
-chunk as they stand now, and it draws the planned ore on a map. A mined block is no longer a planned block, so the
-planned count falls as the chunk is dug. The map and the count are a picture of the chunk at the moment of the scan.
+A patch block that the world generator laid is not registered. Breaking one by hand gives its ordinary drop (glazed
+terracotta drops itself, and coal ore drops coal), not raw ore. Drills are the only source of raw minerals from a deposit.
+
+The Ore Density Scanner can still be crafted after Laboratory Basics, but it does nothing. Right-clicking it shows no map
+and no summary.
 
 ## 11. Brass, gunpowder and ammunition
 

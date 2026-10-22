@@ -65,6 +65,16 @@ energy:
   # Read at startup, so a change needs a restart.
   wire-particle-cap: 320
 
+# The items a drill yields per second at full power, one rate for each level from 1 to 5. A drill works at the power it has,
+# its own source or its network when that is stronger, so a petroleum drill on charcoal yields 35% of its rate. Each rate is
+# finite and 0 or more, and a higher level never yields less than the one below. Read at startup, so a change needs a restart.
+drill-rates:
+  - 1.0
+  - 1.5
+  - 2.5
+  - 4.0
+  - 6.0
+
 charts:
   # Grid charts (/cf grid create): a hologram of a grid's satisfaction, production or storage. Read at startup, so a change
   # needs a restart. The most charts one grid may have.
@@ -304,10 +314,24 @@ placement:
   # Record the placing player's horizontal facing as the TNT's direction (used by shaped charges and napalm).
   direction-from-player: true
 
-geology:
-  # Chunks laid with ore veins per server tick. New chunks are queued as they generate, and /cf geology retrofit
-  # queues old ones. Raise it for faster catch-up on a strong server; each chunk costs a few block writes.
-  chunks-per-tick: 2
+deposits:
+  # The world is cut into square cells of this many blocks. Each cell holds at most one deposit, planned from the world
+  # seed, so the same seed always gives the same deposits. Must be at least twice max-radius, and at most 4096.
+  cell-size: 160
+  # Chance that a cell holds a deposit, from 0 to 1.
+  density: 0.6
+  # Chance that a deposit is crude petroleum rather than a solid ore, from 0 to 1.
+  oil-share: 0.25
+  # Smallest and largest radius of a deposit, in blocks. The range is 1 to 256, with min-radius at most max-radius.
+  min-radius: 24
+  max-radius: 48
+  # Smallest and largest amount a deposit starts with. The amounts are spread evenly on a log scale.
+  min-amount: 500000
+  max-amount: 25000000
+  # Share of the stone blocks in a deposit's footprint that show as its ore block, from 0 to 1. Only blocks in the
+  # ore's height range that it may replace are changed. Each chunk changes at most 4096 blocks.
+  ore-block-density: 0.3
+
 
 persistence:
   # Placed TNT (positions, links, targets, directions) is written here, inside the plugin's data folder.

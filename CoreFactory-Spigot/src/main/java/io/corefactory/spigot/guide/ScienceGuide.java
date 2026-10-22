@@ -88,7 +88,7 @@ public final class ScienceGuide {
     private Chapter ore() {
         List<String> text = new ArrayList<>();
         text.add(BODY + source.ores().size() + " ores are laid on top of the vanilla terrain. Each chunk is filled from "
-                + "the world seed, so the same seed gives the same veins.");
+                + "the world seed, so the same seed gives the same deposits.");
         text.add("");
         for (OreDefinition ore : source.ores()) {
             String range = ore.dropMin() == ore.dropMax() ? String.valueOf(ore.dropMin())
@@ -98,8 +98,7 @@ public final class ScienceGuide {
                     + " Mining gives " + range + " " + name(ore.drop()) + ".");
             text.add("");
         }
-        text.add(BODY + "Ores already in an old world are not changed. An administrator runs /cf geology retrofit "
-                + "<radius> to lay them into chunks that already exist.");
+        text.add(BODY + "Run /cf geology deposits [radius] to list the deposits near you and what each has left.");
         return chapter("1. Find the ore", text);
     }
 

@@ -51,11 +51,11 @@ CoreFactory/
 │   ├── placement/                  PlacedTntStore
 │   ├── display/                    PlacedDisplays
 │   ├── process/                    ProcessCatalog, ProcessEngine, Machine, MachineState, ItemRef, Stack
-│   ├── drill/                      DrillTable, DrillRules, DrillCatalog, DrillStorage, DrillState, DrillBox, DrillKind, DrillPower, PowerSource, DrillStatus, DrillText, DrillSpec, DrillDefinition
-│   ├── geology/                    GeologyService, VeinPlanner, OreDefinition, RetrofitQueue
+│   ├── drill/                      DrillTable, DrillRules, DrillCatalog, DrillStorage, DrillState, DrillBox, DrillKind, DrillPower, PowerSource, DrillStatus, DrillText, DrillSpec, DrillDefinition, DrillDeposits, DrillSelection
+│   ├── deposit/                    Deposit, DepositPlanner, DepositSettings, DepositStore, MemoryDepositStore, DrillAccumulator, DrillYield, TakeBatch, OreBlocks
+│   ├── geology/                    GeologyService, GeologyRegistry, OreDefinition, DepositVolumes, Placement
 │   ├── research/                   ResearchService, ResearchTree, ResearchStore, Progression
 │   ├── hologram/                   HologramRules, HologramText
-│   ├── survey/                     ChunkSurvey
 │   ├── radiation/                  RadiationModel, Fallout, RadiationSuit, GeigerCounter
 │   ├── energy/                     EnergyTable, Units, EnergyNetwork, EnergySnapshot, EnergyResult, GridGraph, GridRegistry,
 │   │                               GridPalette, Grid, GridResult, OutlineTracer, ChartHistory, ChartMode, ChartRenderer,
@@ -65,11 +65,11 @@ CoreFactory/
 │   │                               Splitter, Port, Placement, PlacementReason, Endpoints, LogisticsResult, Item, LogisticsLevel
 │   └── mechanics/                  Mechanics catalogue and every built-in mechanic
 ├── CoreFactory-Storage/            JDBC research store (src/main/java/io/corefactory/storage)
-│   │                               Database (HikariCP pool), DriverLoader, JdbcResearchStore, SchemaMigrations, StorageSettings
+│   │                               Database (HikariCP pool), DriverLoader, JdbcResearchStore, JdbcDepositStore, SchemaMigrations, StorageSettings
 ├── CoreFactory-Spigot/             plugin (src/main/java/io/corefactory/spigot)
 │   ├── hook/                       WorldEditBlockEditor, PacketClientEffects, WorldGuard and GriefPrevention guards
 │   ├── listener/                   placement, ignition, protection, interaction
-│   ├── machine/                    MachineStore, MachineTicker, DrillTicker, HopperListener, HopperRules, MachineMenu, MachineLayouts, Barrel, BarrelMigration, SolarPanelListener, BarrelConcealment, ConcealmentRules, InteractionRoute, MachineInteractions, LabPort, DrillPort
+│   ├── machine/                    MachineStore, MachineTicker, DrillTicker, DrillMining, DrillRates, HopperListener, HopperRules, MachineMenu, MachineLayouts, Barrel, BarrelMigration, SolarPanelListener, BarrelConcealment, ConcealmentRules, InteractionRoute, MachineInteractions, LabPort, DrillPort
 │   ├── hologram/                   HologramService, HologramPackets, Hologram, HologramJson
 │   ├── energy/                     EnergyService, DeviceRegistry, EnergyDevice, GeneratorDevice, AccumulatorDevice, GeneratorMenu,
 │   │                               GeneratorText, GeneratorStatus, GeneratorLook, GeneratorSites, WireSelection, EnergyEffects,
@@ -79,9 +79,9 @@ CoreFactory/
 │   │                               SidePlacement, PlacementAim, Orientation, BeltPath, SplitterMenu, SplitterFilter, FuelPort,
 │   │                               LogisticsPorts, SatisfactionMap, DisplayBudget, LogisticsText, LogisticsIds, LogisticsFile,
 │   │                               LogisticsStore
-│   ├── survey/                     ScannerListener, SurveyRenderer, SurveyMap, OreColours
 │   ├── effects/                    SpriteEffects (the Visuals of the plugin)
-│   ├── geology/                    GeologyWorker, GeologyListener, GeologyCommand, OreChunks
+│   ├── geology/                    DepositGenerator, DepositChunkListener, GeologyCommand, GeologyWorker, GeologyListener, OreChunks
+│   ├── ledger/                     DepositLedger (the deposit store: JDBC when the research database is open, else memory)
 │   ├── research/                   ResearchRuntime, ResearchService adapter, ResearchCommand, ResearchConsoleUi
 │   ├── config/                     DefaultsMerger (the startup data merge)
 │   ├── pack/                       BundledPack, PackInstaller
@@ -99,18 +99,18 @@ The energy and logistics tests are in `CoreFactory-Core/src/test/java/io/corefac
 
 ## Tests
 
-There are 158 test classes (the files named `*Test.java` in all modules). The ones that need a live server are not unit
+There are 195 test classes (the files named `*Test.java` in all modules): 4 in Api, 98 in Core, 3 in ResourcePack, 85 in Spigot and 5 in Storage. The ones that need a live server are not unit
 tests: they need Bukkit's registry, so they are covered by the runtime checks in [COMPATIBILITY.md](COMPATIBILITY.md).
 
 | Module | Test classes | What they cover |
 |---|---|---|
 | Api | `BlockChangeSetTest`, `MechanicSettingsTest`, `PackVersionTest` | The block-change buffer, typed settings with defaults, and the pack version format. |
-| Core | `drill/`: `DrillBoxTest`, `DrillRulesTest`, `DrillStateTest`, `DrillStorageTest`, `DrillTableTest`; `engine/`: `ShapesTest`, `TntManagerCodecTest`, `VisualCatalogTest`; `geology/`: `GeologyRegistryTest`, `GeologyServiceTest`, `OreDefinitionTest`, `RetrofitQueueTest`, `VeinPlannerTest`; `hologram/`: `HologramRulesTest`, `HologramTextTest`; `mechanics/`: `MushroomHeightTest`, `NuclearCutTest`; `process/`: `ProcessCatalogTest`, `ProcessEngineTest`; `radiation/`: `FalloutZoneTest`, `RadiationModelTest`; `research/`: `ResearchServiceTest`, `ResearchTreeTest`; `survey/`: `ChunkSurveyTest` | Drill levels and rules, storage of drill items, the visual catalogue, the ore planner and registry, hologram text and rules, the mushroom height and the nuclear cut, process and recipe rules, radiation, research, and the chunk survey. |
+| Core | `deposit/`: `DepositPlannerTest`, `DepositSettingsTest`, `DepositSettingsFromConfigTest`, `DepositTest`, `DrillAccumulatorTest`, `DrillYieldTest`, `OreBlocksTest`, `TakeBatchTest`; `drill/`: `DrillBoxTest`, `DrillDepositsTest`, `DrillRulesTest`, `DrillStateTest`, `DrillStorageTest`, `DrillTableTest`; `engine/`: `ShapesTest`, `TntManagerCodecTest`, `VisualCatalogTest`; `geology/`: `GeologyRegistryTest`, `GeologyServiceTest`, `OreDefinitionTest`; `hologram/`: `HologramRulesTest`, `HologramTextTest`; `mechanics/`: `MushroomHeightTest`, `NuclearCutTest`; `process/`: `ProcessCatalogTest`, `ProcessEngineTest`; `radiation/`: `FalloutZoneTest`, `RadiationModelTest`; `research/`: `ResearchServiceTest`, `ResearchTreeTest` | The deposit planner, the deposit settings and their config reading, a deposit, the drill's accumulator, yield and take batch, the ore block choice, drill levels and rules, the drill's deposit search, storage of drill items, the visual catalogue, the geology registry and ore definitions, hologram text and rules, the mushroom height and the nuclear cut, process and recipe rules, radiation, and research. |
 | Core, energy and logistics | `energy/`: `ChartHistoryTest`, `ChartRendererTest`, `EnergyNetworkTest`, `EnergyTableTest`, `GeneratorFuelTest`, `GeneratorTest`, `GridGraphTest`, `GridPaletteTest`, `GridRegistryTest`, `OutlineTracerTest`, `PylonTest`, `SkyTest`, `UnitsTest`, `WireRulesTest`; `logistics/`: `BeltFlowTest`, `BeltTopologyTest`, `ConservationTest`, `DirTest`, `LogisticsTableTest`, `NetworkBuilderTest`, `PickerTest`, `PlacementTest`, `PowerTest`, `RestoreTest`, `SplitterTest` | The power network: grids and their ids and colours, the outlines, the chart history and rendering, the solver, pylons, wires, the sky, the units and generator fuel. The logistics layout, belts, pickers, splitters, placement, power and item conservation. |
 | ResourcePack | `ArtTest`, `ResourcePackBuilderTest` | Texture size, uniqueness and determinism, every id has art, and a full pack round trip with the pack format. |
-| Spigot | `ContentTest`, `ResourcePackKeysTest`, `AchievementDatapackTest`, `ScienceFeatsTest`, `CoreFactoryCommandTest`, `DefaultsMergerTest`, `CatalogModelTest`, `PageSplitterTest`, `ScienceGuideTest`, `HologramJsonTest`, `BarrelMigrationTest`, `DrillCatalogTest`, `DrillMenuTest`, `HopperRulesTest`, `LabEffectsTest`, `MachineLayoutsTest`, `MachineSlotsTest`, `PackInstallerTest`, `SurveyMapTest` | Content checks on the data files, the achievement datapack and feats, the command, the startup data merge, the catalogue, the book, the hologram JSON, the barrel migration, the lab tool and drill menus and rules, the survey map, and the pack installer. |
+| Spigot | `ContentTest`, `ResourcePackKeysTest`, `AchievementDatapackTest`, `ScienceFeatsTest`, `CoreFactoryCommandTest`, `DefaultsMergerTest`, `CatalogModelTest`, `PageSplitterTest`, `ScienceGuideTest`, `HologramJsonTest`, `BarrelMigrationTest`, `DrillCatalogTest`, `DrillMenuTest`, `DrillRatesTest`, `HopperRulesTest`, `LabEffectsTest`, `MachineLayoutsTest`, `MachineSlotsTest`, `PackInstallerTest`, `DepositConfigTest` | Content checks on the data files, the achievement datapack and feats, the command, the startup data merge, the catalogue, the book, the hologram JSON, the barrel migration, the lab tool and drill menus and rules, the drill rates, the deposit config, and the pack installer. |
 | Spigot, energy and logistics | `energy/`: `ChartRulesTest`, `ChartSamplesTest`, `ChartTextTest`, `EnergyFileGridTest`, `EnergyFileTest`, `EnergyGeometryTest`, `EnergySnapshotsTest`, `EnergyTextTest`, `GeneratorDeviceTest`, `GeneratorFileTest`, `GeneratorIdsTest`, `GeneratorLookTest`, `GeneratorSnapshotsTest`, `GeneratorStatusTest`, `GeneratorTextTest`, `GridNamesTest`, `PlacementRulesTest`, `WireSelectionTest`, `WorkPaceTest`; `logistics/`: `BeltPathTest`, `DisplayBudgetTest`, `FuelPortTest`, `LogisticsFileTest`, `LogisticsIdsTest`, `LogisticsTextTest`, `OrientationTest`, `PlacementAimTest`, `SatisfactionMapTest`, `SidePlacementTest`, `SplitterFilterTest` | The energy file, the grid names and charts, the generator rules, text, look and status, the wire tool, the placement rules and the work pace. The logistics file and ids, its text, the display budget, the fuel port, satisfaction, the splitter filter, the side placement and the placement aim. |
-| Storage | `DatabaseTest`, `DriverLoaderTest`, `JdbcResearchStoreTest` | The pool and the schema, the driver loader's checks, and the research store. The tests run on SQLite, whose driver is in test scope. |
+| Storage | `DatabaseTest`, `DriverLoaderTest`, `JdbcResearchStoreTest`, `JdbcDepositStoreTest`, `MemoryDepositStoreTest` | The pool and the schema, the driver loader's checks, the research store, and the deposit store, JDBC and in memory. Both deposit store tests run the same checks from `DepositStoreContract`, which is a shared base and not a test class itself. The tests run on SQLite, whose driver is in test scope. |
 
 ## Packaging
 

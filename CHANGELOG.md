@@ -6,8 +6,8 @@ All notable changes to CoreFactory. The format follows Keep a Changelog; version
 
 ### Added
 
-- Coal drills: an ore drill at any level mines the coal in a chunk and gives vanilla charcoal, one per coal block (`coal_ore`
-  in `ores.yml`, `DrillRules.mined`). Charcoal is also a component in `items.yml`, so a broken coal block drops it too.
+- Coal drills: an ore drill at any level mines coal deposits and gives vanilla charcoal, one per unit taken from the deposit
+  (`coal_ore` in `ores.yml`, `DrillRules.mined`). Charcoal is also a component in `items.yml`, so a placed coal ore block drops it too.
 - Drill animation: a running drill's model moves up and down into the ground, four keyframes per stroke, and rests when it stops.
 - Two-block devices, door-style: the wind, charcoal, petroleum, diesel and nuclear generators, and the ore and petroleum drills
   of level IV and V, stand two blocks tall. The anchor is the lower block, and breaking either half breaks the device. The list
@@ -87,9 +87,10 @@ All notable changes to CoreFactory. The format follows Keep a Changelog; version
   to U-233 and plutonium. Eleven machines, each with its own inventory screen and placed 3D model: crusher, roasting kiln,
   centrifugal separator, purification still, fluorination converter, enrichment cascade, neutron transmuter,
   spectrometer, particle accelerator, antimatter condenser, research console.
-- Ore overlay (`ores.yml`): ores are laid into new chunks from the world seed, so the same seed gives the same veins.
-  `/cf geology retrofit <radius> [force]` lays them into chunks that were generated before, and `/cf geology status`
-  shows the state.
+- Ore deposits: deposits are planned from the world seed, each a circular patch of one ore with a remaining amount, in cells
+  of 160 blocks (by default). Each chunk is laid once, when it first loads. The `deposits` section of `config.yml` holds the
+  planning constants, and `/cf geology deposits [radius]` lists the deposits near you (`corefactory.geology`).
+  See `docs/MECHANICS.md#deposits`.
 - Research (`research.yml`): a linear tree of fifteen nodes. Crafting, placing and lighting a gated item needs its node
   finished at a Research Console. Progress is saved permanently: in SQLite (`research.db`, one server) or in PostgreSQL
   (shared by several servers, set in `config.yml`). Storage uses HikariCP.
@@ -101,18 +102,18 @@ All notable changes to CoreFactory. The format follows Keep a Changelog; version
 - Barrel concealment: the barrel under each lab tool and drill is hidden from nearby players, who see the custom model
   instead. Each machine has an invisible interaction hitbox: right-click opens it and left-click breaks it. Config:
   `concealment.enabled` (true) and `concealment.range` (48).
-- Progress holograms over running lab tools and drills, sent as packets. A lab tool's hologram has three lines (the process, a bar, and the percentage with the time left or `idle`) and goes when the tool is idle. A drill's has four lines (its name and level, its power, its rate or status, and its storage and fuel) and shows while the drill has power and room. Each line is its own invisible armour stand. Config: `holograms.enabled` and `holograms.view-distance`.
-- Ore Density Scanner: a held item. Right-click for a map of the current chunk, coloured by the planned ore and shaded by
-  density, and a chat summary. Recipe in `materials.yml`, gated by the Laboratory Basics node. The planned count follows the
-  blocks in the world, so it drops as ore is mined.
+- Progress holograms over running lab tools and drills, sent as packets. A lab tool's hologram has three lines (the process, a bar, and the percentage with the time left or `idle`) and goes when the tool is idle. A drill's has five lines (its name and level, its power, its rate or status, the deposit it works on, and its storage and fuel) and shows while the drill has power and room. Each line is its own invisible armour stand. Config: `holograms.enabled` and `holograms.view-distance`.
+- Ore Density Scanner: a held item that still crafts and unlocks after Laboratory Basics (`materials.yml`), but it does nothing.
+  Its map and chat summary were removed.
 - Petroleum drills (five levels) pump petroleum from crude deposits, on the strongest of a solar panel, redstone or charcoal. Ore drills (five levels)
-  mine the special ores and run on petroleum. Each level has its own area, depth and cycle, and a drill stands on hard base
+  mine ore deposits and run on petroleum. Each level has its own area, depth and cycle, and a drill stands on hard base
   stone. A drill holds its items in its barrel and takes fuel from a hopper.
 - Solar panel: a daylight detector placed as a block. Its power, from its redstone level, runs a petroleum drill next to it.
-- Drill power and status: a petroleum drill runs at the power of its strongest source, a solar panel (its power over 15), redstone (its power over 15) or charcoal (0.35). The source is named on the hologram and in the info item. An ore drill runs at full power on petroleum. The status lines are No power (No petroleum for an ore drill), Output full, No deposit in range (depth N), No special ore in range and Running. Rates are shown per second and per minute.
-- Crude petroleum deposit, an ore that is mined to petroleum. A petroleum drill pumps it without removing it.
-- Ore blocks: each special ore is a placeable block item. Mining gives the raw mineral; silk touch gives the block item.
-  `/cf give` accepts ore ids.
+- Drill power and status: a petroleum drill runs at the power of its strongest source, a solar panel (its power over 15), redstone (its power over 15) or charcoal (0.35). The source is named on the hologram and in the info item. An ore drill runs at full power on petroleum. The status lines are No power (No petroleum for an ore drill), Output full, No deposit in range, Deposit exhausted: no items left in range and Running. Rates are shown per second and per minute.
+- Crude petroleum deposit, an ore laid as deposits. A petroleum drill draws the deposit down, one petroleum per unit taken,
+  so the deposit is used up rather than kept.
+- Ore blocks: each special ore is a placeable block item. A placed ore block gives its raw mineral when mined; silk touch gives
+  the block item back. A patch block dug by hand gives its vanilla drop, not raw ore. `/cf give` accepts ore ids.
 - Catalogue (`/cf gui`): a paged browser of every TNT, component, machine, ore and research pack, in fifteen categories, each its own tab. Browsing
   needs `corefactory.guide`. Right-click for a recipe, and in the recipe view click an ingredient with a recipe of its own
   to open it. BACK returns.
@@ -125,6 +126,7 @@ All notable changes to CoreFactory. The format follows Keep a Changelog; version
   keeps a `.bak` copy. Existing entries are never overwritten, and an entry that differs from the default is logged.
 - Storage: research in SQLite (one server) or PostgreSQL (shared), set in the `storage` section. The JDBC driver is not in
   the jar. It is downloaded from Maven Central on first use and checked against its published SHA-1. HikariCP is bundled.
+  The deposits' remaining amounts are stored with the research data, in the same database.
 - Electricity (`docs/MECHANICS.md`, `docs/PLAYER_GUIDE.md`): three pylon sizes, each with a square range and a maximum current;
   the energy wire, which joins two pylons, or a generator to a pylon, over up to 24 blocks; three accumulator levels that store power and give
   it back when a line runs short; six generators (wind, solar, charcoal, petroleum, diesel and nuclear), each with a menu and a
@@ -178,6 +180,10 @@ All notable changes to CoreFactory. The format follows Keep a Changelog; version
 
 ### Changed
 
+- Ore placement is rebuilt as deposit regions: circular patches of one ore with a remaining amount, planned from the world seed,
+  laid into each chunk once on load, and stored in `corefactory_deposits`. Drills mine deposits, one at a time, at their level's
+  rate (`drill-rates`: 1.0 to 6.0 items per second at full power). The `deposits` section of `config.yml` holds the planning
+  constants. See `docs/MECHANICS.md#deposits` and `docs/MECHANICS.md#drills`.
 - Turret scan rate: `turrets.search-interval-ticks` defaults to 20 ticks, one second. A lower value scans more often and costs more
   server time. Allowed: 1 to 1200.
 - Turret arc and tilt: the arc defaults to 360 degrees and the tilt limit to 90, the whole sphere. A `config.yml` that sets
@@ -268,6 +274,12 @@ All notable changes to CoreFactory. The format follows Keep a Changelog; version
 - Red flash: a mob flashes red when it takes any hit, and a turret's hit is one. A mob that burns from an incendiary round flashes red from the fire, which is not a hit.
 - Picker claim rule for taking: a picker takes from a container on its input side only where its owner may use it, by the rule for deliveries: the owner's own claim, a GriefPrevention trust level of Inventory, Container, Build, Edit or Manage, or a WorldGuard region membership. A picker with no stored owner takes nothing from a claimed container, and a double chest counts as claimed if either half is. Splitters still take from the belt behind them only.
 
+### Removed
+
+- Removed systems: the vein-based ore placement (and the `veins-per-chunk` and `vein-size` keys, which are no longer read), the
+  chunk budgets and their retrofit (`/cf geology retrofit`, `/cf geology status`, and `geology.chunks-per-tick`), the mining
+  ledger, the old ore survey, and the scanner's map and chat summary.
+
 ### Fixed
 
 - Turrets target magma cubes when their magma cube toggle or the slimes category is on. A magma cube is not a slime in the server API (it is a cube mob of its own), so the turret had classed it as "other" and never fired at it.
@@ -280,9 +292,10 @@ All notable changes to CoreFactory. The format follows Keep a Changelog; version
 - Pickers and splitters are placed on a side face of a machine: north, south, east or west, never the top or the bottom. The
   face you aim at is the face that touches the machine. The input faces the machine and the output faces away, so the arrows
   point outward, and no rotation is needed. A left-click with a belt, picker or splitter in hand no longer breaks it.
-- Drill depths are 48, 96, 144, 200 and 280 layers for levels I to V (they were 16, 24, 32, 48 and 64). A level V drill placed at
-  height 215 or lower reaches below the bottom of the world (y -64). The status of a petroleum drill with no deposit in its box reads `No deposit in range
-  (depth N)`, and an ore drill reads `No special ore in range`.
+- Drill depths are 48, 96, 144, 200 and 280 layers for levels I to V (they were 16, 24, 32, 48 and 64). The depth is shown on the
+  info item, but it no longer limits which deposits a drill finds; only the square does. The status of a drill with no deposit in
+  its square reads `No deposit in range`, for both kinds, and `Deposit exhausted: no items left in range` when every deposit in
+  range is empty.
 - A picker beside a drill takes the drill's products from its output slots, first slot first, through `DrillPort`.
 - The achievements tab background was a missing texture (a vanilla path that does not resolve). The pack now ships its own
   tile at `textures/gui/advancements/background.png`, and the tab points at it.

@@ -13,8 +13,9 @@
   <artifactId>CoreFactory-Storage</artifactId>
   <name>CoreFactory :: Storage</name>
   <description>
-    JDBC persistence for CoreFactory: SQLite or PostgreSQL behind a HikariCP pool, schema migrations and the
-    research store. Contains no Bukkit and no Core types.
+    JDBC persistence for CoreFactory: SQLite or PostgreSQL behind a HikariCP pool, schema migrations, the
+    research store and the deposit store. Contains no Bukkit types; the only Core types are the pure deposit
+    interface and record.
   </description>
 
   <dependencies>
@@ -22,6 +23,17 @@
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
       <version>6.3.0</version>
+    </dependency>
+    <!-- Only the pure deposit types are used from Core, so the Bukkit API that Core and Api pull in is excluded. -->
+    <dependency>
+      <groupId>io.corefactory</groupId>
+      <artifactId>CoreFactory-Core</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.spigotmc</groupId>
+          <artifactId>spigot-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <!-- The JDBC drivers are not packaged with the plugin. They are downloaded at runtime (DriverLoader) when the
          chosen backend needs them. The test scope here only lets the tests run against SQLite. -->

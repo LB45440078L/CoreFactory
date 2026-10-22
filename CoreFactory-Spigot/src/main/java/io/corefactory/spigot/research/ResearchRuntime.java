@@ -66,8 +66,7 @@ public final class ResearchRuntime implements AutoCloseable {
     }
 
     /**
-     * The database the research store uses, which also keeps the drill ledger and the chunk budgets. Empty when it could not
-     * open this start.
+     * The database the research store uses, which also keeps the planned deposits. Empty when it could not open this start.
      */
     public Optional<Database> database() {
         return Optional.ofNullable(database);

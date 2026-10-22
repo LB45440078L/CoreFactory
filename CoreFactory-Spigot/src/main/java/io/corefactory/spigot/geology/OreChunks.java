@@ -7,28 +7,16 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 /**
- * Reads and writes the ore data a chunk keeps in its persistent data: the geology marker
- * ({@code corefactory:geology}, the version the chunk was laid with), the registry of placed ore blocks
+ * Reads and writes the ore data a chunk keeps in its persistent data: the registry of placed ore blocks
  * ({@code corefactory:ore_blocks}, packed by {@link io.corefactory.core.geology.GeologyRegistry}) and the volume left in
  * each crude deposit ({@code corefactory:deposit_volumes}, packed by {@link io.corefactory.core.geology.DepositVolumes}).
  */
 public final class OreChunks {
 
-    static final NamespacedKey MARKER = new NamespacedKey(ItemFactory.NAMESPACE, "geology");
     static final NamespacedKey BLOCKS = new NamespacedKey(ItemFactory.NAMESPACE, "ore_blocks");
     static final NamespacedKey VOLUMES = new NamespacedKey(ItemFactory.NAMESPACE, "deposit_volumes");
 
     private OreChunks() {
-    }
-
-    /** The version the chunk was laid with, or 0 when it never was. */
-    public static int marker(Chunk chunk) {
-        Integer version = chunk.getPersistentDataContainer().get(MARKER, PersistentDataType.INTEGER);
-        return version == null ? 0 : version;
-    }
-
-    public static void setMarker(Chunk chunk, int version) {
-        chunk.getPersistentDataContainer().set(MARKER, PersistentDataType.INTEGER, version);
     }
 
     /** The packed registry of the chunk, or null when it has no ore blocks. */

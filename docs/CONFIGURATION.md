@@ -7,12 +7,12 @@ newer version of it. The plugin also adds new entries to the data files when the
 
 | File | Holds |
 |---|---|
-| `config.yml` | Global settings, performance budgets, effects, holograms, the power network and logistics, storage, geology, protection, display, messages |
+| `config.yml` | Global settings, performance budgets, effects, holograms, the power network and logistics, storage, deposits, drill rates, protection, display, messages |
 | `tnts.yml` | Every TNT type: name, lore, radius, fuse, mechanic and its settings, recipe |
 | `items.yml` | Crafting components: name, lore, material, recipe |
 | `materials.yml` | Science materials, research packs, lab tools, the scanner, the solar panel, petroleum and the drills, as components |
 | `processes.yml` | Lab tool kinds (`machines:`), their processes (`processes:`), and the drill kinds and levels (`drills:`) |
-| `ores.yml` | Special ores: the vanilla host block, the drop, the vein shape and the height range |
+| `ores.yml` | Special ores: the vanilla host block of each ore, the drop of a placed ore block, and the height range |
 | `research.yml` | The research line: nodes, their costs in research packs, and the machines, components and TNT each one unlocks |
 
 Apply changes with **`/cf reload`**. It re-reads `config.yml`, `tnts.yml`, `items.yml` and `materials.yml`, and it
@@ -22,7 +22,7 @@ Some changes need a restart, not a reload:
 
 - `processes.yml`, `ores.yml` and `research.yml` are read once, at start.
 - The `drills:` section of `processes.yml` is read once, at start.
-- `effects.*`, `holograms.*`, `concealment.*`, `energy.*`, `charts.*`, `logistics.*`, `geology.chunks-per-tick` and `storage.*` are read once, at start.
+- `effects.*`, `holograms.*`, `concealment.*`, `energy.*`, `charts.*`, `logistics.*`, `deposits.*`, `drill-rates` and `storage.*` are read once, at start.
 - Moving the placed-TNT registry to a different file takes a restart.
 
 Errors in these files are reported on the console and the affected entry is skipped; the others still load.
@@ -67,7 +67,7 @@ research bursts and ore breaks. They are drawn with item displays. The effect na
 Progress holograms over running lab tools and drills. The text is sent as packets, so nothing is written to the world.
 
 - A lab tool's hologram has three lines: the process, a bar of 20 segments, and the percentage with the seconds left (or `idle`).
-- A drill's hologram has four lines: its level and kind, its power, its rate (or its status), and its storage and fuel.
+- A drill's hologram has five lines: its level and kind, its power, its rate (or its status), its deposit, and its storage and fuel.
 - Both also end with a `Grid` line for the power network: the grid's voltage, the power the device asks for and the share it
   gets, such as `Grid 230.0 V  4.0 kW  100 %`. It is always shown. See [MECHANICS.md](MECHANICS.md#looks-menus-and-the-grid-line).
 
@@ -247,11 +247,33 @@ stored owner, such as a belt placed before this update, is refused in any claim 
 |---|---|---|
 | `direction-from-player` | `true` | Store the placer's horizontal facing as the TNT's direction. Shaped charges and napalm use it. |
 
-### `geology`
+### deposits
+
+The patches of ore that the world lays, and how much each holds. The rules are in [MECHANICS.md](MECHANICS.md#deposits). Read at startup, so a change needs a restart.
 
 | Key | Default | Meaning |
 |---|---|---|
-| `chunks-per-tick` | `2` | Chunks the ore overlay lays per server tick. New chunks are queued as they generate, and `/cf geology retrofit` queues old ones. Read at start. Raise it for a faster catch-up on a strong server. |
+| `cell-size` | `160` | Side of a planning cell, in blocks. It must be from twice `max-radius` to 4096. Each cell holds at most one deposit. |
+| `density` | `0.6` | Chance that a cell holds a deposit. From 0 to 1. |
+| `oil-share` | `0.25` | Chance that a deposit is crude petroleum rather than a solid ore. From 0 to 1. |
+| `min-radius` | `24` | Smallest radius of a deposit, in blocks. From 1 to `max-radius`. |
+| `max-radius` | `48` | Largest radius, in blocks. From `min-radius` to 256. |
+| `min-amount` | `500000` | Smallest amount a deposit starts with. At least 1. |
+| `max-amount` | `25000000` | Largest amount a deposit starts with. At least `min-amount`. |
+| `ore-block-density` | `0.3` | Share of the stone blocks in a deposit's patch that become its host block when the chunk is laid. From 0 to 1. |
+
+The shipped `config.yml` has a `deposits:` section with these defaults, so editing it changes the deposits. If the values break a rule, the console logs one warning, and the defaults are used for the whole section, not only for the key that is wrong. A `config.yml` with no `deposits:` section takes the defaults in the table.
+
+### drill-rates
+
+The items a drill yields per second at full power, one rate for each level from 1 to 5. A drill yields its level's rate times its power efficiency (see [MECHANICS.md](MECHANICS.md#drills)). The same rates apply to ore drills and petroleum drills. Read at startup, so a change needs a restart.
+
+| Key | Default | Meaning |
+|---|---|---|
+| `drill-rates` | `[1.0, 1.5, 2.5, 4.0, 6.0]` | Five numbers, items per second at full power for levels 1 to 5, level 1 first. The defaults are 60, 90, 150, 240 and 360 items per minute. |
+
+- **The rules.** The list has exactly five numbers. Each is finite and at least 0, and a higher level may not yield less than the level below it.
+- **A bad list.** A list of the wrong length, or a value that breaks a rule, logs one warning, and the defaults above are used for the whole list.
 
 ### `persistence`
 
@@ -262,7 +284,7 @@ stored owner, such as a belt placed before this update, is refused in any claim 
 
 ### `storage`
 
-Where research progress is kept, permanently. Achievements, lab tools and drills are not in this database: their
+Where research progress and the remaining amounts of deposits are kept, permanently. Achievements, lab tools and drills are not in this database: their
 files are listed under [Where things live on disk](#where-things-live-on-disk).
 
 | Key | Default | Meaning |
@@ -378,7 +400,7 @@ the products of roasting, separation and conversion, the research packs, the lab
 (`solar_panel`), petroleum (`petroleum`), and the drills (`petroleum_drill_1` to `petroleum_drill_5`, `ore_drill_1` to
 `ore_drill_5`).
 
-A lab tool or a drill is a component whose `material` is the block it stands on. `BARREL` is the host of the lab tools and of every drill. The solar panel's `material` is `DAYLIGHT_DETECTOR`.
+A lab tool or a drill is a component whose `material` is the block it stands on. `BARREL` is the host of the lab tools and of every drill. The solar panel's `material` is `DAYLIGHT_DETECTOR`. The Ore Density Scanner (`ore_density_scanner`) is still an item, and it can still be crafted, but it does nothing: no code reacts to its use.
 
 ## processes.yml
 
@@ -400,17 +422,13 @@ One entry per special ore, keyed by its id:
 | Key | Meaning |
 |---|---|
 | `name` | Display name. |
-| `host` | The vanilla block the ore is placed as. Each ore needs its own host. |
-| `drop` | The component given when the ore is mined without silk touch. |
-| `drop-amount` | `[min, max]` items per block. |
-| `replace` | Blocks the vein may replace. |
-| `min-y`, `max-y` | Vertical range of the veins. |
-| `veins-per-chunk` | Expected veins per chunk. Fractions are rolled per chunk. |
-| `vein-size` | `[min, max]` blocks in one vein. |
+| `host` | The vanilla block the ore is placed as: the block of its deposit's patch, and the block of a placed ore block. Each ore needs its own host. |
+| `drop` | The component given when a placed ore block is mined without silk touch. |
+| `drop-amount` | `[min, max]` items per placed ore block. |
+| `replace` | Blocks a patch block may replace. |
+| `min-y`, `max-y` | Vertical range in which a deposit's patch blocks become host blocks. |
 
-The ores are laid into chunks from the world seed, so the same seed gives the same veins. A crude petroleum deposit
-(`crude_petroleum_deposit`) is one of the eight ores. It drops `petroleum`, and a petroleum drill pumps it without
-removing it.
+The keys `veins-per-chunk` and `vein-size` are no longer read, so they do nothing. Deposits are not placed from this file: the world lays them, with the settings under [deposits](#deposits) (see [MECHANICS.md](MECHANICS.md#deposits)). A crude petroleum deposit (`crude_petroleum_deposit`) is one of the entries. A placed one drops `petroleum` when mined, and a petroleum drill takes petroleum from the deposits of that ore.
 
 ## research.yml
 
@@ -542,7 +560,7 @@ plugins/CoreFactory/
 ├── turrets.yml                placed turrets, their levels, rounds, facing and targeting
 ├── friends.yml                each owner's friend list, for the turrets
 ├── achievements.yml           each player's achievement progress
-├── research.db                research progress (when storage.type is sqlite)
+├── research.db                research progress and deposits (when storage.type is sqlite)
 ├── libraries/                 JDBC drivers downloaded for storage, with their .sha1 files
 └── pack/pack.zip              the resource pack copied from the jar
 ```

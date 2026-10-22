@@ -15,29 +15,30 @@ CoreFactory (parent pom, profiles per Spigot-API version)
 │     PlacedDisplays, ItemFactory, RecipeRegistrar, DefinitionParser, CoreSettings, Messages,
 │     mechanics/*  (every built-in mechanic)
 │     process/*    (lab tool processes: ProcessCatalog, ProcessEngine, Machine)
-│     drill/*      (drill levels, power and status: DrillTable, DrillRules, DrillPower, PowerSource, DrillStatus, DrillText, DrillCatalog, DrillState)
-│     geology/*    (ore veins: GeologyService, VeinPlanner, OreDefinition, RetrofitQueue)
+│     drill/*      (drill levels, power and status: DrillTable, DrillRules, DrillPower, PowerSource, DrillStatus, DrillText, DrillCatalog, DrillState, DrillDeposits)
+│     deposit/*   (the deposit model, pure: Deposit, DepositPlanner, DepositSettings, DepositStore, MemoryDepositStore, DrillAccumulator, DrillYield, TakeBatch, OreBlocks)
+│     geology/*   (the placed ore blocks that a player puts down: GeologyService, GeologyRegistry, OreDefinition, DepositVolumes, Placement)
 │     research/*   (the research tree and service: ResearchTree, ResearchService, ResearchStore)
 │     hologram/*   (progress text and rules: HologramText, HologramRules)
-│     survey/*     (the chunk survey: ChunkSurvey)
 │     radiation/*  (fallout, the suit, the Geiger counter)
 │     energy/*     (the power network, pure: EnergyTable, Units, EnergyNetwork, GridGraph, GridRegistry, GridPalette, OutlineTracer, ChartHistory, ChartRenderer, Generator, Sky)
 │     logistics/*  (belts, pickers and splitters, pure: LogisticsTable, LogisticsNetwork, Topology, Lane, Port)
-├── CoreFactory-Storage      HikariCP only. JDBC research store, schema migrations, runtime driver loading.
-│     No Bukkit and no Core types.
+├── CoreFactory-Storage      HikariCP and the JDBC drivers. JDBC research store, JDBC deposit store, schema migrations, runtime driver loading.
+│     No Bukkit. The deposit store implements Core's `DepositStore`, so Storage depends on Core's deposit types.
 ├── CoreFactory-Spigot       Api + Core + Storage + Spigot-API + WorldEdit, PacketEvents (provided)
 │     the plugin jar. Shades Api, Core, Storage and HikariCP. Holds plugin.yml, config.yml and the six
 │     data files. WorldEditBlockEditor, PacketClientEffects, listeners, /cf, the catalogue GUI, lab tool
-│     and drill machines, barrel concealment, holograms, the energy and logistics devices, the chunk scanner, sprite
-     effects, the startup data merge.
+│     and drill machines, barrel concealment, holograms, the energy and logistics devices, sprite
+│     effects, the startup data merge. geology/*: DepositGenerator, DepositChunkListener, GeologyCommand, and the
+│     placed-ore-block classes GeologyListener, GeologyWorker, OreChunks. ledger/*: DepositLedger (the deposit store).
 └── CoreFactory-ResourcePack Build-time only. snakeyaml. Draws textures; writes the pack zip.
 ```
 
 The rule that keeps this clean: **Api has no implementation, Core has no WorldEdit or PacketEvents, and only Spigot
 touches those two libraries.** Core reaches the block pipeline through `BlockEditor` and the client through
 `ClientEffects`, both defined in Api and implemented in Spigot. That is why a future port to another editor needs
-one new class, not a change to any mechanic. Storage knows nothing of Bukkit or Core: the Spigot module opens it and
-hands its store to the research service.
+one new class, not a change to any mechanic. Storage knows nothing of Bukkit. It depends on Core only for the deposit types (`Deposit` and `DepositStore`) that
+`JdbcDepositStore` implements; the Spigot module opens it and hands its stores to the research service and the drills.
 
 ## Runtime composition
 
@@ -60,18 +61,21 @@ before the worlds load.
 5. Loads `config.yml`, `tnts.yml`, `items.yml` and `materials.yml`, loads the placed-TNT registry, registers the
    integrations, and publishes the core through `CoreFactoryProvider`.
 6. Opens research storage (`ResearchRuntime.open`) and sets the research gate. Players who are online load their research.
-7. Registers the listeners: placement, ignition, protection, achievements, interaction, the GUI, geology, and the scanner.
+   The deposit store is opened with it (`DepositLedger.open`): in the research database when that is open, or in memory
+   otherwise.
+7. Registers the listeners: placement, ignition, protection, achievements, interaction, the GUI, and geology. The geology
+   listeners are `DepositChunkListener`, which lays the deposits of a chunk on its first load, and `GeologyListener`, which
+   handles the placed ore blocks.
 8. Creates the hologram service, the drill catalog, the machine store (`machines.yml`), the lab tool and drill
    listeners, the hopper listener, the solar panel listener, and the interaction and concealment pieces
    (`MachineInteractions`, `BarrelConcealment`). It also creates the energy service (`energy.yml`) and the logistics
    service (`logistics.yml`), and registers their listeners.
 9. Registers `/cf` and starts the repeating tasks: the core tick, the energy and logistics tick, the machine ticker,
-   the geology drain, the recipe watch, the Geiger display, and the achievement save. It then starts the sprite effects
-   and the holograms.
+   the recipe watch, the Geiger display, and the achievement save. It then starts the sprite effects and the holograms.
 
 `onDisable` cancels the tasks, shuts the logistics and the energy services down (each saves its file and releases its
-entities), stops the sprite effects, shuts the holograms down, saves the machines, drains the ore
-queue, saves achievements and placed TNT, and closes research storage after its pending writes.
+entities), stops the sprite effects, shuts the holograms down, saves the machines, saves achievements and placed TNT,
+and closes research storage after its pending writes.
 
 ## Ignition and detonation
 
@@ -166,8 +170,22 @@ A lab tool, a petroleum drill and an ore drill each stand on a barrel. The host 
 - `HopperListener` handles `InventoryMoveItemEvent`. A move into a lab tool puts one item into the input or fuel slot that
   takes it. A move out takes one item from the first output slot. Any other move that touches a lab tool is cancelled.
   The decisions are in `HopperRules`, which is pure.
-- `DrillTicker` advances each drill's `DrillState` by the efficiency of its power. The grid is one more source there: `DrillRules.withGrid` takes the network's satisfaction when it is stronger than the local power (see [Energy and logistics](#energy-and-logistics)). `DrillRules.petroleumPower` takes the best of three sources: the redstone power the drill's block receives, each daylight detector touching it (`signalEfficiency`, power over `DrillRules.FULL_SIGNAL`, which is 15), and charcoal in the fuel slot (`CHARCOAL_EFFICIENCY`, 0.35). Ties go to solar, then redstone, then charcoal. `DrillRules.orePower` gives an ore drill full power while it holds petroleum. Each full cycle pumps one petroleum from the nearest deposit in the box, which is kept, or mines the nearest registered ore block (`DrillRules.nearest`). `DrillBox` is the region a drill works in, and `DrillTable` gives each level's area, depth and cycle.
-- `DrillRules.status` returns the status in this order: no power, output full, no target in the box, then running. `DrillStatus.text` gives the words. `DrillText` gives the rate, the power and the lines of the info item.
+- `DrillTicker` searches the deposits every 20 ticks through `DepositStore`, and at once when its deposit runs out. The
+  search finds the deposits whose circle touches the drill's square, and the drill works on one of them at a time (the
+  one it has, or else the mineable one with the most left). Its items are made at the drill's rate and kept in a take
+  batch (`DrillMining`, which also holds the search state). The batch is taken from the deposit in lots of ten, or when
+  the oldest item has waited a second, and the taken items go into the output slots. `DrillRates` reads `drill-rates`
+  from `config.yml`. The grid is one more source there: `DrillRules.withGrid` takes the network's satisfaction when it is
+  stronger than the local power (see [Energy and logistics](#energy-and-logistics)). `DrillRules.petroleumPower` takes the
+  best of three sources: the redstone power the drill's block receives, each daylight detector touching it
+  (`signalEfficiency`, power over `DrillRules.FULL_SIGNAL`, which is 15), and charcoal in the fuel slot
+  (`CHARCOAL_EFFICIENCY`, 0.35). Ties go to solar, then redstone, then charcoal. `DrillRules.orePower` gives an ore drill
+  full power while it holds petroleum. The drill's cycle now only counts fuel use while it runs: an ore drill uses one
+  petroleum per two counted cycles, and a petroleum drill uses one charcoal per eight counted cycles when charcoal is
+  its source. `DrillBox` is the region a drill works in, and `DrillTable` gives each level's area, depth and cycle.
+- `DrillRules.status` returns the status in this order: no power, output full, no deposit in range, then running. A
+  drill whose deposits in range are all empty reports `EXHAUSTED` ("Deposit exhausted"), and the drill stays there until
+  it is moved. `DrillStatus.text` gives the words. `DrillText` gives the rate, the power and the lines of the info item.
 - `SolarPanelListener` handles the solar panel, which is a daylight detector. Breaking any daylight detector gives back the solar panel item.
 - `BarrelMigration` moves the stacks of an older `machines.yml` into empty barrel slots once the chunk loads. A stack that has no empty slot stays in the file and is logged, so nothing is overwritten.
 
@@ -352,16 +370,22 @@ recordings listed in `tools/sounds/sources.json` (with ffmpeg) and synthesises t
 
 ## Storage
 
-The `CoreFactory-Storage` module holds the research store and nothing else.
+The `CoreFactory-Storage` module holds the research store and the deposit store, and nothing else.
 
 - `StorageSettings` is the record of the `storage:` section. Any `storage.type` other than `postgresql` means SQLite.
 - `Database.open` chooses the driver. `DriverLoader.ensure` downloads it when it is not on the classpath, checks it
   against its SHA-1, and loads it in its own class loader from `libraries/`. See [CONFIGURATION.md](CONFIGURATION.md#database-drivers).
 - The HikariCP pool has one connection for SQLite, with a busy timeout of 5 seconds. PostgreSQL uses `pool-size`.
 - `SchemaMigrations.apply` runs at open. It keeps a version in the `corefactory_schema` table, and each migration runs in
-  its own transaction. The research tables are `corefactory_research_unlocks` and `corefactory_research_progress`.
+  its own transaction. The tables are:
+  - `corefactory_research_unlocks` and `corefactory_research_progress` (migration 1), the research store.
+  - `corefactory_deposits` (migration 3): `id` (primary key), `world`, `centre_x`, `centre_z`, `radius`, `ore`,
+    `initial_amount`, and `remaining` (which must not be negative), with the index `corefactory_deposits_centre` on
+    (`world`, `centre_x`, `centre_z`). A take lowers `remaining` in one conditional update.
+  - `corefactory_mining_ledger` and `corefactory_chunk_budget` (migration 2) are still created on install, but no code
+    reads or writes them. They are legacy tables: `corefactory_deposits` replaced the chunk budgets.
 - `JdbcResearchStore` implements `unlocked`, `unlock`, `progress` and `setProgress`. It reads and writes through
-  `Database.query` and `Database.execute`.
+  `Database.query` and `Database.execute`. `JdbcDepositStore` does the same for the deposits.
 
 `ResearchRuntime` opens the store from `config.yml`. When the database cannot open, it keeps research in memory for that
 start and logs a SEVERE message. The research writes run on a single background thread, which `close` waits for.
@@ -377,17 +401,28 @@ the grants, and `ResearchGateListener` cancels any craft, placement or ignition 
 player has not finished. A Research Console (`ResearchConsoleUi`) takes the packs in its six input slots. `ResearchCommand`
 is the admin command, and a finished node is an achievement (see [ACHIEVEMENTS.md](ACHIEVEMENTS.md)).
 
-## Geology and the survey
+## Geology and deposits
 
-- `GeologyService` plans the veins of a chunk from the world seed and the chunk coordinates. `VeinPlanner` is the random
-  walk, and it takes blocks only from an ore's `replace` set. The same seed and chunk always give the same veins.
-- A chunk's ore marker and its registry of placed ore blocks are kept in the chunk's persistent data. `GeologyWorker`
-  queues new chunks as they generate, and `/cf geology retrofit` queues old ones. It lays `geology.chunks-per-tick`
-  chunks per tick.
-- The Ore Density Scanner (`ScannerListener`) plans the chunk with hosts included. `ChunkSurvey` reduces the planned
-  blocks to one dominant ore and a count per 16 by 16 column. `SurveyRenderer` paints the 128 by 128 map, with each column
-  as an 8 by 8 cell. The colour is the ore's colour from `OreColours`, darker for fewer blocks, and full at 64 blocks.
-  The "still in the ground" count comes from the registry, not from the plan.
+- `DepositPlanner` (Core, pure) plans the deposits from the world seed, the world name and the cell. The surface is cut
+  into square cells of `deposits.cell-size` blocks. A cell holds at most one deposit, with the chance `density`, and a
+  deposit's circle lies inside its cell, so deposits never overlap. Every choice is a hash of the seed, the world name
+  and the cell, so the planner keeps no state and the same world always has the same deposits.
+- `DepositGenerator` runs from `DepositChunkListener`, on `ChunkLoadEvent`. It plans the deposits that touch the chunk,
+  inserts each one once (`insertIfAbsent`), and places the host blocks: in each deposit's footprint, every replaceable
+  block in the ore's height band becomes the ore's host block, with the chance `ore-block-density`. `OreBlocks` hashes
+  the deposit and the position, so the choice never changes. A chunk writes at most 4,096 blocks. The chunk marker
+  `corefactory:deposits` is set last, so a chunk is laid once, and a restart adds no ore blocks. A chunk generated before
+  the rework has no marker, so it is laid the first time it loads after the upgrade.
+- `DepositStore` keeps the deposits. `JdbcDepositStore` writes them to the research database (`corefactory_deposits`).
+  `MemoryDepositStore` is used when that database is not open, and then the deposits are lost when the server stops (a
+  warning is logged). A take is one conditional update, so `remaining` never goes below zero. Drills read and take
+  through the store (see [Lab tools, drills and hoppers](#lab-tools-drills-and-hoppers)).
+- The placed-ore-block path still exists for the ore block items a player places: `GeologyListener`, `GeologyWorker`,
+  `OreChunks` and `GeologyRegistry`. A placed ore item is registered, and breaking a registered block gives the raw
+  mineral (or the ore block item with silk touch). Patch blocks laid by `DepositGenerator` are not registered, so
+  breaking one by hand gives its vanilla drop. Drills are the only source of raw minerals from deposits.
+- The Ore Density Scanner item still exists, and Laboratory Basics still unlocks it, so it can be crafted. No code
+  listens for its right-click, so it does nothing.
 
 ## Why it looks like this
 

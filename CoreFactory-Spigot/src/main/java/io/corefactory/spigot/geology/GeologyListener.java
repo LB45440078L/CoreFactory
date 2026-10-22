@@ -21,7 +21,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
@@ -29,8 +28,7 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Connects the ore veins to the game. A chunk that generates is queued for its veins; a chunk that loads from disk is
- * left alone (only retrofit changes it). Mining a registered host block gives the ore's raw items instead of the
+ * Connects the placed ore blocks to the game. Mining a registered host block gives the ore's raw items instead of the
  * vanilla drop, or the ore block item when the tool has silk touch. Placing an ore block item registers the block, and
  * explosions remove the blocks they destroy from the registry.
  */
@@ -47,14 +45,6 @@ public final class GeologyListener implements Listener {
         this.worker = worker;
         this.achievements = achievements;
         this.visuals = visuals;
-    }
-
-    @EventHandler
-    public void onChunkLoad(ChunkLoadEvent event) {
-        if (event.isNewChunk()) {
-            Chunk chunk = event.getChunk();
-            worker.enqueue(chunk.getWorld(), chunk.getX(), chunk.getZ(), false);
-        }
     }
 
     /**

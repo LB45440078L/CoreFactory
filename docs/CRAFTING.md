@@ -9,6 +9,9 @@ and the scanner), [`processes.yml`](../CoreFactory-Spigot/src/main/resources/pro
 [`tnts.yml`](../CoreFactory-Spigot/src/main/resources/tnts.yml) (TNT). Ingredients that are custom items match
 exactly, by their identity, so a plain vanilla item of the same material never substitutes for a component.
 
+The Ore Density Scanner (`ore_density_scanner`) still crafts after Laboratory Basics, but it does nothing now: no code reacts
+to its right-click. Its recipe is kept below as the item's definition.
+
 ## Components
 
 | Component id | Name | Recipe (shaped rows, or shapeless list) |
@@ -64,9 +67,9 @@ placed by their own item, and the drills work like machines.
 | `research_console` | Research Console | shaped: `BLB` / `LRL` / `BLB`. B Book, L Lapis Lazuli, R Redstone Block | Laboratory Basics |
 | `particle_accelerator` | Particle Accelerator | shaped: `MMM` / `MCM` / `MMM`. M Superconducting Magnet, C End Crystal | Particle Physics |
 | `antimatter_condenser` | Antimatter Condenser | shaped: `SAS` / `ACA` / `SAS`. S Superconducting Magnet, A Antiproton Capsule, C Neutron Flux Cell | Antimatter Physics |
-| `ore_density_scanner` | Ore Density Scanner | shaped: `GIG` / `ILI` / `GRG`. G Glass, I Iron Ingot, L Amethyst Shard, R Redstone | Laboratory Basics |
+| `ore_density_scanner` | Ore Density Scanner (does nothing now) | shaped: `GIG` / `ILI` / `GRG`. G Glass, I Iron Ingot, L Amethyst Shard, R Redstone | Laboratory Basics |
 | `solar_panel` | Solar Panel | shaped: `PPP` / `RIR` / `IRI`. P Blue Stained Glass Pane, R Redstone, I Iron Ingot | Metallurgy |
-| `petroleum` | Petroleum | none. Found in crude petroleum deposits, or pumped by a petroleum drill | None |
+| `petroleum` | Petroleum | none. Found in crude petroleum deposits, or drawn from them by a petroleum drill | None |
 | `petroleum_drill_1` | Petroleum Drill I | shaped: `IPI` / `HBH` / `IRI`. I Iron Ingot, P Piston, H Hopper, B Chest, R Redstone | Chemical Separation |
 | `petroleum_drill_2` | Petroleum Drill II | shapeless: Petroleum Drill I, Iron Block, Redstone, Piston | Chemical Separation |
 | `petroleum_drill_3` | Petroleum Drill III | shapeless: Petroleum Drill II, Iron Block, Redstone Block, Piston, Hopper | Hydrogen Processes |

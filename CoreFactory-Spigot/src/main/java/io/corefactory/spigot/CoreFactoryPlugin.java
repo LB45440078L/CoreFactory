@@ -2,11 +2,12 @@ package io.corefactory.spigot;
 
 import io.corefactory.api.CoreFactoryProvider;
 import io.corefactory.core.CoreFactoryCore;
+import io.corefactory.core.deposit.DepositSettings;
+import io.corefactory.core.deposit.DepositStore;
+import io.corefactory.core.deposit.DrillYield;
 import io.corefactory.core.drill.DrillCatalog;
 import io.corefactory.core.geology.GeologyService;
 import io.corefactory.core.geology.OreDefinition;
-import io.corefactory.core.ledger.ChunkBudgets;
-import io.corefactory.core.ledger.MiningLedger;
 import io.corefactory.core.process.ProcessCatalog;
 import io.corefactory.core.process.ProcessEngine;
 import io.corefactory.spigot.machine.BarrelConcealment;
@@ -19,8 +20,9 @@ import io.corefactory.spigot.machine.MachineListener;
 import io.corefactory.spigot.machine.MachineMenu;
 import io.corefactory.spigot.machine.MachineStore;
 import io.corefactory.spigot.machine.MachineTicker;
+import io.corefactory.spigot.machine.DrillRates;
 import io.corefactory.spigot.machine.DrillResources;
-import io.corefactory.spigot.ledger.DrillLedgers;
+import io.corefactory.spigot.ledger.DepositLedger;
 import io.corefactory.spigot.research.ResearchCommand;
 import io.corefactory.spigot.research.ResearchConsoleUi;
 import io.corefactory.spigot.command.CoreFactoryCommand;
@@ -28,6 +30,8 @@ import io.corefactory.spigot.achievement.AchievementCatalog;
 import io.corefactory.spigot.achievement.AchievementDatapack;
 import io.corefactory.spigot.achievement.AchievementStore;
 import io.corefactory.spigot.achievement.AchievementTracker;
+import io.corefactory.spigot.geology.DepositChunkListener;
+import io.corefactory.spigot.geology.DepositGenerator;
 import io.corefactory.spigot.geology.GeologyCommand;
 import io.corefactory.spigot.effects.SpriteEffects;
 import io.corefactory.spigot.geology.GeologyListener;
@@ -66,7 +70,6 @@ import io.corefactory.spigot.pack.BundledPack;
 import io.corefactory.spigot.radiation.GeigerDisplay;
 import io.corefactory.spigot.research.ResearchGateListener;
 import io.corefactory.spigot.research.ResearchRuntime;
-import io.corefactory.spigot.survey.ScannerListener;
 import io.corefactory.spigot.turret.TurretCommand;
 import io.corefactory.spigot.turret.TurretIds;
 import io.corefactory.spigot.turret.TurretRuntime;
@@ -83,7 +86,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -108,8 +113,6 @@ public final class CoreFactoryPlugin extends JavaPlugin {
     private BukkitTask geigerWatch;
     private BukkitTask saver;
     private ResearchRuntime research;
-    private GeologyWorker geology;
-    private BukkitTask geologyDrain;
     private MachineStore machines;
     private BukkitTask machineTicker;
     private BukkitTask resourcesWatch;
@@ -208,16 +211,16 @@ public final class CoreFactoryPlugin extends JavaPlugin {
         manager.registerEvents(achievements, this);
         manager.registerEvents(new InteractionListener(core, achievements), this);
         manager.registerEvents(new GuiListener(), this);
-        if (research.database().isEmpty()) {
-            getLogger().warning("The database is not open, so drill ledgers and chunk budgets last only until the "
-                    + "server stops.");
+        DepositStore deposits = DepositLedger.open(research.database(), getLogger());
+        DepositSettings depositSettings = DepositSettings.from(getConfig(), getLogger());
+        DrillYield drillYield = DrillRates.read(getConfig().getDoubleList("drill-rates"), getLogger());
+        Map<String, OreDefinition> oreById = new LinkedHashMap<>();
+        for (OreDefinition ore : oreDefinitions) {
+            oreById.putIfAbsent(ore.id(), ore);
         }
-        MiningLedger ledger = DrillLedgers.miningLedger(research.database());
-        ChunkBudgets budgets = DrillLedgers.chunkBudgets(research.database());
-        geology = new GeologyWorker(core, new GeologyService(oreDefinitions),
-                getConfig().getInt("geology.chunks-per-tick", 2), budgets, getLogger());
+        manager.registerEvents(new DepositChunkListener(new DepositGenerator(deposits, depositSettings, oreDefinitions)), this);
+        GeologyWorker geology = new GeologyWorker(core, new GeologyService(oreDefinitions), getLogger());
         manager.registerEvents(new GeologyListener(core, geology, achievements, sprites), this);
-        manager.registerEvents(new ScannerListener(core, geology), this);
 
         ProcessCatalog processes = processCatalog;
         ItemRefs itemRefs = new ItemRefs(core);
@@ -226,11 +229,11 @@ public final class CoreFactoryPlugin extends JavaPlugin {
                 getConfig().getDouble("holograms.view-distance", 32.0));
         manager.registerEvents(holograms, this);
         DrillCatalog drills = DrillCatalog.parse(processesFile, core.componentDefinitions(), getLogger());
-        DrillResources resources = new DrillResources(geology, ledger, () -> {
+        DrillResources resources = new DrillResources(oreById, () -> {
             if (machines != null) {
                 machines.save();
             }
-        }, getLogger());
+        });
         machines = new MachineStore(core, processes, drills, (machine, layout, site, slots, fuels) -> {
                 if (machine.id().equals("research_console")) {
                     return new ResearchConsoleUi(core, processes, machine, layout, site, research.service(), sprites);
@@ -280,10 +283,11 @@ public final class CoreFactoryPlugin extends JavaPlugin {
         manager.registerEvents(new PlaceableItemGuard(core, id ->
                 processes.machine(id).isPresent() || drills.machine(id).isPresent() || TurretIds.ITEM.equals(id)
                         || TurretIds.LASER_ITEM.equals(id)), this);
-        DrillTicker drillTicker = new DrillTicker(machines, geology, holograms, ledger, budgets, energy, getLogger());
+        DrillTicker drillTicker = new DrillTicker(machines, holograms, deposits, depositSettings, drillYield, oreById, energy,
+                getLogger());
 
         GuideBook guide = new GuideBook(core, researchTree, processCatalog, oreDefinitions);
-        CoreFactoryCommand command = new CoreFactoryCommand(this, core, achievements, new GeologyCommand(core, geology),
+        CoreFactoryCommand command = new CoreFactoryCommand(this, core, achievements, new GeologyCommand(core, deposits, depositSettings),
                 new ResearchCommand(core, research.service()), guide, energy, energyEffects, new ChartCommand(charts),
                 new FriendsCommand(turrets.friends()), new TurretCommand(turrets.service(), turrets.registry()));
         if (getCommand("cf") != null) {
@@ -296,7 +300,6 @@ public final class CoreFactoryPlugin extends JavaPlugin {
         // A data reload (a datapack enabled or disabled) drops the recipes added through the API. Put them back.
         recipeWatch = Bukkit.getScheduler().runTaskTimer(this, () -> core.recipes().restoreIfMissing(), 40L, 40L);
         geigerWatch = Bukkit.getScheduler().runTaskTimer(this, new GeigerDisplay(core), 10L, 10L);
-        geologyDrain = Bukkit.getScheduler().runTaskTimer(this, geology::drain, 1L, 1L);
         resourcesWatch = Bukkit.getScheduler().runTaskTimer(this, resources::refreshOpen, 40L, 40L);
         energyTicker = Bukkit.getScheduler().runTaskTimer(this, () -> {
             energy.tick();
@@ -335,10 +338,6 @@ public final class CoreFactoryPlugin extends JavaPlugin {
         if (geigerWatch != null) {
             geigerWatch.cancel();
             geigerWatch = null;
-        }
-        if (geologyDrain != null) {
-            geologyDrain.cancel();
-            geologyDrain = null;
         }
         if (energyTicker != null) {
             energyTicker.cancel();
@@ -379,9 +378,6 @@ public final class CoreFactoryPlugin extends JavaPlugin {
         if (machines != null) {
             machines.save();
             machines = null;
-        }
-        if (geology != null) {
-            geology.drainAll();
         }
         if (saver != null) {
             saver.cancel();

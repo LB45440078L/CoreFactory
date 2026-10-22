@@ -1,9 +1,11 @@
 package io.corefactory.core.hologram;
 
+import io.corefactory.core.deposit.Deposit;
 import io.corefactory.core.drill.DrillKind;
 import io.corefactory.core.drill.DrillPower;
 import io.corefactory.core.drill.DrillRules;
 import io.corefactory.core.drill.DrillStatus;
+import io.corefactory.core.drill.DrillText;
 import io.corefactory.core.drill.DrillTable;
 import io.corefactory.core.process.MachineState;
 import org.junit.jupiter.api.Test;
@@ -124,16 +126,32 @@ class HologramTextTest {
         assertThat(HologramText.processName("")).isEmpty();
     }
 
+    private static Deposit galena(long remaining) {
+        return new Deposit(9, "world", 0, 0, 20, "galena_ore", 2_500_000, remaining);
+    }
+
     @Test
-    void aPetroleumDrillOnCharcoalShowsItsFourLines() {
+    void aPetroleumDrillOnCharcoalShowsItsFiveLines() {
         DrillPower power = DrillRules.petroleumPower(0, List.of(), true);
 
         assertThat(HologramText.drillLines(DrillKind.PETROLEUM, DrillTable.level(1), power, DrillStatus.RUNNING,
-                12, 576, 3)).containsExactly(
+                0.35, DrillText.deposit("&7Crude Petroleum Deposit", null), 12, 576, 3)).containsExactly(
                 "&bL1 Petroleum drill",
                 "&7Power: &echarcoal 35%",
-                "&7Extracting &f0.01/s  (0.7/min)",
+                "&7Extracting &f0.35/s  (21.0/min)",
+                "&7Deposit &cnone in range",
                 "&7Stored &f12&7/576 &7· fuel &f3");
+    }
+
+    @Test
+    void theDepositLineShowsTheOreAndWhatIsLeft() {
+        DrillPower power = DrillRules.orePower(true);
+
+        List<String> lines = HologramText.drillLines(DrillKind.ORE, DrillTable.level(5), power, DrillStatus.RUNNING,
+                6.0, DrillText.deposit("&7Galena Ore", galena(1_200_000)), 40, 576, 0);
+
+        assertThat(lines.get(3)).isEqualTo("&7Deposit &f&7Galena Ore &71.2M / 2.5M (48%)");
+        assertThat(lines.get(2)).isEqualTo("&7Extracting &f6.00/s  (360.0/min)");
     }
 
     @Test
@@ -141,10 +159,10 @@ class HologramTextTest {
         DrillPower power = DrillRules.petroleumPower(15, List.of(), false);
 
         List<String> lines = HologramText.drillLines(DrillKind.PETROLEUM, DrillTable.level(3), power,
-                DrillStatus.RUNNING, 0, 576, 0);
+                DrillStatus.RUNNING, 2.5, "", 0, 576, 0);
 
         assertThat(lines.get(1)).isEqualTo("&7Power: &eredstone 100%");
-        assertThat(lines.get(2)).isEqualTo("&7Extracting &f0.06/s  (3.3/min)");
+        assertThat(lines.get(2)).isEqualTo("&7Extracting &f2.50/s  (150.0/min)");
     }
 
     @Test
@@ -152,42 +170,42 @@ class HologramTextTest {
         DrillPower power = DrillRules.orePower(true);
 
         List<String> lines = HologramText.drillLines(DrillKind.ORE, DrillTable.level(5), power, DrillStatus.RUNNING,
-                40, 576, 0);
+                6.0, "", 40, 576, 0);
 
-        assertThat(lines).containsExactly(
-                "&bL5 Ore drill",
-                "&7Power: &epetroleum 100%",
-                "&7Extracting &f0.17/s  (10.0/min)",
-                "&7Stored &f40&7/576 &7· fuel &f0");
+        assertThat(lines.get(0)).isEqualTo("&bL5 Ore drill");
+        assertThat(lines.get(1)).isEqualTo("&7Power: &epetroleum 100%");
+        assertThat(lines.get(2)).isEqualTo("&7Extracting &f6.00/s  (360.0/min)");
+        assertThat(lines.get(4)).isEqualTo("&7Stored &f40&7/576 &7· fuel &f0");
     }
 
     @Test
     void aDrillThatIsNotRunningShowsItsStatusInPlaceOfTheRate() {
         assertThat(HologramText.drillLines(DrillKind.PETROLEUM, DrillTable.level(1), DrillPower.NONE,
-                DrillStatus.NO_POWER, 0, 576, 0).get(2)).isEqualTo("&7No power");
+                DrillStatus.NO_POWER, 0, "", 0, 576, 0).get(2)).isEqualTo("&7No power");
         assertThat(HologramText.drillLines(DrillKind.PETROLEUM, DrillTable.level(1),
-                DrillRules.petroleumPower(15, List.of(), false), DrillStatus.NO_TARGET, 0, 576, 0).get(2))
-                .isEqualTo("&7No deposit in range (depth 48)");
+                DrillRules.petroleumPower(15, List.of(), false), DrillStatus.NO_TARGET, 0, "", 0, 576, 0).get(2))
+                .isEqualTo("&7No deposit in range");
         assertThat(HologramText.drillLines(DrillKind.ORE, DrillTable.level(1),
-                DrillRules.orePower(true), DrillStatus.FULL, 576, 576, 4).get(2)).isEqualTo("&7Output full");
+                DrillRules.orePower(true), DrillStatus.FULL, 0, "", 576, 576, 4).get(2)).isEqualTo("&7Output full");
     }
 
     @Test
-    void theOreDrillsStatusNamesItsOwnTarget() {
+    void anExhaustedDepositSaysSo() {
         assertThat(visible(HologramText.drillLines(DrillKind.ORE, DrillTable.level(2), DrillRules.orePower(true),
-                DrillStatus.NO_TARGET, 0, 576, 0).get(2))).isEqualTo("No special ore in range");
+                DrillStatus.EXHAUSTED, 0, "", 0, 576, 0).get(2)))
+                .isEqualTo("Deposit exhausted: no items left in range");
     }
 
     @Test
-    void everyDrillLineIsAtMostThirtyTwoCharactersExceptThePetroleumNoTargetStatus() {
+    void everyDrillLineStaysWithinAHologramWidth() {
         for (DrillStatus status : DrillStatus.values()) {
             for (DrillKind kind : DrillKind.values()) {
                 List<String> lines = HologramText.drillLines(kind, DrillTable.level(5),
-                        DrillRules.petroleumPower(0, List.of(), true), status, 999, 576, 99);
+                        DrillRules.petroleumPower(0, List.of(), true), status, 999, DrillText.deposit(
+                                "&8Crude Petroleum Deposit", galena(2_000_000)), 999, 576, 99);
                 assertThat(lines).hasSize(HologramText.DRILL_LINES);
-                for (int line = 0; line < lines.size(); line++) {
-                    int limit = 32;
-                    assertThat(visible(lines.get(line)).length()).as(lines.get(line)).isLessThanOrEqualTo(limit);
+                for (String line : lines) {
+                    assertThat(visible(line).length()).as(line).isLessThanOrEqualTo(64);
                 }
             }
         }

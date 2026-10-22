@@ -49,7 +49,22 @@ final class SchemaMigrations {
                         planned BIGINT NOT NULL,
                         mined BIGINT NOT NULL,
                         PRIMARY KEY (world, cx, cz, ore_id)
-                    )""")));
+                    )""")),
+            new Migration(3, List.of(
+                    """
+                    CREATE TABLE IF NOT EXISTS corefactory_deposits (
+                        id BIGINT PRIMARY KEY,
+                        world VARCHAR NOT NULL,
+                        centre_x INTEGER NOT NULL,
+                        centre_z INTEGER NOT NULL,
+                        radius INTEGER NOT NULL,
+                        ore VARCHAR NOT NULL,
+                        initial_amount BIGINT NOT NULL,
+                        remaining BIGINT NOT NULL CHECK (remaining >= 0)
+                    )""",
+                    """
+                    CREATE INDEX IF NOT EXISTS corefactory_deposits_centre
+                        ON corefactory_deposits (world, centre_x, centre_z)""")));
 
     private SchemaMigrations() {
     }

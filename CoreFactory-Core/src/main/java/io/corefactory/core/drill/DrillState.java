@@ -1,11 +1,12 @@
 package io.corefactory.core.drill;
 
 /**
- * The running state of one drill: how far its cycle has run, and how many completed cycles it has burned fuel for. The
- * drill's barrel holds its items; this holds only the timing, which is what gets saved.
+ * The running state of one drill: how far its fuel cycle has run, and how many completed cycles it has burned fuel for. The
+ * drill's barrel holds its items, and the items it mines are counted by its deposit; this holds only the fuel clock, which
+ * is what gets saved.
  *
- * <p>A cycle advances by the drill's efficiency each tick. When it is full the drill is ready, and it finishes the cycle
- * only once the work is done (a yield, a mined block). Fuel is counted per finished cycle that burned fuel.
+ * <p>A cycle advances by the drill's efficiency each tick the drill runs, and a full cycle is finished at once. Fuel is
+ * counted per finished cycle that burned fuel.
  */
 public final class DrillState {
 

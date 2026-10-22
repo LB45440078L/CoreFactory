@@ -1,0 +1,132 @@
+package io.corefactory.core.drill;
+
+import io.corefactory.core.deposit.Deposit;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalLong;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class DrillDepositsTest {
+
+    private static final String GALENA = "galena_ore";
+    private static final String CRUDE = DrillRules.DEPOSIT;
+    private static final Set<String> KNOWN = Set.of(GALENA, CRUDE, "coal_ore");
+
+    /** A level 1 drill at (0, 60, 0): its square is x -5 to 4 and z -5 to 4. */
+    private static final DrillBox SQUARE = DrillBox.around(0, 60, 0, DrillTable.level(1));
+
+    private static Deposit deposit(long id, int x, int z, int radius, String ore, long remaining) {
+        return new Deposit(id, "world", x, z, radius, ore, Math.max(remaining, 1_000), remaining);
+    }
+
+    @Test
+    void theDepositWithTheMostRemainingIsPicked() {
+        Deposit small = deposit(1, 0, 0, 5, GALENA, 100);
+        Deposit large = deposit(2, 0, 0, 5, GALENA, 300);
+        assertThat(DrillDeposits.pick(List.of(small, large))).contains(large);
+    }
+
+    @Test
+    void aTieOfRemainingGoesToTheLowerId() {
+        Deposit five = deposit(5, 0, 0, 5, GALENA, 200);
+        Deposit three = deposit(3, 0, 0, 5, GALENA, 200);
+        assertThat(DrillDeposits.pick(List.of(five, three)).orElseThrow().id()).isEqualTo(3L);
+        assertThat(DrillDeposits.pick(List.of(three, five)).orElseThrow().id()).isEqualTo(3L);
+    }
+
+    @Test
+    void aDepositWithNothingLeftIsNeverPicked() {
+        assertThat(DrillDeposits.pick(List.of(deposit(1, 0, 0, 5, GALENA, 0)))).isEmpty();
+        Deposit empty = deposit(1, 0, 0, 5, GALENA, 0);
+        Deposit few = deposit(2, 0, 0, 5, GALENA, 4);
+        assertThat(DrillDeposits.pick(List.of(empty, few)).orElseThrow().id()).isEqualTo(2L);
+        assertThat(DrillDeposits.pick(List.of())).isEmpty();
+    }
+
+    @Test
+    void aDrillKeepsItsCurrentDepositWhileItIsMineableAndHasSomethingLeft() {
+        Deposit current = deposit(1, 0, 0, 5, GALENA, 100);
+        Deposit richer = deposit(2, 0, 0, 5, GALENA, 300);
+        assertThat(DrillDeposits.choose(List.of(current, richer), OptionalLong.of(1))).contains(current);
+    }
+
+    @Test
+    void aDrillMovesOnWhenItsCurrentDepositIsEmptyOrOutOfRange() {
+        Deposit empty = deposit(1, 0, 0, 5, GALENA, 0);
+        Deposit other = deposit(2, 0, 0, 5, GALENA, 40);
+        assertThat(DrillDeposits.choose(List.of(empty, other), OptionalLong.of(1))).contains(other);
+        assertThat(DrillDeposits.choose(List.of(other), OptionalLong.of(9))).contains(other);
+        assertThat(DrillDeposits.choose(List.of(), OptionalLong.empty())).isEmpty();
+    }
+
+    @Test
+    void aPetroleumDrillTakesOnlyCrudeDepositsAndAnOreDrillTakesEveryOtherOre() {
+        assertThat(DrillDeposits.kindTakes(DrillKind.PETROLEUM, CRUDE)).isTrue();
+        assertThat(DrillDeposits.kindTakes(DrillKind.PETROLEUM, GALENA)).isFalse();
+        assertThat(DrillDeposits.kindTakes(DrillKind.ORE, CRUDE)).isFalse();
+        assertThat(DrillDeposits.kindTakes(DrillKind.ORE, GALENA)).isTrue();
+        assertThat(DrillDeposits.kindTakes(DrillKind.ORE, "coal_ore")).isTrue();
+    }
+
+    @Test
+    void inTheSquareOnlyDepositsOfTheKindAndAKnownOreAreListed() {
+        Deposit crude = deposit(1, 0, 0, 3, CRUDE, 50);
+        Deposit galena = deposit(2, 1, 1, 3, GALENA, 50);
+        Deposit unknown = deposit(3, 1, 1, 3, "moon_ore", 50);
+        List<Deposit> ore = DrillDeposits.inSquare(List.of(crude, galena, unknown), SQUARE, DrillKind.ORE, KNOWN::contains);
+        assertThat(ore).containsExactly(galena);
+        List<Deposit> petroleum = DrillDeposits.inSquare(List.of(crude, galena, unknown), SQUARE, DrillKind.PETROLEUM,
+                KNOWN::contains);
+        assertThat(petroleum).containsExactly(crude);
+    }
+
+    @Test
+    void aDepositTouchingTheEdgeOfTheSquareIsInRangeAndOneOutsideIsNot() {
+        // The square's east edge is column 4. A radius of 5 from column 9 reaches column 4 exactly.
+        Deposit touching = deposit(1, 9, 0, 5, GALENA, 50);
+        Deposit outside = deposit(2, 10, 0, 5, GALENA, 50);
+        assertThat(DrillDeposits.touches(touching, SQUARE)).isTrue();
+        assertThat(DrillDeposits.touches(outside, SQUARE)).isFalse();
+        assertThat(DrillDeposits.inSquare(List.of(touching, outside), SQUARE, DrillKind.ORE, KNOWN::contains))
+                .containsExactly(touching);
+    }
+
+    @Test
+    void aDepositCountsByItsNearestCornerOnTheDiagonal() {
+        // The nearest block column of the square to (9, 9) is (4, 4): 5 blocks away on each axis, so 50 in all.
+        assertThat(DrillDeposits.touches(deposit(1, 9, 9, 7, GALENA, 1), SQUARE)).isFalse();
+        assertThat(DrillDeposits.touches(deposit(2, 9, 9, 8, GALENA, 1), SQUARE)).isTrue();
+    }
+
+    @Test
+    void aDepositInsideTheSquareTouchesIt() {
+        assertThat(DrillDeposits.touches(deposit(1, 0, 0, 1, GALENA, 1), SQUARE)).isTrue();
+    }
+
+    @Test
+    void theSelectionRemovesTheOresTheDrillIgnores() {
+        Deposit galena = deposit(1, 0, 0, 3, GALENA, 50);
+        Deposit crude = deposit(2, 1, 1, 3, CRUDE, 50);
+        DrillSelection ignoring = new DrillSelection(List.of(GALENA));
+        assertThat(DrillDeposits.mineable(List.of(galena, crude), ignoring)).containsExactly(crude);
+        assertThat(DrillDeposits.mineable(List.of(galena, crude), new DrillSelection())).containsExactly(galena, crude);
+    }
+
+    @Test
+    void theSearchReachCoversARadiusPlusTheSideOfTheSquare() {
+        assertThat(DrillDeposits.reach(DrillTable.level(5), 48)).isEqualTo(88);
+        assertThat(DrillDeposits.reach(DrillTable.level(1), 24)).isEqualTo(34);
+    }
+
+    @Test
+    void theChosenDepositIsEmptyWhenTheSquareHoldsNoPickableDeposit() {
+        Optional<Deposit> none = DrillDeposits.choose(DrillDeposits.mineable(
+                DrillDeposits.inSquare(List.of(deposit(1, 50, 50, 3, GALENA, 9)), SQUARE, DrillKind.ORE, KNOWN::contains),
+                new DrillSelection()), OptionalLong.empty());
+        assertThat(none).isEmpty();
+    }
+}

@@ -44,7 +44,7 @@ the plugin without the old-version warnings.
 **Not verified:**
 
 - Since 1.0.0, none of these has been run on a server: the lab tool barrels and hopper rules, the drills (both kinds and
-  all levels), the Ore Density Scanner, the solar panel, petroleum and the ore blocks, the progress holograms, the sprite
+  all levels), the deposits and their ore blocks, the solar panel, petroleum, the progress holograms, the sprite
   effects, the research admin commands, the startup data merge, and the SQLite and PostgreSQL drivers with their download.
   The pure rules of several of them are covered by unit tests.
 - The power network and the logistics devices (pylons, accumulators, generators, wires, belts, pickers, splitters, and
@@ -140,7 +140,8 @@ what was placed before, and what it cannot convert is listed here.
 - **Tall devices may overlap a block above them.** A generator or a level IV or V drill placed before this change stood one block
   high. If a block was placed above it, the upper half of the new footprint now overlaps that block. There is no migration. See
   [MECHANICS.md](MECHANICS.md#placing-and-breaking-the-energy-devices).
-- **Charcoal from coal.** Ore drills now mine coal veins, which give charcoal. Coal blocks broken by hand give the same item.
+- **Charcoal from coal.** Ore drills now mine coal deposits, which give charcoal, one item for each unit mined. A coal ore
+  block broken by hand gives its vanilla drop, coal, not charcoal.
 - **Turret arc and tilt.** The arc defaults to `arc-degrees: 360` and the tilt limit to `pitch-limit-degrees: 90`, the whole
   sphere. A `config.yml` that already sets `arc-degrees: 180` keeps 180, and then a turret ignores every mob outside that
   sector. Change `arc-degrees` to `360` and `pitch-limit-degrees` to `90`, then restart. The scan rate is
@@ -153,6 +154,17 @@ what was placed before, and what it cannot convert is listed here.
   [PLAYER_GUIDE.md](PLAYER_GUIDE.md#belts-and-chests-the-claim-rule)).
 - **Turret owners.** Only the owner, with `corefactory.turret`, can load, eject, upgrade, change targeting or break a turret.
   Anyone else can open its menu and look, but cannot touch it.
+- **Deposits in existing worlds.** Ore is now laid as deposits (see [ARCHITECTURE.md](ARCHITECTURE.md#geology-and-deposits)).
+  A chunk generated before the rework has no deposit marker, so it is laid once, the first time it loads after the
+  upgrade. The vein ore blocks that the old code placed in those chunks stay where they are. A deposit that is not in the
+  store yet is planned and stored when its chunk is laid.
+- **Old tables and data are not used.** The chunk budgets and the mining ledger are not read or written any more. Their
+  tables (`corefactory_chunk_budget` and `corefactory_mining_ledger`) are still created on install, but they stay empty
+  and unused. The petroleum volumes that the old code kept per chunk are not used by drills or deposits. They are read
+  only for crude petroleum ore blocks that a player placed.
+- **The Ore Density Scanner does nothing.** It can still be crafted after Laboratory Basics, and it has no right-click
+  action: no map and no summary. `/cf geology status` and `/cf geology retrofit` are removed, and `/cf geology deposits`
+  replaces them. The `geology.chunks-per-tick` key is no longer read.
 
 ## Pending in-game checks
 
@@ -214,6 +226,16 @@ listed here until it is checked on a server with a client.
 | Chemistry and ammunition models | The induction furnace, powder mill, cartridge press, bullet swaging machine, ammunition assembly, metal lathe, component assembly and heavy weapons assembly look right, and their front faces animate. | `ProcessMachineArt` |
 | New ore blocks | The saltpeter, sulfur, zinc and coal ore blocks look like their minerals on the ground. | `OreArt` |
 | energy.yml reset | A real file from before version 2 loads with the one-line warning, and its accumulators start empty. | `EnergyFile.read`, `EnergyFile.resetLegacyUnits` |
+| Deposit patches | In a new world, deposits show as patches of ore blocks over stone, inside each ore's height band, about 30 percent of the stone in a patch. Check the look, and that the patches are where the deposit list says they are. | `DepositGenerator`, `OreBlocks`, `DepositPlanner` |
+| Deposit list | `/cf geology deposits` lists the deposits near you, with the ore, what is left, the centre and the radius, and says "None. Try a larger radius." when there are none. Check the radius limits (1 to 512) and the usage line. | `GeologyCommand` |
+| Chunk laid once | A chunk is populated once: after a restart, its ore blocks are the same and no new ore blocks appear. | `DepositGenerator.populate` |
+| Drill yield | A drill over a patch yields about its rate: a level 1 drill at full power makes about 1.0 item per second, and the info item shows the rate. | `DrillTicker`, `DrillMining`, `DrillRates` |
+| No deposit in range | A drill with no deposit in its square says "No deposit in range". | `DrillStatus`, `DrillRules.status` |
+| Exhausted deposit | An exhausted deposit reports "Deposit exhausted", and the drill moves on to another deposit in range when one exists. | `DrillMining`, `DrillRules.status` |
+| Deposits survive a restart | The remaining amounts survive a restart. This holds with the JDBC store only. | `JdbcDepositStore`, `DepositLedger` |
+| Resources menu | The resources menu pages the deposits, six per page, with the arrows and the back button. | `DrillResourcesMenu`, `DrillResourceRows` |
+| Patch block broken by hand | Breaking a patch block by hand gives its vanilla drop (glazed terracotta drops itself, coal ore drops coal), not raw ore. Drills are the only source of raw minerals from deposits. | `GeologyListener`, `DepositGenerator` |
+| No database, restart | Without the database, a drill finds no deposit in a chunk laid before a restart, because the deposits were kept in memory only. | `DepositLedger`, `MemoryDepositStore` |
 
 ## Known limitations
 
@@ -244,7 +266,7 @@ These are real, and are part of the design unless noted.
 | Barrel concealment | Block changes are sent to the players near each barrel, and each machine has an invisible interaction entity. Nothing is written to the world or saved. The views are sent again every 40 ticks. |
 | Power and logistics | A lab tool and a belt, picker or splitter draw their power even when idle or empty. Generators give power only while their chunk is loaded. Logistics items are shown only up to `logistics.max-item-displays`; the rest are carried without a display. |
 | Sprite effects | Sprite effects are item displays. At `effects.max-sprites` newer effects are dropped, with one warning. |
-| Ore blocks | An ore re-textures every block of its host type in the world. See [RESOURCE_PACK.md](RESOURCE_PACK.md#limits). |
+| Ore blocks | An ore re-textures every block of its host type in the world. A deposit's ore block is one of its ore's host blocks (glazed terracotta for most ores, vanilla coal ore for coal), so this applies to those blocks wherever they are. See [RESOURCE_PACK.md](RESOURCE_PACK.md#limits). |
 | Turrets and blasts | A blast does not destroy a machine gun turret or a laser turret. Keep turrets out of a blast's radius. |
 | Turrets and hoppers | A hopper does not feed a turret. Belts and pickers do. |
 | Turret coordination | The target coordination is checked by reading the code and by unit tests only. It has not run on a server with several turrets and several mobs. |

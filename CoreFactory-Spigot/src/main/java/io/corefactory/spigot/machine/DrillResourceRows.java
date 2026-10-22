@@ -1,18 +1,21 @@
 package io.corefactory.spigot.machine;
 
-import io.corefactory.core.drill.DrillReport;
+import io.corefactory.core.deposit.Deposit;
+import io.corefactory.core.drill.DrillSelection;
+import io.corefactory.core.drill.DrillText;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * The lines of a drill's resources menu, built from its {@link DrillReport}. Each line names its ore, the material of its icon,
- * the lore, and the state of its toggle; the menu turns a line into items. Pure, so the rows are tested without a server.
+ * The lines of a drill's resources menu: one per deposit in its square that the drill may mine, with the ore's icon, the amounts
+ * left in the deposit in the lore, and the toggle of its ore. The menu turns a line into items. Pure, so the lines are tested
+ * without a server.
  */
 public final class DrillResourceRows {
 
-    /** The icon of an exhausted ore: grey glass, not a barrier. */
+    /** The icon of an exhausted deposit: grey glass, not a barrier. */
     public static final String EXHAUSTED_ICON = "GRAY_STAINED_GLASS_PANE";
 
     /** The icon of an ore whose host block is unknown. */
@@ -21,11 +24,10 @@ public final class DrillResourceRows {
     /**
      * What the menu shows for an ore.
      *
-     * @param name   the display name, with colour codes from ores.yml
-     * @param host   the material name of the ore's host block, or null when unknown
-     * @param volume true for a deposit, whose counts are volumes rather than blocks
+     * @param name the display name, with colour codes from ores.yml
+     * @param host the material name of the ore's host block, or null when unknown
      */
-    public record OreLabel(String name, String host, boolean volume) {
+    public record OreLabel(String name, String host) {
     }
 
     /** The state of an ore's toggle: mined, or ignored. */
@@ -35,45 +37,47 @@ public final class DrillResourceRows {
     }
 
     /**
-     * One row of the menu.
+     * One line of the menu.
      *
-     * @param oreId     the ore id
+     * @param depositId the deposit's id
+     * @param oreId     the ore id, which the toggle flips for every deposit of that ore
      * @param name      the display name, with colour codes
      * @param icon      the material name of the icon
      * @param lore      the icon's lore lines, with colour codes
      * @param toggle    the state of the toggle beside the icon
-     * @param exhausted true when the ore is mined but nothing of it is left in range
+     * @param exhausted true when nothing is left in the deposit
      */
-    public record Line(String oreId, String name, String icon, List<String> lore, Toggle toggle, boolean exhausted) {
+    public record Line(long depositId, String oreId, String name, String icon, List<String> lore, Toggle toggle,
+                       boolean exhausted) {
     }
 
     private DrillResourceRows() {
     }
 
     /**
-     * The lines, one per report row and in the same order.
+     * The lines, one per deposit and in the order given.
      *
-     * @param rows   the report's rows
-     * @param labels the name, host and kind of every ore; an ore without a label is shown by its id
+     * @param deposits  the deposits in the drill's square that its kind may mine
+     * @param labels    the name and host of every ore; an ore without a label is shown by its id
+     * @param selection the drill's selection, which sets each toggle
      */
-    public static List<Line> of(List<DrillReport.Row> rows, Map<String, OreLabel> labels) {
+    public static List<Line> of(List<Deposit> deposits, Map<String, OreLabel> labels, DrillSelection selection) {
         List<Line> lines = new ArrayList<>();
-        for (DrillReport.Row row : rows) {
-            OreLabel label = labels.getOrDefault(row.oreId(), new OreLabel(row.oreId(), null, false));
-            String unit = label.volume() ? " units" : "";
-            List<String> lore = new ArrayList<>(List.of(
-                    "&7In range now: &f" + row.inRange() + unit,
-                    "&7Mined by this drill: &f" + row.minedByDrill() + unit,
-                    "&7Total in range: &f" + row.totalInRange() + unit));
+        for (Deposit deposit : deposits) {
+            OreLabel label = labels.getOrDefault(deposit.ore(), new OreLabel(deposit.ore(), null));
+            boolean exhausted = deposit.remaining() <= 0;
             String name = label.name();
             String icon = label.host() == null ? DEFAULT_ICON : label.host();
-            if (row.exhausted()) {
+            List<String> lore = new ArrayList<>(List.of(
+                    "&7Left &f" + DrillText.remaining(deposit),
+                    "&7At &f" + deposit.centreX() + " " + deposit.centreZ()));
+            if (exhausted) {
                 name = "&7" + plain(name);
                 icon = EXHAUSTED_ICON;
-                lore.add("&8exhausted in range");
+                lore.add("&8empty");
             }
-            lines.add(new Line(row.oreId(), name, icon, List.copyOf(lore),
-                    row.selected() ? Toggle.MINING : Toggle.IGNORING, row.exhausted()));
+            Toggle toggle = selection.isMining(deposit.ore()) ? Toggle.MINING : Toggle.IGNORING;
+            lines.add(new Line(deposit.id(), deposit.ore(), name, icon, List.copyOf(lore), toggle, exhausted));
         }
         return List.copyOf(lines);
     }

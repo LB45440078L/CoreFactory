@@ -145,9 +145,8 @@ public final class CoreFactoryCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(Style.usage("/cf pack", "[update]",
                 "show the resource pack version, or install a newer one now"));
         sender.sendMessage(Style.COMMAND.of("/cf count") + Style.HINT.of(" | ") + Style.COMMAND.of("/cf reload"));
-        sender.sendMessage(Style.usage("/cf geology status", "", "marker state of the loaded chunks"));
-        sender.sendMessage(Style.usage("/cf geology retrofit", "<radius> [force]",
-                "lay ores into existing chunks"));
+        sender.sendMessage(Style.usage("/cf geology deposits", "[radius]",
+                "the deposits within radius blocks of you, with what each has left"));
         sender.sendMessage(Style.usage("/cf research max", "[player]", "finish every node (admins)"));
         sender.sendMessage(Style.usage("/cf friends", "add|remove <player> | list",
                 "your friends: a turret never fires at them while friendly fire is off"));
@@ -485,13 +484,7 @@ public final class CoreFactoryCommand implements CommandExecutor, TabCompleter {
             case "pack" -> index == 1 ? Completion.all(List.of("update"), PERMISSION_RELOAD) : List.of();
             case "pylons" -> index == 1 ? Completion.all(List.of("show"), PERMISSION_PYLONS) : List.of();
             case "turret" -> turret.options(args);
-            case "geology" -> {
-                if (index == 1) {
-                    yield Completion.all(List.of("status", "retrofit"), GeologyCommand.PERMISSION);
-                }
-                yield index == 3 && first.equals("retrofit")
-                        ? Completion.all(List.of("force"), GeologyCommand.PERMISSION) : List.of();
-            }
+            case "geology" -> index == 1 ? Completion.all(List.of("deposits"), GeologyCommand.PERMISSION) : List.of();
             case "research" -> {
                 if (index == 1) {
                     yield Completion.all(List.of("max", "grant", "nodes"), ResearchCommand.PERMISSION);

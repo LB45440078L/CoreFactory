@@ -361,7 +361,10 @@ public final class MachineStore {
                 layout.fuelSlots().size(), drill.isPresent());
         Set<ItemRef> fuels = drill.isPresent() ? Set.of(drill.get().fuel()) : ProcessEngine.FUEL;
         PlacedMachine placed = new PlacedMachine(at, machine, host, menus.create(machine, layout, at, slots, fuels));
-        drill.ifPresent(definition -> placed.setDrill(new DrillState(definition)));
+        drill.ifPresent(definition -> {
+            placed.setDrill(new DrillState(definition));
+            placed.setMining(new DrillMining());
+        });
         return placed;
     }
 

@@ -4,6 +4,7 @@ import io.corefactory.core.drill.DrillKind;
 import io.corefactory.core.drill.DrillRules;
 import io.corefactory.core.drill.DrillStatus;
 import io.corefactory.core.drill.DrillTable;
+import io.corefactory.core.drill.DrillText;
 import io.corefactory.core.hologram.HologramText;
 import io.corefactory.core.process.MachineState;
 import io.corefactory.core.process.ProcessDefinition;
@@ -70,9 +71,10 @@ class HologramJsonTest {
         List<List<String>> hologramLines = List.of(
                 HologramText.forMachine("&7Crusher", state, 100),
                 HologramText.drillLines(DrillKind.PETROLEUM, DrillTable.level(2),
-                        DrillRules.petroleumPower(0, List.of(9), true), DrillStatus.RUNNING, 12, 576, 3),
+                        DrillRules.petroleumPower(0, List.of(9), true), DrillStatus.RUNNING, 0.4,
+                        DrillText.deposit("&7Crude Petroleum Deposit", null), 12, 576, 3),
                 HologramText.drillLines(DrillKind.ORE, DrillTable.level(4), DrillRules.orePower(true),
-                        DrillStatus.NO_TARGET, 0, 576, 0));
+                        DrillStatus.NO_TARGET, 0.0, "&7Deposit &cnone in range", 0, 576, 0));
         for (List<String> lines : hologramLines) {
             for (String line : lines) {
                 assertThat(HologramJson.of(line)).as(line).startsWith("{\"text\":\"\",\"extra\":[").doesNotContain("&");

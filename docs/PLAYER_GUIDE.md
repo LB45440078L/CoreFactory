@@ -1,12 +1,12 @@
 # CoreFactory Player Guide
 
-Welcome to CoreFactory. This guide is for players. It tells you what the mod adds, how to find the rare ores, how the science works, how to run every machine, how to research, how to craft every item and bomb, and how to stay alive when the bombs go off.
+Welcome to CoreFactory. This guide is for players. It tells you what the mod adds, how to find the ores, how the science works, how to run every machine, how to research, how to craft every item and bomb, and how to stay alive when the bombs go off.
 
 You do not need to read it in order. Use the table of contents to jump to what you need. If you are new, read the [First hour](#first-hour) section, which walks you through your first session step by step.
 
 ## Welcome
 
-CoreFactory turns TNT into a whole game. Mine rare ores, refine them in machines that work like a real nuclear fuel cycle, unlock new knowledge at a research console, and then build bombs from what you made. The bombs range from simple charges to the largest weapon in the game.
+CoreFactory turns TNT into a whole game. Dig up ores, refine them in machines that work like a real nuclear fuel cycle, unlock new knowledge at a research console, and then build bombs from what you made. The bombs range from simple charges to the largest weapon in the game.
 
 The mod has three big ideas.
 
@@ -169,9 +169,9 @@ Every mod item, bomb, machine, ore and research pack has its picture next to its
 
 CoreFactory adds seven things to your world.
 
-1. **Ores.** Seven special ores, and a crude petroleum deposit, are hidden in the stone. They sit at different depths and show different colours. Each one gives a raw mineral when you mine it. See [Finding ores](#finding-ores).
+1. **Ores.** Eleven solid ores and crude petroleum lie in the world as deposits: round patches of one ore, set in the stone. They sit at different depths and show different colours. Drills dig the raw minerals out of the deposits. See [Finding ores](#finding-ores).
 2. **Machines.** Twenty machines turn raw minerals into the materials for bombs, ammunition and the turret. You place them like blocks, then open them to load and empty them. Hoppers can feed them. See [The lab machines](#the-lab-machines).
-3. **Drills.** Ten drills dig for you. Five petroleum drills pump petroleum, and five ore drills mine the special ores. See [Drills and petroleum](#drills-and-petroleum).
+3. **Drills.** Ten drills dig for you. Five petroleum drills draw petroleum, and five ore drills mine the solid ores. See [Drills and petroleum](#drills-and-petroleum).
 4. **Power and belts.** Generators make power, pylons carry it to the machines, and accumulators store it. Belts, pickers and splitters move items between machines. See [Electricity](#electricity) and [Belts and automation](#belts-and-automation).
 5. **Research.** A line of 15 research nodes controls what you can craft, place and light. Each node costs research packs, which the spectrometer makes from samples. See [Research](#research).
 6. **Bombs.** Forty-two TNT types, from the simple Chain Reaction TNT to a 50 megaton Tsar Bomba and a 1000 megaton 4-dimensional bomb. See [Bombs](#bombs) and [Nuclear weapons](#nuclear-weapons).
@@ -196,8 +196,8 @@ There are three kinds of new item: the things you craft, the things you dig up o
 | Crafted components | <img src="images/components/fuse_linker.png" width="24" height="24" align="absmiddle"> Fuse linker, <img src="images/components/fuse_wire.png" width="24" height="24" align="absmiddle"> Fuse wire, <img src="images/components/shaped_charge_lens.png" width="24" height="24" align="absmiddle"> Shaped charge lens, <img src="images/components/gravity_core.png" width="24" height="24" align="absmiddle"> Gravity core, <img src="images/components/vitrifier_flux.png" width="24" height="24" align="absmiddle"> Vitrifier flux, <img src="images/components/sorting_magnet.png" width="24" height="24" align="absmiddle"> Sorting magnet, <img src="images/components/anchor_crystal.png" width="24" height="24" align="absmiddle"> Anchor crystal, <img src="images/components/pulse_capacitor.png" width="24" height="24" align="absmiddle"> Pulse capacitor, <img src="images/components/quantum_detonator.png" width="24" height="24" align="absmiddle"> Quantum detonator, <img src="images/components/biohazard_culture.png" width="24" height="24" align="absmiddle"> Biohazard culture, <img src="images/components/napalm_gel.png" width="24" height="24" align="absmiddle"> Napalm gel, <img src="images/components/anchor_plate.png" width="24" height="24" align="absmiddle"> Anchor plate, <img src="images/components/plutonium_pit.png" width="24" height="24" align="absmiddle"> Plutonium pit, <img src="images/components/tritium_booster.png" width="24" height="24" align="absmiddle"> Tritium booster, <img src="images/components/neutron_initiator.png" width="24" height="24" align="absmiddle"> Neutron initiator, <img src="images/components/nuclear_casing.png" width="24" height="24" align="absmiddle"> Nuclear casing, <img src="images/components/thermonuclear_core.png" width="24" height="24" align="absmiddle"> Thermonuclear core | Crafting table |
 | Protection | <img src="images/components/hazmat_fabric.png" width="24" height="24" align="absmiddle"> Hazmat fabric, the four Radioactive Suit pieces, <img src="images/components/geiger_counter.png" width="24" height="24" align="absmiddle"> Geiger counter | Crafting table, after research |
 | Machines | <img src="images/components/crusher.png" width="24" height="24" align="absmiddle"> Crusher, <img src="images/components/roaster.png" width="24" height="24" align="absmiddle"> Roasting kiln, <img src="images/components/separator.png" width="24" height="24" align="absmiddle"> Centrifugal separator, <img src="images/components/purifier.png" width="24" height="24" align="absmiddle"> Purification still, <img src="images/components/converter.png" width="24" height="24" align="absmiddle"> Fluorination converter, <img src="images/components/enrichment_cascade.png" width="24" height="24" align="absmiddle"> Enrichment cascade, <img src="images/components/transmuter.png" width="24" height="24" align="absmiddle"> Neutron transmuter, <img src="images/components/spectrometer.png" width="24" height="24" align="absmiddle"> Spectrometer, <img src="images/components/particle_accelerator.png" width="24" height="24" align="absmiddle"> Particle accelerator, <img src="images/components/antimatter_condenser.png" width="24" height="24" align="absmiddle"> Antimatter condenser, <img src="images/components/research_console.png" width="24" height="24" align="absmiddle"> Research console | Crafting table, after research |
-| Drills and power | <img src="images/components/petroleum_drill_1.png" width="24" height="24" align="absmiddle"> Petroleum drills I to V, <img src="images/components/ore_drill_1.png" width="24" height="24" align="absmiddle"> Ore drills I to V, <img src="images/components/solar_panel.png" width="24" height="24" align="absmiddle"> Solar panel, <img src="images/components/ore_density_scanner.png" width="24" height="24" align="absmiddle"> Ore density scanner | Crafting table, after research. The scanner needs Laboratory Basics |
-| Petroleum | <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> Petroleum | Mining a crude petroleum deposit, or pumping one with a petroleum drill |
+| Drills and power | <img src="images/components/petroleum_drill_1.png" width="24" height="24" align="absmiddle"> Petroleum drills I to V, <img src="images/components/ore_drill_1.png" width="24" height="24" align="absmiddle"> Ore drills I to V, <img src="images/components/solar_panel.png" width="24" height="24" align="absmiddle"> Solar panel, <img src="images/components/ore_density_scanner.png" width="24" height="24" align="absmiddle"> Ore density scanner (does nothing now) | Crafting table, after research. The scanner needs Laboratory Basics |
+| Petroleum | <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> Petroleum | A petroleum drill working a crude petroleum deposit |
 | Research packs | <img src="images/components/research_pack_basic.png" width="24" height="24" align="absmiddle"> Basic, <img src="images/components/research_pack_chemical.png" width="24" height="24" align="absmiddle"> Chemical, <img src="images/components/research_pack_nuclear.png" width="24" height="24" align="absmiddle"> Nuclear, <img src="images/components/research_pack_plasma.png" width="24" height="24" align="absmiddle"> Plasma, <img src="images/components/research_pack_exotic.png" width="24" height="24" align="absmiddle"> Exotic | Spectrometer |
 | Crafted parts for machines | <img src="images/components/superconducting_magnet.png" width="24" height="24" align="absmiddle"> Superconducting magnet, <img src="images/components/neutron_flux_cell.png" width="24" height="24" align="absmiddle"> Neutron flux cell, <img src="images/components/tesseract_lattice.png" width="24" height="24" align="absmiddle"> Tesseract lattice | Crafting table, after research |
 
@@ -223,34 +223,40 @@ Some of the everyday bombs need only vanilla items. Others need components, so y
 
 <img src="images/ores/uraninite_ore.png" width="48" height="48" align="absmiddle">
 
-Eight kinds of ore block are hidden in the stone of the world: seven special ores, and a crude petroleum deposit. None of them is visible from far away, so you must dig to find them. Each ore sits in a band of depths, and it appears only in the rock types it is allowed to replace. Ores are placed when a new piece of land is generated, so the same seed always gives the same veins.
+Eleven solid ores and crude petroleum lie in the world as **deposits**. A deposit is a round patch of one ore, roughly 48 to 96 blocks across, laid in the stone. None of them is visible from far away, so you must travel and dig to find them.
 
-Mining an ore block gives you its raw mineral. Raw minerals are not the end of the chain. They must be crushed, roasted and separated before they become useful. See [The science](#the-science) for what each one becomes.
+Each chunk (a 16 by 16 block column) gets its deposits the first time it loads, and only once. Deposits never overlap, and the same world always has the same deposits in the same places. Old land gets its deposits too, when you first visit it.
 
-Three things decide how easy an ore is to find:
+Digging a patch block by hand gives you its vanilla drop, not raw minerals. Drills take the raw minerals out of a deposit, one unit for each raw piece. Raw minerals are not the end of the chain. They must be crushed, roasted and separated before they become useful. See [The science](#the-science) for what each one becomes.
 
-- **Depth.** Each ore has a lowest and a highest level, written as y values. Y is the height in the world: the lowest point is -64, and higher numbers are higher up. The ranges are given below.
-- **Rarity.** Some ores come in more veins per chunk than others. A chunk is a 16 by 16 block column. "Common" means the ore turns up in most chunks in its band. "Rare" means you must search a lot of chunks.
-- **Vein size.** A vein is a small cluster of ore blocks. Bigger veins give more blocks in one spot, so one find can be a good haul.
+Three things decide what you find and how much of it there is:
+
+- **Depth.** Each ore sits in its own band of depths, written as y values. Y is the height in the world: the lowest point is -64, and higher numbers are higher up. Patch blocks appear only inside that ore's band. The ranges are given below.
+- **Size.** A deposit is a round patch, roughly 48 to 96 blocks across. About three in ten of the stone blocks inside the patch, within the ore's band, show as the ore's patch block, so you see a scatter of coloured blocks over the stone.
+- **Amount.** A deposit holds a set amount of its ore when it is made, between 500,000 and 25,000,000 units by default. The same range applies to every ore. Small deposits are more common than large ones, so a big deposit is a real find.
 
 ### The ores
 
-| Ore | Found between y | Rarity | Vein size (blocks) | Raw mineral you get per block |
+| Ore | Found between y | Patch block | Amount in a deposit (default) | Drill gives, one per unit |
 |---|---|---|---|---|
-| <img src="images/ores/uraninite_ore.png" width="24" height="24" align="absmiddle"> Uraninite Ore | -48 and 24 | Fairly common | 5 to 8 | 2 to 4 <img src="images/components/raw_uraninite.png" width="24" height="24" align="absmiddle"> Raw uraninite |
-| <img src="images/ores/pitchblende_ore.png" width="24" height="24" align="absmiddle"> Pitchblende Ore | -64 and -8 | Uncommon | 4 to 7 | 1 to 3 <img src="images/components/raw_pitchblende.png" width="24" height="24" align="absmiddle"> Raw pitchblende |
-| <img src="images/ores/monazite_ore.png" width="24" height="24" align="absmiddle"> Monazite Ore | 0 and 80 | Uncommon | 6 to 10 | 2 to 4 <img src="images/components/raw_monazite.png" width="24" height="24" align="absmiddle"> Raw monazite |
-| <img src="images/ores/thorite_ore.png" width="24" height="24" align="absmiddle"> Thorite Ore | -64 and -16 | Rare | 3 to 6 | 1 to 3 <img src="images/components/raw_thorite.png" width="24" height="24" align="absmiddle"> Raw thorite |
-| <img src="images/ores/galena_ore.png" width="24" height="24" align="absmiddle"> Galena Ore | -32 and 40 | Common | 4 to 8 | 2 to 5 <img src="images/components/raw_galena.png" width="24" height="24" align="absmiddle"> Raw galena |
-| <img src="images/ores/cinnabar_ore.png" width="24" height="24" align="absmiddle"> Cinnabar Ore | -32 and 24 | Uncommon | 4 to 7 | 2 to 4 <img src="images/components/raw_cinnabar.png" width="24" height="24" align="absmiddle"> Raw cinnabar |
-| <img src="images/ores/fluorite_ore.png" width="24" height="24" align="absmiddle"> Fluorite Ore | -48 and 64 | Common | 6 to 12 | 3 to 6 <img src="images/components/raw_fluorite.png" width="24" height="24" align="absmiddle"> Raw fluorite |
-| <img src="images/ores/crude_petroleum_deposit.png" width="24" height="24" align="absmiddle"> Crude Petroleum Deposit | -64 and 0 | Rare | 3 to 6 | 1 to 2 <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> Petroleum |
+| <img src="images/ores/uraninite_ore.png" width="24" height="24" align="absmiddle"> Uraninite Ore | -48 and 24 | Black glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_uraninite.png" width="24" height="24" align="absmiddle"> Raw uraninite |
+| <img src="images/ores/pitchblende_ore.png" width="24" height="24" align="absmiddle"> Pitchblende Ore | -64 and -8 | Brown glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_pitchblende.png" width="24" height="24" align="absmiddle"> Raw pitchblende |
+| <img src="images/ores/monazite_ore.png" width="24" height="24" align="absmiddle"> Monazite Ore | 0 and 80 | Yellow glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_monazite.png" width="24" height="24" align="absmiddle"> Raw monazite |
+| <img src="images/ores/thorite_ore.png" width="24" height="24" align="absmiddle"> Thorite Ore | -64 and -16 | Gray glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_thorite.png" width="24" height="24" align="absmiddle"> Raw thorite |
+| <img src="images/ores/galena_ore.png" width="24" height="24" align="absmiddle"> Galena Ore | -32 and 40 | Light gray glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_galena.png" width="24" height="24" align="absmiddle"> Raw galena |
+| <img src="images/ores/cinnabar_ore.png" width="24" height="24" align="absmiddle"> Cinnabar Ore | -32 and 24 | Red glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_cinnabar.png" width="24" height="24" align="absmiddle"> Raw cinnabar |
+| <img src="images/ores/fluorite_ore.png" width="24" height="24" align="absmiddle"> Fluorite Ore | -48 and 64 | Purple glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_fluorite.png" width="24" height="24" align="absmiddle"> Raw fluorite |
+| <img src="images/ores/crude_petroleum_deposit.png" width="24" height="24" align="absmiddle"> Crude Petroleum Deposit | -64 and 0 | White glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> Petroleum |
+| <img src="images/ores/saltpeter_deposit.png" width="24" height="24" align="absmiddle"> Saltpeter Deposit | -32 and 80 | Lime glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_saltpeter.png" width="24" height="24" align="absmiddle"> Raw saltpeter |
+| <img src="images/ores/sulfur_deposit.png" width="24" height="24" align="absmiddle"> Sulfur Deposit | -48 and 32 | Orange glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_sulfur.png" width="24" height="24" align="absmiddle"> Raw sulfur |
+| <img src="images/ores/zinc_deposit.png" width="24" height="24" align="absmiddle"> Sphalerite (Zinc Ore) | -48 and 48 | Cyan glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_sphalerite.png" width="24" height="24" align="absmiddle"> Raw sphalerite |
+| <img src="images/ores/coal_ore.png" width="24" height="24" align="absmiddle"> Coal Ore | -64 and 96 | Coal ore (the vanilla block) | 500,000 to 25,000,000 | <img src="images/components/charcoal.png" width="24" height="24" align="absmiddle"> Charcoal |
 
-Common ores are good for starting. Rare ores are good for later, when you need more of them.
+The last four are described in [New ores](#new-ores).
 
-The table is also a map. Deep ores (pitchblende and thorite) lie in the dark layer below sea level, where deepslate is common. High ores (monazite) lie in the upper stone and in mountains. Galena and fluorite are the widest, and you will see them at many depths.
+The table is also a map of depth. Deep ores (pitchblende and thorite) lie in the dark layer below sea level, where deepslate is common. High ores (monazite) lie in the upper stone and in mountains. Coal has the widest band, so you will find its patches at many depths.
 
-In the world, an ore block is a block of grey stone with the mineral's colours flecked through it. The mineral's colour is shown in the icon next to each name. Without the server's resource pack, an ore block looks like a plain coloured block instead. If your ores look like plain terracotta, accept the server's resource pack.
+In the world, a deposit shows as a patch of its colour. Most patch blocks are glazed terracotta in the colour shown in the table. Coal patches are ordinary coal ore.
 
 ### Uraninite
 
@@ -258,7 +264,7 @@ In the world, an ore block is a block of grey stone with the mineral's colours f
 
 - **Where:** from y -48 to y 24, in stone, deepslate, tuff, andesite, granite and diorite.
 - **The mineral:** black and pitchy, heavy, and faintly warm to the touch.
-- **Drops:** 2 to 4 <img src="images/components/raw_uraninite.png" width="24" height="24" align="absmiddle"> raw uraninite per block.
+- **Drill yield:** one <img src="images/components/raw_uraninite.png" width="24" height="24" align="absmiddle"> raw uraninite for each unit a drill takes from a deposit.
 - **Next step:** crush the raw uraninite. Each raw piece becomes two crushed uraninite, and two crushed uraninite roast into one <img src="images/components/uranium_calcine.png" width="24" height="24" align="absmiddle"> uranium calcine. Two calcine give one <img src="images/components/yellowcake.png" width="24" height="24" align="absmiddle"> yellowcake, the first real uranium product.
 - **Why it matters:** it is the main uranium ore. Most of the uranium chain starts here.
 
@@ -268,9 +274,9 @@ In the world, an ore block is a block of grey stone with the mineral's colours f
 
 - **Where:** from y -64 to y -8, in stone, deepslate and granite. This is the deep layer.
 - **The mineral:** brown-black, almost all uranium oxide.
-- **Drops:** 1 to 3 <img src="images/components/raw_pitchblende.png" width="24" height="24" align="absmiddle"> raw pitchblende per block.
+- **Drill yield:** one <img src="images/components/raw_pitchblende.png" width="24" height="24" align="absmiddle"> raw pitchblende for each unit a drill takes from a deposit.
 - **Next step:** the same as uraninite. One raw pitchblende becomes one calcine after crushing and roasting, so two raw pitchblende make one yellowcake.
-- **Why it matters:** the game calls it nearly pure uranium oxide. Its drops are fewer than uraninite's, so pitchblende is harder to collect in quantity.
+- **Why it matters:** the game calls it nearly pure uranium oxide. Its deposits hold the same range of units as any other ore, so it is no harder to collect in quantity than uraninite.
 
 ### Monazite
 
@@ -278,7 +284,7 @@ In the world, an ore block is a block of grey stone with the mineral's colours f
 
 - **Where:** from y 0 to y 80, in stone, granite, diorite, andesite and tuff. This is the high band, so you often find it in mountains and high cliffs.
 - **The mineral:** amber phosphate sand, golden in colour and rich in rare earths and thorium.
-- **Drops:** 2 to 4 <img src="images/components/raw_monazite.png" width="24" height="24" align="absmiddle"> raw monazite per block.
+- **Drill yield:** one <img src="images/components/raw_monazite.png" width="24" height="24" align="absmiddle"> raw monazite for each unit a drill takes from a deposit.
 - **Next step:** crush it, then run the crushed monazite through the centrifugal separator. The separator gives <img src="images/components/rare_earth_concentrate.png" width="24" height="24" align="absmiddle"> rare earth concentrate and <img src="images/components/phosphate_tailings.png" width="24" height="24" align="absmiddle"> phosphate tailings.
 - **Why it matters:** rare earth concentrate is one of the two feeds for the neutron transmuter when you breed U-233. It is the harder of the two breeding routes. See [Thorium and U-233](#thorium-and-u-233).
 
@@ -288,17 +294,17 @@ In the world, an ore block is a block of grey stone with the mineral's colours f
 
 - **Where:** from y -64 to y -16, in deepslate, stone and tuff. This is the deepest ore in the game.
 - **The mineral:** dark silicate rock that holds thorium-232.
-- **Drops:** 1 to 3 <img src="images/components/raw_thorite.png" width="24" height="24" align="absmiddle"> raw thorite per block.
+- **Drill yield:** one <img src="images/components/raw_thorite.png" width="24" height="24" align="absmiddle"> raw thorite for each unit a drill takes from a deposit.
 - **Next step:** crush it, then separate the crushed thorite. The separator gives <img src="images/components/thorium_concentrate.png" width="24" height="24" align="absmiddle"> thorium concentrate and <img src="images/components/silicate_tailings.png" width="24" height="24" align="absmiddle"> silicate tailings.
-- **Why it matters:** thorium concentrate breeds U-233 more reliably than rare earths do. Thorite is the rarest ore in the game, so each piece of it is worth keeping.
+- **Why it matters:** thorium concentrate breeds U-233 more reliably than rare earths do, so a thorite deposit is worth keeping for the drills.
 
 ### Galena
 
 <img src="images/ores/galena_ore.png" width="24" height="24" align="absmiddle"> **Galena Ore**
 
-- **Where:** from y -32 to y 40, in stone, andesite, diorite and deepslate. It is one of the most common ores, so it is a good first ore.
+- **Where:** from y -32 to y 40, in stone, andesite, diorite and deepslate. It is a good first ore.
 - **The mineral:** light grey cubes of lead sulfide, often with a little silver.
-- **Drops:** 2 to 5 <img src="images/components/raw_galena.png" width="24" height="24" align="absmiddle"> raw galena per block.
+- **Drill yield:** one <img src="images/components/raw_galena.png" width="24" height="24" align="absmiddle"> raw galena for each unit a drill takes from a deposit.
 - **Next step:** crush it. Two crushed galena roast into <img src="images/components/refined_lead.png" width="24" height="24" align="absmiddle"> refined lead, with a chance of slag. You can also send one crushed galena straight to the spectrometer, which makes a <img src="images/components/research_pack_basic.png" width="24" height="24" align="absmiddle"> basic research pack.
 - **Why it matters:** galena is your first research ore. Basic packs unlock the early nodes, including Radiation Safety, which gives you the suit and the Geiger counter. You do not need refined lead for any recipe, so it is a metal you can keep for later.
 
@@ -308,7 +314,7 @@ In the world, an ore block is a block of grey stone with the mineral's colours f
 
 - **Where:** from y -32 to y 24, in stone, deepslate and andesite.
 - **The mineral:** red mercury ore. Roasting it releases the metal.
-- **Drops:** 2 to 4 <img src="images/components/raw_cinnabar.png" width="24" height="24" align="absmiddle"> raw cinnabar per block.
+- **Drill yield:** one <img src="images/components/raw_cinnabar.png" width="24" height="24" align="absmiddle"> raw cinnabar for each unit a drill takes from a deposit.
 - **Next step:** crush it. Two crushed cinnabar roast into one <img src="images/components/mercury_flask.png" width="24" height="24" align="absmiddle"> mercury flask, with a chance of slag. Cinnabar can also go to the spectrometer, which makes a basic research pack from one crushed cinnabar.
 - **Why it matters:** mercury is one of the two items for the chemical research pack, along with purified iron.
 
@@ -316,9 +322,9 @@ In the world, an ore block is a block of grey stone with the mineral's colours f
 
 <img src="images/ores/fluorite_ore.png" width="24" height="24" align="absmiddle"> **Fluorite Ore**
 
-- **Where:** from y -48 to y 64, in stone, deepslate, tuff and granite. Fluorite has the widest band and has large veins.
+- **Where:** from y -48 to y 64, in stone, deepslate, tuff and granite. Fluorite has a wide band.
 - **The mineral:** fluorine in a purple and green crystal. It is the source of every fluoride in the mod.
-- **Drops:** 3 to 6 <img src="images/components/raw_fluorite.png" width="24" height="24" align="absmiddle"> raw fluorite per block. This is the most you get from one block of any ore.
+- **Drill yield:** one <img src="images/components/raw_fluorite.png" width="24" height="24" align="absmiddle"> raw fluorite for each unit a drill takes from a deposit.
 - **Next step:** crush it into <img src="images/components/crushed_fluorite.png" width="24" height="24" align="absmiddle"> crushed fluorite. Two crushed fluorite go with one yellowcake into the fluorination converter, which makes a <img src="images/components/uf6_cylinder.png" width="24" height="24" align="absmiddle"> UF6 cylinder.
 - **Why it matters:** fluorine is the key to the enrichment step. Without fluorite you cannot make the gas that the enrichment cascade needs.
 
@@ -328,79 +334,61 @@ In the world, an ore block is a block of grey stone with the mineral's colours f
 
 - **Where:** from y -64 to y 0, in stone and deepslate.
 - **The mineral:** crude oil, black and thick. The game calls it petroleum.
-- **Drops:** 1 to 2 <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> petroleum per block. Mining the block removes it.
-- **Silk touch:** keeps the block as an item, as it does for the other ores.
-- **Pumping:** a petroleum drill pumps a deposit without removing it, so one deposit can supply a drill for a long time. See [Petroleum drills](#petroleum-drills).
+- **Drill yield:** one <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> petroleum for each unit a petroleum drill takes from a deposit. Digging a patch block by hand gives you only the block, not petroleum.
+- **Silk touch:** on an ore block item that you placed, keeps the block as an item. See [The silk touch trick](#the-silk-touch-trick).
+- **Pumping:** a petroleum drill draws the deposit down, one petroleum for each unit, until it is empty. The amount left is shown on the drill's info item. See [Petroleum drills](#petroleum-drills).
 - **Why it matters:** petroleum is the fuel of the ore drills. See [Petroleum](#petroleum).
 
 ### What to mine with
 
-Any tool breaks an ore block. The mod takes over the drop, so the tool does not change what you get, apart from one thing: a silk touch enchantment keeps the ore block itself. See [The silk touch trick](#the-silk-touch-trick).
+**Drills are the way to get raw minerals from a deposit.** A drill takes one item for each unit of the deposit, at its level's rate. See [Ore drills](#ore-drills) and [Petroleum drills](#petroleum-drills).
 
-- **Use a pickaxe.** The ore blocks are hard stone-like blocks, and a pickaxe breaks them fastest. Use the best pickaxe you have.
-- **Fortune does not help.** An enchantment called fortune does not give extra ore. Each block gives a fixed random amount in the range shown in the table.
-- **Blasts destroy ore.** If an explosion breaks an ore block, the block is gone and it gives no raw minerals. Mine away from TNT, and do not let a bomb blow up a vein you want.
+Hand-mining a patch block gives its vanilla drop, not a raw mineral. A glazed terracotta patch block drops itself, and a coal patch block drops coal. The only raw minerals you get by hand come from a placed ore block item, which the game registers when you place it. See [The silk touch trick](#the-silk-touch-trick).
+
+- **Use a pickaxe.** The blocks are hard stone-like blocks, and a pickaxe breaks them fastest. Use the best pickaxe you have.
+- **Fortune does not help.** Fortune does not add to a drill's yield, which is one item for each unit it takes.
+- **Blasts remove blocks.** An explosion that breaks a patch block removes that block, but it does not change the amount left in its deposit, so a drill keeps working on the rest. A placed ore block that a blast breaks gives no raw minerals. Mine away from TNT, and do not let a bomb blow up a deposit you want.
 - **Mine in a safe spot.** Ores are found deep, often near lava or caves. Put torches up and check your surroundings first.
 
 ### The silk touch trick
 
-Silk touch keeps the ore itself.
+Silk touch works only on an ore block that you placed. It keeps the ore block itself, so you can carry it and place it again.
 
-- Mine the ore block with a pickaxe that has silk touch.
-- You get the **ore block as an item**, not raw minerals.
-- Place that item in the world to put the ore back. You can place it at any height from y -64 to y 959. The placed block is a real ore again.
-- Mine it again without silk touch to get the raw minerals. The drop is the same as before.
+- Place an ore block item in the world, and it becomes a registered ore block.
+- Mine that placed block with a pickaxe that has silk touch, and you get the **ore block as an item**, not raw minerals.
+- Place that item in the world to put the ore back. You can place it at any height from y -64 to y 959.
+- Mine a placed ore block without silk touch to get raw minerals. The drop is the same as before.
 
-Why use it? Three reasons:
+Silk touch on a patch block in a deposit does not give you the ore block item. You get the vanilla drop, as you do without silk touch. A patch block is never registered, so it is not an ore block item.
 
-1. **Keep a rare ore.** Thorite is rare. If you find one vein and do not need all of it yet, you can keep the block and mine it later.
-2. **Build a farm.** Put several ore items in a safe place. When you need raw minerals, mine them.
-3. **Move the ore.** You can carry the block home and place it near your machines.
+Why use it? Two reasons:
 
-Silk touch does not add more raw minerals. The ore block item only keeps the block. It still gives the same amount of raw minerals when you mine it without silk touch.
+1. **Keep an ore block.** If you want to hold a placed ore block until you need its raw minerals, you can keep the block and mine it later.
+2. **Move the ore.** You can carry the block home and place it near your machines.
+
+Silk touch does not add more raw minerals. The ore block item only keeps the block.
 
 ### Finding ores in old land
 
-Ores are placed when a new chunk is generated. Land that was generated before the mod was added may have no ores at all. If you explore an old area and find no ore, the land is simply older than the mod.
+Each chunk gets its deposits the first time it loads, and only once. This applies to old land too. Land generated before the mod was added is filled as you first visit it, so exploring old land finds deposits just as exploring new land does. A chunk that is already filled is not filled again, and a restart adds no more.
 
-The easy fix is to explore new land. Travel far enough and you will find chunks that the mod has filled, and the ores are waiting there.
+Deposits are patches, not every block, so explore a good distance between digs. If you find none nearby, keep walking.
 
-An ore block stays in place until you mine it or a blast destroys it.
+Operators can list the deposits near a player with `/cf geology deposits [radius]`. See [The Ore Density Scanner](#the-ore-density-scanner).
+
+A patch block stays in place until you mine it or a blast destroys it.
 
 ### The Ore Density Scanner
 
 <img src="images/components/ore_density_scanner.png" width="24" height="24" align="absmiddle"> **Ore density scanner**
 
-The scanner shows the ores of the chunk you stand in, before you dig. Hold it in your main hand and right-click. You can right-click in the air or on a block.
+**The scanner does nothing now.** It is still an item you can craft, but right-clicking it gives no map and no chat summary. The old ore survey it used has been removed, so do not rely on it to find ores.
 
-**What you get.**
+To find ores, dig into the stone in the band of depths that the table gives for each ore. A patch is a round area, roughly 48 to 96 blocks across, of one ore's patch blocks in the stone, so a few digs may pass near one without showing it.
 
-- **A map.** A filled map of the chunk, which is 16 by 16 blocks. Each use makes a new map item. The map does not follow you, and earlier maps stay valid.
-- **A chat summary.** The number of planned ore blocks in the chunk. Then one line for each ore that is planned there. Each line gives the planned count, the count still in the ground, and the depths the ore is planned between.
+**For operators.** `/cf geology deposits [radius]` lists the deposits near you, in your world. The radius is in blocks, from 1 to 512, and it defaults to 64. The list shows each deposit whose edge comes within the radius, nearest centre first, with the ore, how much is left of how much it started with, and its centre and radius. If none is in range, it says "None. Try a larger radius." The permission `corefactory.geology` is for operators by default.
 
-**How to read the map.**
-
-- Each column of the chunk is one small square on the map. A square is 8 by 8 pixels, and the map is 16 squares across and 16 down.
-- The colour of a square is the ore with the most planned blocks in that column.
-- A dark square has few planned blocks. A full colour square has 64 or more.
-- A thin dark line marks where the dominant ore changes from one square to the next.
-- A plain dark grey square has no planned ore.
-
-| Colour on the map | Ore |
-|---|---|
-| Near black | Uraninite ore |
-| Very dark brown | Pitchblende ore, or crude petroleum deposit |
-| Gold | Monazite ore |
-| Dark grey | Thorite ore |
-| Light grey | Galena ore |
-| Dark red | Cinnabar ore |
-| Purple | Fluorite ore |
-
-Thorite is close to the plain grey of an empty square. Read the chat summary to be sure.
-
-**The limit.** The planned count drops as ore is mined or blown up. A planned block that is gone no longer counts. Use the scanner before you dig, and use the count still in the ground to see what is left.
-
-**Recipe and research.** The scanner needs Laboratory Basics. Its recipe is in [Survey and power recipes](#survey-and-power-recipes).
+**Recipe and research.** The scanner needs Laboratory Basics to craft. Its recipe is in [Survey and power recipes](#survey-and-power-recipes).
 
 ## The science
 
@@ -439,7 +427,7 @@ Other parts of the mod follow the same logic:
 - **Time:** 100 ticks, which is 5 seconds.
 - **Fuel:** none.
 
-Crushed ore is the same mineral in finer grains. This works for all seven ores. Raw uraninite, for example, becomes crushed uraninite, which is a fine black powder ready for the roaster.
+Crushed ore is the same mineral in finer grains. This works for the raw ores of the deposits. Raw uraninite, for example, becomes crushed uraninite, which is a fine black powder ready for the roaster.
 
 Why it is realistic: real mills break rock so that the mineral grains come free of the surrounding stone. Chemists can then treat the mineral more easily. The game gives two crushed pieces per raw piece, to keep the chain going.
 
@@ -623,7 +611,7 @@ The mod follows real physics where it can. Where it cannot, it says so, or it ch
 
 | Part | What is real | What the game changes |
 |---|---|---|
-| Ore and uranium share | Natural uranium is mostly U-238, with about 0.7 percent U-235. | The ore veins and the drops are game numbers. |
+| Ore and uranium share | Natural uranium is mostly U-238, with about 0.7 percent U-235. | The deposits and their amounts are game numbers. |
 | Roasting and calcine | Roasting drives off unwanted matter and makes a stable oxide. | The chance of slag and the two-for-one ratio are for play. |
 | Separation | Concentrating a mineral from waste is real. | The real method is chemical. The game shows one spinning machine. |
 | UF6 gas | UF6 turns to gas at a modest temperature and can be spun. | The fluorination converter is one machine. |
@@ -971,7 +959,7 @@ Research is a single line of 15 steps, called nodes. You finish them in order, o
 ### How research works
 
 - **The line.** Each node has a name, a short description, the nodes it needs first, a cost in research packs, and a list of the items it unlocks.
-- **Free nodes.** Laboratory Basics has no requirements and costs nothing, so it is finished from the start. It unlocks the console, the spectrometer, the crusher and the Ore Density Scanner.
+- **Free nodes.** Laboratory Basics has no requirements and costs nothing, so it is finished from the start. It unlocks the console, the spectrometer, the crusher and the Ore Density Scanner. The scanner does nothing now, so see [The Ore Density Scanner](#the-ore-density-scanner).
 - **Paid nodes.** Every other node costs packs. You feed the packs into the research console, and when the cost is paid the node is finished.
 - **Partial progress.** You do not have to pay all the packs at once. Feed a few, leave, and come back. The progress is kept for each node.
 - **Your own research.** Research belongs to each player. Your progress is yours, not the server's, so a friend starts their own line.
@@ -1083,18 +1071,18 @@ The TNT types that are locked are the ten nuclear tiers, the 4-Dimensional Bomb,
 
 Drills dig for you. A drill stands on a barrel and works a square of the world below it. The square grows with the drill's level. There are two kinds, and each has five levels.
 
-- **Petroleum drills** pump petroleum out of crude petroleum deposits.
-- **Ore drills** mine the special ores out of the ground.
+- **Petroleum drills** draw petroleum out of crude petroleum deposits.
+- **Ore drills** mine the solid ores out of their deposits, coal included.
 
 Drills need research. The first ones come after Chemical Separation, and the last ones come at the end of the line. The levels are in [The five levels](#the-five-levels), and the recipes are in [Drill recipes](#drill-recipes).
 
 ### What a drill does
 
-- **It works a square.** The square is centred on the drill. It reaches out to each side, and down from the drill's own layer.
-- **It makes one item per cycle.** A cycle takes a fixed time at full power. A petroleum drill makes one petroleum. An ore drill mines one ore block.
+- **It works a square.** The square is centred on the drill, and its side is the area of its level. It searches the square for deposits, and it works one deposit at a time: the one with the most left in the square. When that deposit is empty, it moves on to the next.
+- **It makes items at its level's rate.** At full power a level 1 drill makes 1.0 item a second, and each level is faster. A petroleum drill mines crude petroleum deposits. An ore drill mines the other ores, including coal, which gives charcoal. Each unit it takes from a deposit becomes one item.
 - **It has its own storage.** Its barrel holds one fuel item and nine products. You take products out by clicking them. A hopper can fill the fuel slot and take products out. Nothing else goes in.
 - **It needs power.** Without power, it does nothing. See [The power of a drill](#the-power-of-a-drill).
-- **It waits when full.** When its output slots have no room, the cycle waits until there is room.
+- **It stops when full.** When its output slots have no room, the drill makes nothing and takes nothing, so the deposit keeps its amount until there is room.
 - **Explosions.** A blast that reaches the drill breaks it, and its storage drops. A drill outside the blast's radius, or on protected ground, stays where it is.
 
 ### Placing a drill
@@ -1109,15 +1097,15 @@ Drills need research. The first ones come after Chemical Separation, and the las
 
 ### The five levels
 
-| Level | Square (blocks) | Depth (layers, counting the drill's own layer) | Cycle at full power | Items a minute at full power |
+| Level | Square (blocks) | Items a second at full power | Items a minute at full power | Fuel cycle at full power |
 |---|---|---|---|---|
-| 1 | 10 by 10 | 48 | 30 seconds | 2 |
-| 2 | 14 by 14 | 96 | 24 seconds | 2.5 |
-| 3 | 20 by 20 | 144 | 18 seconds | 3.3 |
-| 4 | 28 by 28 | 200 | 12 seconds | 5 |
-| 5 | 40 by 40 | 280 | 6 seconds | 10 |
+| 1 | 10 by 10 | 1.0 | 60 | 30 seconds |
+| 2 | 14 by 14 | 1.5 | 90 | 24 seconds |
+| 3 | 20 by 20 | 2.5 | 150 | 18 seconds |
+| 4 | 28 by 28 | 4.0 | 240 | 12 seconds |
+| 5 | 40 by 40 | 6.0 | 360 | 6 seconds |
 
-Each higher level is wider, deeper and faster. Every drill has nine output slots. A level 5 drill digs 280 layers down from its own layer. Placed at height 215 or lower, it digs below the bottom of the world, at y -64.
+Each higher level is wider and faster. Every drill has nine output slots. The fuel cycle is the drill's fuel clock, and it does not set the output. The info item still shows a depth for each level, but the depth does not limit which deposits the drill finds.
 
 ### The power of a drill
 
@@ -1134,54 +1122,55 @@ A drill runs at the power of its best source. The source's name shows on the dri
 - **The best source wins.** If two sources are equal, the solar panel counts first, then redstone, then charcoal.
 - **The grid wins only when it is stronger.** The grid is used when its share is more than the drill's other source. It can run an ore drill that has no petroleum.
 - **Percentages round down.** A panel at power 5 reads 33 percent. That is less than the 35 percent of charcoal, so charcoal runs the drill instead. A panel at power 15 reads 100 percent.
-- **Charcoal burns only when it runs the drill.** One charcoal burns every 8 cycles, and only in a cycle when charcoal is the source. When a panel or redstone is stronger, the charcoal stays in the slot.
-- **An ore drill burns petroleum while it runs.** One petroleum burns every 2 cycles. Without petroleum, the drill stops.
+- **Charcoal burns only when it runs the drill.** While the drill runs on charcoal, the drill counts its fuel cycles, and one charcoal burns for every 8 cycles counted. When a panel or redstone is stronger, the charcoal stays in the slot.
+- **An ore drill burns petroleum while it runs.** While it runs, the drill counts its fuel cycles, and one petroleum burns for every 2 cycles counted. Without petroleum, the drill stops.
 
 ### Drill status
 
-The info item and the hologram show the drill's status. The status follows this order: no power, then output full, then no target. The first one that applies is shown.
+The info item and the hologram show the drill's status. The status is checked in this order: no power (or no petroleum for an ore drill), then output full, then no deposit in range, then deposit exhausted. The first one that applies is shown. If none applies, the drill is running.
 
 | Status | What it means | What to do |
 |---|---|---|
 | No power | A petroleum drill has no redstone, older solar panel, charcoal or grid power to run on. | Put a redstone block next to it, put charcoal in the fuel slot, or place it inside a pylon's square with a generator wired to that pylon. |
 | No petroleum | An ore drill has no petroleum in its fuel slot. | Put petroleum in the fuel slot, by hand or with a hopper. |
 | Output full | The output slots have no room for another item. | Take the products out, by hand or with a hopper. |
-| No deposit in range (depth 48) | A petroleum drill has power and room, but no deposit lies in its square. The number is the drill's depth, shown here for level I. | Place the drill closer to the deposits. They lie underground, from y -64 to y 0. |
-| No special ore in range | An ore drill has power and room, but no special ore lies in its square. | Place the drill over special ore, within its square and its depth. |
-| Done in range: move the drill | The drill had targets, and none it can mine is left in its square. It stays until it is moved. | Move the drill to a new spot. |
-| Running | The drill has power, room and a target. | Nothing. |
+| No deposit in range | No deposit that the drill can mine touches its square. A petroleum drill looks only for crude petroleum deposits, and an ore drill only for the other ores. | Move the drill over a deposit. Deposits lie underground in their own bands of depth. |
+| Deposit exhausted: no items left in range | The deposits in range are all empty. The drill stays where it is. | Move the drill to a new spot. |
+| Running | The drill has power, room and a deposit with something left. | Nothing. |
 
 The hologram goes when a drill has no power or its outputs are full. For those two, read the info item.
 
 ### The drill hologram
 
-A drill's hologram has four lines, and a fifth for the power grid. It shows while the drill has power and room in its outputs.
+A drill's hologram has five lines. It shows while the drill has power and room in its outputs.
 
 1. **The name.** The level and the kind, such as L1 Petroleum drill.
 2. **The power.** The source and its percentage, such as Power: solar 33%.
-3. **The rate.** While the drill runs, its rate: items per second, then items per minute, such as 0.03/s (2.0/min) at level 1 and full power. When the drill cannot run, this line shows its status instead, such as No special ore in range.
-4. **The storage and fuel.** The items in the output slots, then the most they can hold, then the fuel count, such as Stored 0/576 · fuel 0. The most is nine full stacks of 64, which is 576.
+3. **The rate or status.** While the drill runs, its rate: items per second, then items per minute, such as Extracting 1.00/s (60.0/min) at level 1 and full power. When the drill cannot run, this line shows its status instead, such as No deposit in range.
+4. **The deposit.** The ore of the deposit the drill is working on, and what is left of it, such as Deposit Galena Ore 1.2M / 2.5M (48%). It reads Deposit none in range when no deposit is in its square.
+5. **The storage and fuel.** The items in the output slots, then the most they can hold, then the fuel count, such as Stored 0/576 · fuel 0. The most is nine full stacks of 64, which is 576.
 
-The info item shows the same rate. Its rate line reads stopped until the drill runs.
+The info item shows the same rate and the same deposit line. Its rate line reads stopped until the drill runs.
 
 ### Petroleum drills
 
-A petroleum drill pumps petroleum from the nearest crude petroleum deposit in its square. A deposit is never used up, so the drill keeps pumping from it. Each cycle gives one petroleum.
+A petroleum drill works the crude petroleum deposits in its square, one deposit at a time: the one with the most left. It draws the deposit down, one petroleum for each unit, and the amount left is shown on the drill's info item and hologram. When a deposit is empty, the drill moves on to the next one in its square.
 
 - **Power.** It runs on redstone, on charcoal, or on the grid. See [The power of a drill](#the-power-of-a-drill).
 - **Solar panel.** An older solar panel next to the drill gives it power. Full sun gives full speed, and night gives none. See [The solar panel](#the-solar-panel).
-- **Charcoal.** Charcoal in the fuel slot gives 35 percent of full speed. One charcoal burns every 8 cycles, and only while charcoal is the source.
+- **Charcoal.** Charcoal in the fuel slot gives 35 percent of full speed. While it runs on charcoal, one charcoal burns for every 8 cycles counted.
 
 Several solar panels do not add up. The best one counts.
 
 ### Ore drills
 
-An ore drill mines the special ores in its square. It takes the nearest ore block first, and that block is removed from the ground. It gives the raw mineral, which goes into the output slots. It does not touch ordinary stone, and it does not mine a deposit.
+An ore drill works the deposits of the other ores in its square, one deposit at a time: the one with the most left. Each unit it takes becomes one raw mineral, which goes into the output slots. It does not touch ordinary stone. Coal deposits are among the ones it mines, and each unit of coal gives you one charcoal.
 
-- **Fuel.** Petroleum goes in the fuel slot. One petroleum burns every 2 cycles. Without petroleum, the drill stops and shows No petroleum.
+- **Fuel.** Petroleum goes in the fuel slot. While it runs, one petroleum burns for every 2 cycles counted. Without petroleum, the drill stops and shows No petroleum.
 - **Power.** It runs at full speed while it has petroleum. Solar panels and redstone do nothing for an ore drill. A grid in range can run it without petroleum, at the grid's share of full speed.
+- **Resources menu.** Open the drill and use its resources button to see one entry for each deposit in its square. Each entry shows the ore's icon and the deposit's amounts. A toggle for each ore sets whether the drill mines it or ignores it, and the toggle applies to every deposit of that ore. Six entries show on each page, with arrows to turn the pages. An empty deposit shows a grey glass pane.
 
-An ore drill never gives you the ore block item, so silk touch does not apply to it. Coal veins are one of the things it mines, and each coal block gives you one charcoal.
+An ore drill never gives you the ore block item, so silk touch does not apply to it. It gives you raw minerals, one for each unit it takes.
 
 ### The solar panel
 
@@ -1200,12 +1189,9 @@ Older solar panels are different. A solar panel placed before the electrical sys
 
 <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> **Petroleum**
 
-Petroleum is crude oil. It has one use: fuel for the ore drills. It has no recipe. There are two ways to get it:
+Petroleum is crude oil. It has one use: fuel for the ore drills. It has no recipe. You get it from a crude petroleum deposit, one unit at a time, by working the deposit with a petroleum drill. Each unit the drill takes gives one petroleum, and the deposit is drawn down by that amount. Digging the patch block by hand does not give petroleum.
 
-- **Mine a crude petroleum deposit.** You get 1 or 2 petroleum. The deposit is gone.
-- **Pump a deposit with a petroleum drill.** You get one petroleum per cycle, and the deposit stays.
-
-Deposits lie from y -64 to y 0, in stone and deepslate. See [Crude petroleum deposit](#crude-petroleum-deposit).
+Patch blocks lie from y -64 to y 0, in stone and deepslate. See [Crude petroleum deposit](#crude-petroleum-deposit).
 
 ## Electricity
 
@@ -1658,12 +1644,12 @@ You are never a target of your own turret. Tab completion offers the subcommands
 
 | Ore | Found in | Drill gives | Next step |
 |---|---|---|---|
-| <img src="images/ores/saltpeter_deposit.png" width="24" height="24" align="absmiddle"> Saltpeter deposit | Its own block, lime glazed terracotta | <img src="images/components/raw_saltpeter.png" width="24" height="24" align="absmiddle"> Raw saltpeter | <img src="images/components/crusher.png" width="24" height="24" align="absmiddle"> Crusher, then <img src="images/components/purifier.png" width="24" height="24" align="absmiddle"> purifier. |
-| <img src="images/ores/sulfur_deposit.png" width="24" height="24" align="absmiddle"> Sulfur deposit | Its own block, orange glazed terracotta | <img src="images/components/raw_sulfur.png" width="24" height="24" align="absmiddle"> Raw sulfur | <img src="images/components/crusher.png" width="24" height="24" align="absmiddle"> Crusher, for the <img src="images/components/powder_mill.png" width="24" height="24" align="absmiddle"> powder mill. |
-| <img src="images/ores/zinc_deposit.png" width="24" height="24" align="absmiddle"> Zinc deposit | Its own block, cyan glazed terracotta | <img src="images/components/raw_sphalerite.png" width="24" height="24" align="absmiddle"> Raw sphalerite | <img src="images/components/crusher.png" width="24" height="24" align="absmiddle"> Crusher, then <img src="images/components/roaster.png" width="24" height="24" align="absmiddle"> roaster, for brass. |
-| <img src="images/ores/coal_ore.png" width="24" height="24" align="absmiddle"> Coal ore | Coal veins in stone | <img src="images/components/charcoal.png" width="24" height="24" align="absmiddle"> Charcoal, one per block | <img src="images/components/charcoal.png" width="24" height="24" align="absmiddle"> Charcoal is also the <img src="images/components/powder_mill.png" width="24" height="24" align="absmiddle"> powder mill's charcoal. |
+| <img src="images/ores/saltpeter_deposit.png" width="24" height="24" align="absmiddle"> Saltpeter deposit | Patches of lime glazed terracotta | <img src="images/components/raw_saltpeter.png" width="24" height="24" align="absmiddle"> Raw saltpeter | <img src="images/components/crusher.png" width="24" height="24" align="absmiddle"> Crusher, then <img src="images/components/purifier.png" width="24" height="24" align="absmiddle"> purifier. |
+| <img src="images/ores/sulfur_deposit.png" width="24" height="24" align="absmiddle"> Sulfur deposit | Patches of orange glazed terracotta | <img src="images/components/raw_sulfur.png" width="24" height="24" align="absmiddle"> Raw sulfur | <img src="images/components/crusher.png" width="24" height="24" align="absmiddle"> Crusher, for the <img src="images/components/powder_mill.png" width="24" height="24" align="absmiddle"> powder mill. |
+| <img src="images/ores/zinc_deposit.png" width="24" height="24" align="absmiddle"> Zinc deposit | Patches of cyan glazed terracotta | <img src="images/components/raw_sphalerite.png" width="24" height="24" align="absmiddle"> Raw sphalerite | <img src="images/components/crusher.png" width="24" height="24" align="absmiddle"> Crusher, then <img src="images/components/roaster.png" width="24" height="24" align="absmiddle"> roaster, for brass. |
+| <img src="images/ores/coal_ore.png" width="24" height="24" align="absmiddle"> Coal ore | Patches of coal ore in stone | <img src="images/components/charcoal.png" width="24" height="24" align="absmiddle"> Charcoal, one per unit | <img src="images/components/charcoal.png" width="24" height="24" align="absmiddle"> Charcoal is also the <img src="images/components/powder_mill.png" width="24" height="24" align="absmiddle"> powder mill's charcoal. |
 
-Coal is an ore target of the ore drills at every level, so a drill that mines coal gives you charcoal.
+Coal is one of the ores that the ore drills mine at every level, so a drill that mines coal gives you charcoal.
 
 ## Crafting
 
@@ -1994,7 +1980,7 @@ Needs research: Laboratory Basics.
 | Iron ingot | Amethyst shard | Iron ingot |
 | Glass | Redstone | Glass |
 
-Makes: <img src="images/components/ore_density_scanner.png" width="24" height="24" align="absmiddle"> **Ore Density Scanner**.
+Makes: <img src="images/components/ore_density_scanner.png" width="24" height="24" align="absmiddle"> **Ore Density Scanner**. It does nothing when you right-click it. See [The Ore Density Scanner](#the-ore-density-scanner).
 
 
 **<img src="images/components/solar_panel.png" width="24" height="24" align="absmiddle"> Solar Panel** (id `solar_panel`)
@@ -3005,7 +2991,7 @@ Some items cannot be crafted. You get them from the world or from a machine. The
 | <img src="images/components/neutronium_slug.png" width="24" height="24" align="absmiddle"> Neutronium slug | Particle accelerator | 4-Dimensional Bomb |
 | <img src="images/components/antimatter_condensate.png" width="24" height="24" align="absmiddle"> Antimatter condensate | Antimatter condenser | Antimatter Bomb, 4-Dimensional Bomb |
 | <img src="images/components/research_pack_basic.png" width="24" height="24" align="absmiddle"> Basic pack, <img src="images/components/research_pack_chemical.png" width="24" height="24" align="absmiddle"> Chemical pack, <img src="images/components/research_pack_nuclear.png" width="24" height="24" align="absmiddle"> Nuclear pack, <img src="images/components/research_pack_plasma.png" width="24" height="24" align="absmiddle"> Plasma pack, <img src="images/components/research_pack_exotic.png" width="24" height="24" align="absmiddle"> Exotic pack | Spectrometer | Research console |
-| <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> Petroleum | Mining a crude petroleum deposit, or pumping one with a petroleum drill | Fuel for the ore drills |
+| <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> Petroleum | A petroleum drill working a crude petroleum deposit | Fuel for the ore drills |
 
 **Two things to keep in mind:**
 
@@ -3458,7 +3444,7 @@ The catalogue has seventeen categories, in this order. Each one is a tab of its 
 | Splitters | Splitters I to III. |
 | Ammunition | The empty shell, the high-grade gunpowder, and the bullets and rounds of the four kinds. |
 | Defences | The machine gun turret and the laser turret, and the parts they are built from: the precision barrel, the steel frame, the turret mechanism, the ammunition feed, the targeting unit, the optical lens and the laser emitter. |
-| Ores | The twelve ore blocks: the seven special ores, the crude petroleum deposit, saltpeter, sulfur, zinc and coal. |
+| Ores | The twelve ore blocks: uraninite, pitchblende, monazite, thorite, galena, cinnabar, fluorite, the crude petroleum deposit, saltpeter, sulfur, zinc and coal. |
 
 When the tabs do not all fit in the top row, the arrows at each end of the row scroll them. Seven tabs show at a time. The
 arrow on the left shows the earlier categories, and the arrow on the right shows the later ones.
@@ -3511,7 +3497,7 @@ Each time you unlock an achievement, you get a toast on your screen, and the ser
 | Set off a TNT, including a chain it starts | You, the player who started the chain. |
 | Link two placed TNT with the fuse linker | You, the player who made the link. |
 | Drop a TNT item | You, the player who dropped it. |
-| Mine an ore block | You, the player who mined it. |
+| Mine a placed ore block, the block you put back from an ore block item. Patch blocks in a deposit do not count. | You, the player who mined it. |
 | Take an item out of a machine's output slot | You, the player who took it. |
 | Place a machine or a drill | You, the player who placed it. |
 | Finish a research node at the console | You, the player who fed the last packs. |
@@ -3569,7 +3555,7 @@ The nuclear tiers are listed under Detonated, and they count toward the Atomic A
 
 | Achievement | What it needs |
 |---|---|
-| Prospector | Mine any ore block. |
+| Prospector | Mine any placed ore block, the block you put back from an ore block item. Patch blocks in a deposit do not count. |
 | Crushing Work | Take crushed ore out of a <img src="images/components/crusher.png" width="24" height="24" align="absmiddle"> crusher. |
 | First Research Pack | Take a research pack out of a <img src="images/components/spectrometer.png" width="24" height="24" align="absmiddle"> spectrometer. |
 | Made: Yellowcake | Take yellowcake out of a machine. |
@@ -3616,7 +3602,7 @@ The goal of your first session is to set up your first laboratory, finish the fi
 
 **Step 3. Light your first bomb.** Craft a vanilla TNT, then a <img src="images/tnt/chain_reaction_tnt.png" width="24" height="24" align="absmiddle"> Chain Reaction TNT. Its recipe is a ring of redstone around a TNT block. It is free, so you can craft it straight away. Place it on open ground, walk well away, light it with flint and steel, and watch the fuse. It is a good way to learn how the fuse works.
 
-**Step 4. Find galena.** Dig into stone at a height between -32 and 40. Galena ore is light grey, and it is one of the most common ores. Mine a few. Each block gives 2 to 5 <img src="images/components/raw_galena.png" width="24" height="24" align="absmiddle"> raw galena. You need at least five crushed galena for your first research, so mine until you have a good handful.
+**Step 4. Find galena.** Dig into stone at a height between -32 and 40, and look for light grey galena patch blocks. Digging a patch block by hand gives you the block, not raw galena. Raw galena comes from an ore drill working the deposit, one <img src="images/components/raw_galena.png" width="24" height="24" align="absmiddle"> raw galena for each unit it takes, or from a galena ore block item that you placed. You need at least five crushed galena for your first research.
 
 **Step 5. Craft the lab.** Craft these three machines. None of them needs research, because Laboratory Basics is free and finished from the start:
 
@@ -3634,9 +3620,9 @@ Place all three in a safe, dry place near your base. Right-click the crusher to 
 
 **Step 9. Craft your radiation gear.** You now have access to the hazmat fabric, the four Radioactive Suit pieces and the Geiger counter. The hazmat fabric is made from leather and lead, which are vanilla items. Start with a few pieces of hazmat fabric, then craft a Geiger counter. The Geiger counter takes 2 hazmat fabric, plus iron, redstone and a compass. Hold it in your hand to see the radiation around you.
 
-**Step 10. Look for uraninite.** The next research step is Metallurgy, which costs ten basic packs and unlocks the roasting kiln. You will need more galena for that. You will also need uraninite, which is the main uranium ore. Uraninite is found between y -48 and 24, in stone, deepslate and similar rock. Mine a little uraninite and keep it. You will need it when you have a roasting kiln.
+**Step 10. Look for uraninite.** The next research step is Metallurgy, which costs ten basic packs and unlocks the roasting kiln. You will need more galena for that. You will also need uraninite, which is the main uranium ore. Uraninite patches are found between y -48 and 24, in stone, deepslate and similar rock. Note where one is. Raw uraninite comes from a drill working the deposit, and you will need it when you have a roasting kiln.
 
-**A tip for the search.** Once Laboratory Basics is finished, craft the Ore Density Scanner. It maps the planned ore of the chunk you stand in, before you dig. See [The Ore Density Scanner](#the-ore-density-scanner).
+**A tip for the search.** The Ore Density Scanner does nothing now, so do not craft it for the search. Explore, and dig into the stone in each ore's band of depths. An operator can list the deposits near you with `/cf geology deposits [radius]`. See [The Ore Density Scanner](#the-ore-density-scanner).
 
 **What you should have after the first hour:**
 
@@ -3656,19 +3642,19 @@ It is probably locked by research. A message in chat tells you which node you ne
 
 **Why do my ores look like plain terracotta?**
 
-The ores are shown with the server's resource pack. If you see plain coloured terracotta, the pack is not loaded for you yet. Accept the server's resource pack, and the ores will show their proper look.
+That is how the patches are built. Most patch blocks are glazed terracotta in the colour of their ore, so you tell the ores apart by colour. Coal patches are ordinary coal ore. See [The ores](#the-ores).
 
 **I dug and found no ore. What now?**
 
-Ores are placed when a chunk is first created. Old land made before the mod may have no ore at all. Explore new land, which is where the ore is. See [Finding ores in old land](#finding-ores-in-old-land).
+Deposits are patches, not every block, so you may need to explore a good distance before you reach one. Each chunk is filled once, when it first loads, and old land is filled the same way, so exploring old land works too. See [Finding ores in old land](#finding-ores-in-old-land).
 
 **Can I keep an ore block instead of mining it for raw minerals?**
 
-Yes. Mine it with a pickaxe that has silk touch, and you get the ore block as an item. Place it again to get an ore back, and mine that without silk touch to get the raw minerals. See [The silk touch trick](#the-silk-touch-trick).
+Yes, for an ore block item that you placed. Mine the placed block with a pickaxe that has silk touch, and you get the ore block as an item. Place it again to get an ore back, and mine that without silk touch to get the raw minerals. Silk touch on a patch block in a deposit gives you the vanilla drop. See [The silk touch trick](#the-silk-touch-trick).
 
 **Does fortune give me more ore?**
 
-No. The amount from each ore block is fixed in a range, and fortune does not change it. See [What to mine with](#what-to-mine-with).
+No. A drill gives one item for each unit it takes from a deposit, and fortune does not change that. See [What to mine with](#what-to-mine-with).
 
 **Where do I get enriched uranium?**
 
@@ -3696,7 +3682,7 @@ Yes, if it is inside the blast's radius. The machine's block is removed and its 
 
 **Can a blast destroy my ores?**
 
-Yes. An ore block that a blast destroys is gone, and it drops nothing.
+A blast removes the blocks it breaks. A deposit keeps its remaining amount, so a drill still takes what is left in it. A placed ore block that a blast breaks is gone, and it drops nothing.
 
 **Is my research shared with my friends?**
 
@@ -3724,7 +3710,7 @@ Type `/cf achievements`. You can also see them in the Advancements screen, under
 
 **Why did an achievement not count?**
 
-It probably came from an item you were given, from the catalogue, or from a blast started by redstone or by another plugin. See [What counts](#achievements).
+It probably came from an item you were given, from the catalogue, or from a blast started by redstone or by another plugin. Mining a patch block in a deposit does not count toward the ore achievements, only a placed ore block does. See [What counts](#achievements).
 
 **Why does the 4-Dimensional Bomb not need vanilla TNT?**
 
@@ -3749,22 +3735,22 @@ Open the drill and read the status line in its info item. The status tells you w
 - **No power.** Put a redstone block next to a petroleum drill, or put charcoal in its fuel slot. A drill also runs on the grid: place it inside a pylon's square, with a generator wired to that pylon.
 - **No petroleum.** An ore drill needs petroleum in its fuel slot.
 - **Output full.** Take the products out, by hand or with a hopper.
-- **No deposit in range.** Place the drill closer to the deposits. They lie underground, from y -64 to y 0. The drill only works inside its square, down from its own layer.
-- **No special ore in range.** Place the drill over special ore, inside its square.
+- **No deposit in range.** No deposit that this kind of drill can mine touches its square. Move the drill over a deposit. A petroleum drill looks only for crude petroleum deposits, from y -64 to y 0, and an ore drill for the other ores.
+- **Deposit exhausted.** The deposits in its square are all empty. Move the drill to a new spot.
 
 The hologram goes when a drill has no power or its outputs are full, so check the info item for those two. See [Drill status](#drill-status).
 
 **Where do I find petroleum?**
 
-In crude petroleum deposits. They lie from y -64 to y 0, in stone and deepslate. Mine a deposit for one or two petroleum, or place a petroleum drill over deposits and let it pump. See [Petroleum](#petroleum).
+In crude petroleum deposits. Their patch blocks lie from y -64 to y 0, in stone and deepslate. Place a petroleum drill over a deposit, and it draws out one petroleum for each unit. Digging a patch block by hand gives you the block, not petroleum. See [Petroleum](#petroleum).
 
 **Why does my petroleum drill stop at night?**
 
 An older solar panel gives no power at night. Then the drill needs a redstone source, charcoal in its fuel slot, or grid power. The power line of the info item shows which source runs the drill. See [The power of a drill](#the-power-of-a-drill).
 
-**Why did the planned count on my scanner go down?**
+**Why does my scanner do nothing?**
 
-Mining and blasts remove ore blocks. Once an ore block is gone, it is no longer planned. See [The Ore Density Scanner](#the-ore-density-scanner).
+The Ore Density Scanner no longer shows the ores of a chunk. It still crafts, but right-clicking it gives no map and no chat summary. For operators, `/cf geology deposits [radius]` lists the deposits near a player. See [The Ore Density Scanner](#the-ore-density-scanner).
 
 **Can a hopper fill a lab machine with anything?**
 
@@ -3798,19 +3784,21 @@ The line shows only while the machine runs or has something it can start. Some s
 
 **Catalogue.** The menu of every TNT, component and ore block. Open it with `/cf gui`.
 
-**Chunk.** A square column of the world, 16 blocks across. Machines run only in loaded chunks, and ores are placed chunk by chunk.
+**Chunk.** A square column of the world, 16 blocks across. Machines run only in loaded chunks, and each chunk is given its deposits once, the first time it loads.
 
 **Component.** A custom item that a bomb or machine needs as an ingredient. Components are made by crafting or by machines.
 
-**Crude petroleum deposit.** An ore block that holds petroleum. Mine it, or pump it with a petroleum drill.
+**Crude petroleum deposit.** A deposit of crude oil. A petroleum drill draws petroleum from it, one unit at a time. Digging its patch block by hand gives only the block.
 
 **Crushed ore.** Raw ore after the crusher. It is a fine powder, and two crushed pieces come from each raw piece.
+
+**Deposit.** A round patch of one ore, roughly 48 to 96 blocks across, laid in the stone when its chunk first loads. It holds a set amount of its ore, and drills take that amount out one unit at a time. See [Finding ores](#finding-ores).
 
 **Deuterium.** Heavy hydrogen. A deuterium cell is made from water in the purification still.
 
 **Dose.** The total radiation you have taken. It is measured in sieverts. The dose builds in fallout, and it clears slowly outside.
 
-**Drill.** A machine that works a square of the world below it. Petroleum drills pump petroleum, and ore drills mine the special ores.
+**Drill.** A machine that works a square of the world below it. Petroleum drills draw petroleum from crude petroleum deposits, and ore drills mine the other ores from their deposits.
 
 **Enrichment.** Raising the share of U-235 in uranium. The enrichment cascade does it.
 
@@ -3838,7 +3826,7 @@ The line shows only while the machine runs or has something it can start. Some s
 
 **Half-life.** The time it takes for a quantity to fall by half. For the fallout in the mod, the half-life is 90 minutes.
 
-**Hologram.** The text that floats over a running lab tool or drill. A lab tool's has three lines and a grid line, and a drill's has four lines and a grid line. Players near it can read it.
+**Hologram.** The text that floats over a running lab tool or drill. A lab tool's has three lines and a grid line, and a drill's has five lines, one of them the deposit it works on. Players near it can read it.
 
 **Hopper.** A block that moves items. It can feed a lab machine or take its products.
 
@@ -3860,7 +3848,7 @@ The line shows only while the machine runs or has something it can start. Some s
 
 **Node.** A research step, on the line of 15 nodes. You finish a node by feeding it packs.
 
-**Ore density scanner.** A held item. It makes a map of the planned ore in the chunk you stand in.
+**Ore density scanner.** A crafted item that does nothing now. Right-clicking it gives no map and no chat summary.
 
 **Output slot.** A slot in a machine that holds its products. You can take items out, but not put them in.
 
@@ -3876,7 +3864,7 @@ The line shows only while the machine runs or has something it can start. Some s
 
 **Radiation.** Energy that comes out of unstable atoms. The fallout and the neutron dose both deliver it.
 
-**Raw ore.** The mineral you get from mining an ore block, before it is crushed.
+**Raw ore.** The mineral you get from a drill working a deposit, or from mining a placed ore block, before it is crushed.
 
 **Recipe.** The grid of items that makes a result when crafted.
 
@@ -3894,7 +3882,7 @@ The line shows only while the machine runs or has something it can start. Some s
 
 **Sievert (Sv).** The unit of radiation dose. A millisievert is one thousandth of a sievert.
 
-**Silk touch.** An enchantment that keeps a block whole when you mine it. For ore blocks, it gives you the ore block itself.
+**Silk touch.** An enchantment that keeps a block whole when you mine it. For a placed ore block, it gives you the ore block item.
 
 **Slag.** The waste that roasting can leave behind. It has no use in the recipes.
 

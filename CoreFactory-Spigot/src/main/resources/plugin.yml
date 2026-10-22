@@ -57,7 +57,7 @@ permissions:
     description: Open the recipe of any TNT or component.
     default: true
   corefactory.geology:
-    description: Check the ore veins and lay them into existing chunks (/cf geology).
+    description: List the deposits near you and what each has left (/cf geology deposits).
     default: op
   corefactory.research.admin:
     description: Finish research for players (/cf research).

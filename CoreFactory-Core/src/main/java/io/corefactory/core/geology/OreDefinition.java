@@ -10,23 +10,20 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * One ore type from {@code ores.yml}: the host block it is placed as, what mining drops, the blocks its veins may
- * replace and the range they are laid in. Immutable. Built by {@link #parse}, which reads the file; the constructor
- * checks the ranges so a definition in code is held to the same rules.
+ * One ore type from {@code ores.yml}: the host block an ore block is placed as, what mining drops, the blocks an ore
+ * block may replace and the height range it is shown in. Immutable. Built by {@link #parse}, which reads the file; the
+ * constructor checks the ranges so a definition in code is held to the same rules.
  *
- * @param id            the key under {@code ores:}
- * @param name          display name, with ampersand colour codes
- * @param host          material name of the vanilla block the ore occupies in the world
- * @param drop          component id given when the ore is mined
- * @param dropMin       fewest items one mined block gives
- * @param dropMax       most items one mined block gives
- * @param replace       material names a vein may replace
- * @param minY          lowest y a vein may reach
- * @param maxY          highest y a vein may reach
- * @param veinsPerChunk expected number of veins per chunk
- * @param veinSizeMin   fewest blocks in one vein
- * @param veinSizeMax   most blocks in one vein
- * @param volume        units of petroleum one block holds, for a volume ore such as a deposit; 0 for a count ore
+ * @param id      the key under {@code ores:}
+ * @param name    display name, with ampersand colour codes
+ * @param host    material name of the vanilla block the ore occupies in the world
+ * @param drop    component id given when the ore is mined
+ * @param dropMin fewest items one mined block gives
+ * @param dropMax most items one mined block gives
+ * @param replace material names an ore block may replace
+ * @param minY    lowest y an ore block may be placed at
+ * @param maxY    highest y an ore block may be placed at
+ * @param volume  units of petroleum one block holds, for a volume ore such as a deposit; 0 for a count ore
  */
 public record OreDefinition(
         String id,
@@ -38,9 +35,6 @@ public record OreDefinition(
         Set<String> replace,
         int minY,
         int maxY,
-        double veinsPerChunk,
-        int veinSizeMin,
-        int veinSizeMax,
         int volume
 ) {
 
@@ -52,8 +46,8 @@ public record OreDefinition(
 
     /** A count ore: the same as the full constructor with no volume. */
     public OreDefinition(String id, String name, String host, String drop, int dropMin, int dropMax, Set<String> replace,
-                         int minY, int maxY, double veinsPerChunk, int veinSizeMin, int veinSizeMax) {
-        this(id, name, host, drop, dropMin, dropMax, replace, minY, maxY, veinsPerChunk, veinSizeMin, veinSizeMax, 0);
+                         int minY, int maxY) {
+        this(id, name, host, drop, dropMin, dropMax, replace, minY, maxY, 0);
     }
 
     public OreDefinition {
@@ -76,12 +70,6 @@ public record OreDefinition(
             throw new IllegalArgumentException("has an invalid y range (need " + MIN_Y + " <= min-y < max-y <= "
                     + MAX_Y + ")");
         }
-        if (Double.isNaN(veinsPerChunk) || Double.isInfinite(veinsPerChunk) || veinsPerChunk < 0) {
-            throw new IllegalArgumentException("has an invalid veins-per-chunk");
-        }
-        if (veinSizeMin < 1 || veinSizeMin > veinSizeMax) {
-            throw new IllegalArgumentException("has an invalid vein-size (need 1 <= min <= max)");
-        }
         if (volume < 0) {
             throw new IllegalArgumentException("has a negative volume");
         }
@@ -90,19 +78,8 @@ public record OreDefinition(
     }
 
     /**
-     * This ore with its own host block also counted as replaceable. Retrofit uses it to record ores that were already
-     * placed, so a plan can find them again. The planner stays deterministic, so the same positions come back.
-     */
-    public OreDefinition withHostReplaceable() {
-        Set<String> widened = new LinkedHashSet<>(replace);
-        widened.add(host);
-        return new OreDefinition(id, name, host, drop, dropMin, dropMax, widened, minY, maxY, veinsPerChunk,
-                veinSizeMin, veinSizeMax, volume);
-    }
-
-    /**
      * Reads every ore under the {@code ores:} section, in file order. An entry with a missing or bad field is logged
-     * and skipped; the rest still load.
+     * and skipped; the rest still load. Keys the ore no longer uses are ignored.
      *
      * @param ores the {@code ores:} section of {@code ores.yml}, or null when the file has none
      * @param log  receives one warning per skipped entry
@@ -140,7 +117,6 @@ public record OreDefinition(
             throw new IllegalArgumentException("has no drop");
         }
         int[] dropAmount = pair(section, "drop-amount");
-        int[] veinSize = pair(section, "vein-size");
         Set<String> replace = new LinkedHashSet<>();
         List<String> names = section.getStringList("replace");
         if (names.isEmpty()) {
@@ -151,12 +127,8 @@ public record OreDefinition(
         }
         int minY = integer(section, "min-y");
         int maxY = integer(section, "max-y");
-        Object veins = section.get("veins-per-chunk");
-        if (!(veins instanceof Number number)) {
-            throw new IllegalArgumentException("has no veins-per-chunk");
-        }
         return new OreDefinition(id, section.getString("name", id), host, drop, dropAmount[0], dropAmount[1],
-                replace, minY, maxY, number.doubleValue(), veinSize[0], veinSize[1], section.getInt("volume", 0));
+                replace, minY, maxY, section.getInt("volume", 0));
     }
 
     private static String block(String name, String what) {

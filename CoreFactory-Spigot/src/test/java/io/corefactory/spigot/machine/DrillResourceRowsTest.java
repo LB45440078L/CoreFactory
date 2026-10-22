@@ -1,6 +1,6 @@
 package io.corefactory.spigot.machine;
 
-import io.corefactory.core.drill.DrillReport;
+import io.corefactory.core.deposit.Deposit;
 import io.corefactory.core.drill.DrillSelection;
 import io.corefactory.spigot.machine.DrillResourceRows.Line;
 import io.corefactory.spigot.machine.DrillResourceRows.OreLabel;
@@ -14,84 +14,77 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class DrillResourceRowsTest {
 
-    private static final List<String> ORDER = List.of("uraninite_ore", "galena_ore", "crude_petroleum_deposit");
     private static final Map<String, OreLabel> LABELS = Map.of(
-            "uraninite_ore", new OreLabel("&8Uraninite Ore", "DEEPSLATE", false),
-            "galena_ore", new OreLabel("&9Galena Ore", "STONE", false),
-            "crude_petroleum_deposit", new OreLabel("&8Crude Petroleum Deposit", "WHITE_GLAZED_TERRACOTTA", true));
+            "galena_ore", new OreLabel("&7Galena Ore", "IRON_ORE"),
+            "crude_petroleum_deposit", new OreLabel("&8Crude Petroleum Deposit", "WHITE_GLAZED_TERRACOTTA"));
 
-    @Test
-    void oneLinePerReportRowWithItsNameIconAndCounts() {
-        List<DrillReport.Row> rows = DrillReport.build(ORDER, Map.of("uraninite_ore", 5L, "galena_ore", 2L),
-                Map.of("uraninite_ore", 3L), new DrillSelection());
-
-        List<Line> lines = DrillResourceRows.of(rows, LABELS);
-
-        assertThat(lines).extracting(Line::oreId).containsExactly("uraninite_ore", "galena_ore");
-        Line uraninite = lines.get(0);
-        assertThat(uraninite.name()).isEqualTo("&8Uraninite Ore");
-        assertThat(uraninite.icon()).isEqualTo("DEEPSLATE");
-        assertThat(uraninite.lore()).containsExactly(
-                "&7In range now: &f5", "&7Mined by this drill: &f3", "&7Total in range: &f8");
-        assertThat(uraninite.toggle()).isEqualTo(Toggle.MINING);
-        assertThat(uraninite.exhausted()).isFalse();
+    private static Deposit galena(long id, long remaining) {
+        return new Deposit(id, "world", 12, -7, 9, "galena_ore", 2_500_000, remaining);
     }
 
     @Test
-    void anIgnoredOreShowsTheIgnoringToggle() {
-        DrillSelection selection = new DrillSelection(List.of("galena_ore"));
-        List<DrillReport.Row> rows = DrillReport.build(ORDER, Map.of("galena_ore", 4L), Map.of(), selection);
+    void aLineShowsEachDepositWithItsOresIconAndWhatIsLeft() {
+        List<Line> lines = DrillResourceRows.of(List.of(galena(4, 1_200_000)), LABELS, new DrillSelection());
 
-        Line galena = DrillResourceRows.of(rows, LABELS).get(0);
-
-        assertThat(galena.toggle()).isEqualTo(Toggle.IGNORING);
-        assertThat(galena.exhausted()).isFalse();
-        assertThat(galena.icon()).isEqualTo("STONE");
+        assertThat(lines).hasSize(1);
+        Line line = lines.get(0);
+        assertThat(line.depositId()).isEqualTo(4);
+        assertThat(line.oreId()).isEqualTo("galena_ore");
+        assertThat(line.name()).isEqualTo("&7Galena Ore");
+        assertThat(line.icon()).isEqualTo("IRON_ORE");
+        assertThat(line.lore()).containsExactly("&7Left &f1.2M / 2.5M (48%)", "&7At &f12 -7");
+        assertThat(line.toggle()).isEqualTo(Toggle.MINING);
+        assertThat(line.exhausted()).isFalse();
     }
 
     @Test
-    void anExhaustedOreIsGreyWithTheExhaustedLine() {
-        List<DrillReport.Row> rows = DrillReport.build(ORDER, Map.of(), Map.of("galena_ore", 6L), new DrillSelection());
-
-        Line galena = DrillResourceRows.of(rows, LABELS).get(0);
-
-        assertThat(galena.exhausted()).isTrue();
-        assertThat(galena.icon()).isEqualTo(DrillResourceRows.EXHAUSTED_ICON).isEqualTo("GRAY_STAINED_GLASS_PANE");
-        assertThat(galena.name()).isEqualTo("&7Galena Ore");
-        assertThat(galena.lore()).last().isEqualTo("&8exhausted in range");
-        assertThat(galena.lore()).contains("&7Total in range: &f6");
-        assertThat(galena.toggle()).isEqualTo(Toggle.MINING);
+    void theOrderOfTheDepositsIsKept() {
+        List<Line> lines = DrillResourceRows.of(List.of(galena(9, 10), galena(2, 20)), LABELS, new DrillSelection());
+        assertThat(lines).extracting(Line::depositId).containsExactly(9L, 2L);
     }
 
     @Test
-    void aDepositIsCountedInVolumeUnits() {
-        List<DrillReport.Row> rows = DrillReport.build(ORDER, Map.of("crude_petroleum_deposit", 380L),
-                Map.of("crude_petroleum_deposit", 20L), new DrillSelection());
-
-        Line deposit = DrillResourceRows.of(rows, LABELS).get(0);
-
-        assertThat(deposit.lore()).containsExactly(
-                "&7In range now: &f380 units", "&7Mined by this drill: &f20 units", "&7Total in range: &f400 units");
-    }
-
-    @Test
-    void anOreWithNoLabelIsShownByItsId() {
-        List<DrillReport.Row> rows = DrillReport.build(List.of(), Map.of("zinc_ore", 1L), Map.of(), new DrillSelection());
-
-        Line zinc = DrillResourceRows.of(rows, LABELS).get(0);
-
-        assertThat(zinc.name()).isEqualTo("zinc_ore");
-        assertThat(zinc.icon()).isEqualTo(DrillResourceRows.DEFAULT_ICON);
-    }
-
-    @Test
-    void theToggleFollowsTheSelectionTheReportWasBuiltWith() {
+    void theToggleFollowsTheSelectionOfTheOre() {
         DrillSelection selection = new DrillSelection();
-        List<DrillReport.Row> rows = DrillReport.build(ORDER, Map.of("galena_ore", 1L), Map.of(), selection);
-        assertThat(DrillResourceRows.of(rows, LABELS).get(0).toggle()).isEqualTo(Toggle.MINING);
-
+        assertThat(DrillResourceRows.of(List.of(galena(1, 5)), LABELS, selection).get(0).toggle()).isEqualTo(Toggle.MINING);
         selection.toggle("galena_ore");
-        List<DrillReport.Row> after = DrillReport.build(ORDER, Map.of("galena_ore", 1L), Map.of(), selection);
-        assertThat(DrillResourceRows.of(after, LABELS).get(0).toggle()).isEqualTo(Toggle.IGNORING);
+        assertThat(DrillResourceRows.of(List.of(galena(1, 5)), LABELS, selection).get(0).toggle()).isEqualTo(Toggle.IGNORING);
+    }
+
+    @Test
+    void anEmptyDepositIsGreyGlassAndSaysSo() {
+        Line line = DrillResourceRows.of(List.of(galena(1, 0)), LABELS, new DrillSelection()).get(0);
+
+        assertThat(line.exhausted()).isTrue();
+        assertThat(line.icon()).isEqualTo(DrillResourceRows.EXHAUSTED_ICON).isEqualTo("GRAY_STAINED_GLASS_PANE");
+        assertThat(line.name()).isEqualTo("&7Galena Ore");
+        assertThat(line.lore()).contains("&8empty");
+    }
+
+    @Test
+    void anOreWithoutALabelIsShownByItsIdAndAStoneIcon() {
+        Deposit zinc = new Deposit(3, "world", 0, 0, 4, "zinc_ore", 900_000, 900_000);
+        Line line = DrillResourceRows.of(List.of(zinc), LABELS, new DrillSelection()).get(0);
+
+        assertThat(line.name()).isEqualTo("zinc_ore");
+        assertThat(line.icon()).isEqualTo(DrillResourceRows.DEFAULT_ICON).isEqualTo("STONE");
+    }
+
+    @Test
+    void aLabelWithoutAHostKeepsTheDefaultIcon() {
+        Deposit galena = galena(1, 5);
+        Line line = DrillResourceRows.of(List.of(galena), Map.of("galena_ore", new OreLabel("&7Galena Ore", null)),
+                new DrillSelection()).get(0);
+        assertThat(line.icon()).isEqualTo(DrillResourceRows.DEFAULT_ICON);
+    }
+
+    @Test
+    void noDepositsMeansNoLines() {
+        assertThat(DrillResourceRows.of(List.of(), LABELS, new DrillSelection())).isEmpty();
+    }
+
+    @Test
+    void plainTextDropsTheColourCodes() {
+        assertThat(DrillResourceRows.plain("&8Crude &fPetroleum")).isEqualTo("Crude Petroleum");
     }
 }

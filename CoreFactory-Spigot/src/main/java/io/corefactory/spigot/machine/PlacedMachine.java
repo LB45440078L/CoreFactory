@@ -32,8 +32,8 @@ public final class PlacedMachine {
     private UUID interaction;
     private Hologram hologram;
     private DrillState drill;
+    private DrillMining mining;
     private DrillSelection selection = new DrillSelection();
-    private Boolean minedBefore;
     private long lastWorkTick = Long.MIN_VALUE / 2;
     private boolean settled;
     private double workCredit;
@@ -151,6 +151,15 @@ public final class PlacedMachine {
         this.drill = drill;
     }
 
+    /** The mining state of a drill, or null for a lab tool. It is not saved. */
+    DrillMining mining() {
+        return mining;
+    }
+
+    void setMining(DrillMining mining) {
+        this.mining = mining;
+    }
+
     /** The ores a drill mines. Every ore is mined unless the player ignored it in the resources menu. */
     public DrillSelection selection() {
         return selection;
@@ -158,15 +167,6 @@ public final class PlacedMachine {
 
     void setSelection(DrillSelection selection) {
         this.selection = selection;
-    }
-
-    /** Whether the drill has mined before, or null when the ledger has not been read yet this start. */
-    Boolean minedBefore() {
-        return minedBefore;
-    }
-
-    void setMinedBefore(boolean minedBefore) {
-        this.minedBefore = minedBefore;
     }
 
     /** True when the chunk of the host block is loaded, so the machine may run. */

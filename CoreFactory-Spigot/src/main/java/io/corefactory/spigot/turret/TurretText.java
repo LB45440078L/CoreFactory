@@ -49,10 +49,15 @@ public final class TurretText {
         return "&7Rounds: &f" + magazine.count() + "&7/&f" + magazine.capacity() + " &8(" + type + "&8)";
     }
 
-    /** The status line: the status word, and the share of the power it gets while it has rounds. */
+    /**
+     * The status line: the status word, and the share of its power demand the turret gets. A turret with some power but not all of its demand
+     * fires slower, so the line says so: the power share is the reason for the slower fire.
+     */
     public static String statusLine(TurretStatus status, double satisfaction) {
-        int percent = (int) Math.round(Math.max(0.0, Math.min(1.0, satisfaction)) * 100.0);
-        return "&7Status: &f" + status.text() + "&7 - power &f" + percent + "%";
+        double share = Math.max(0.0, Math.min(1.0, satisfaction));
+        int percent = (int) Math.round(share * 100.0);
+        String slowed = share > 0.0 && share < 1.0 ? " (fire slowed by the power)" : "";
+        return "&7Status: &f" + status.text() + "&7 - power &f" + percent + "%" + slowed;
     }
 
     /** The name of a round type as a player reads it, such as Armor-piercing. */

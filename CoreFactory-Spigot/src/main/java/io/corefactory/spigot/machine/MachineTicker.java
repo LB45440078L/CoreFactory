@@ -6,10 +6,10 @@ import io.corefactory.core.hologram.HologramText;
 import io.corefactory.core.process.ProcessCatalog;
 import io.corefactory.core.process.ProcessDefinition;
 import io.corefactory.core.process.ProcessEngine;
+import io.corefactory.core.upgrade.LabLevels;
 import io.corefactory.spigot.audio.MachineSounds;
 import io.corefactory.spigot.energy.EnergyService;
 import io.corefactory.spigot.energy.EnergyText;
-import io.corefactory.spigot.energy.WorkPace;
 import io.corefactory.spigot.hologram.HologramService;
 import org.bukkit.Location;
 
@@ -36,12 +36,14 @@ public final class MachineTicker implements Runnable {
     private final Visuals visuals;
     private final HologramService holograms;
     private final EnergyService energy;
+    private final LabLevels levels;
     private final Random random = new Random();
     private final int saveIntervalTicks;
     private long tick;
 
     public MachineTicker(MachineStore store, ProcessCatalog catalog, ProcessEngine engine, DrillTicker drills,
-                         Visuals visuals, HologramService holograms, EnergyService energy, int saveIntervalTicks) {
+                         Visuals visuals, HologramService holograms, EnergyService energy, LabLevels levels,
+                         int saveIntervalTicks) {
         this.store = store;
         this.catalog = catalog;
         this.engine = engine;
@@ -49,6 +51,7 @@ public final class MachineTicker implements Runnable {
         this.visuals = visuals;
         this.holograms = holograms;
         this.energy = energy;
+        this.levels = levels;
         this.saveIntervalTicks = Math.max(1, saveIntervalTicks);
     }
 
@@ -77,9 +80,9 @@ public final class MachineTicker implements Runnable {
             }
             EnergyService.Reading reading = energy.reading(placed.block());
             double grid = reading.satisfaction();
-            WorkPace pace = WorkPace.step(placed.workCredit(), grid);
+            LabLevels.Pace pace = LabLevels.pace(placed.workCredit(), grid, levels.speed(placed.level()));
             placed.setWorkCredit(pace.credit());
-            ProcessEngine.Step step = pace.runTick() ? engine.tick(placed.state(), random) : ProcessEngine.Step.IDLE;
+            ProcessEngine.Step step = runProcess(placed, pace.runs());
             int total = placed.state().processId() == null ? 0 : catalog.process(placed.state().processId())
                     .map(ProcessDefinition::ticks).orElse(0);
             placed.menu().refresh(placed.state().progress(), total, step == ProcessEngine.Step.BLOCKED);
@@ -100,6 +103,23 @@ public final class MachineTicker implements Runnable {
         }
     }
 
+    /**
+     * Runs the process ticks of one server tick. A machine of a higher level runs more than one in a tick. Stops early when the
+     * machine goes idle or its outputs are full. The step is COMPLETED when any of the ticks finished a pass.
+     */
+    private ProcessEngine.Step runProcess(PlacedMachine placed, int runs) {
+        ProcessEngine.Step step = ProcessEngine.Step.IDLE;
+        boolean completed = false;
+        for (int run = 0; run < runs; run++) {
+            step = engine.tick(placed.state(), random);
+            completed |= step == ProcessEngine.Step.COMPLETED;
+            if (step == ProcessEngine.Step.IDLE || step == ProcessEngine.Step.BLOCKED) {
+                break;
+            }
+        }
+        return completed ? ProcessEngine.Step.COMPLETED : step;
+    }
+
     /** The lab effect of a machine id, or empty when the machine has none. */
     static Optional<String> labEffect(String machineId) {
         return ProcessFamily.labVisual(machineId).map(ProcessFamily.LabVisual::effect);
@@ -113,7 +133,8 @@ public final class MachineTicker implements Runnable {
             store.releaseHologram(placed);
             return;
         }
-        List<String> lines = EnergyText.withGrid(HologramText.forMachine(placed.machine().name(), placed.state(), total),
+        String title = placed.machine().name() + " &7Level " + LabLevels.numeral(placed.level());
+        List<String> lines = EnergyText.withGrid(HologramText.forMachine(title, placed.state(), total),
                 reading.voltageV(), reading.demandW(), reading.satisfaction());
         if (placed.hologram() == null) {
             holograms.create(HologramService.spotAbove(placed.block()), lines).ifPresent(placed::setHologram);

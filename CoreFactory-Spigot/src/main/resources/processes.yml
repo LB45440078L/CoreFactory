@@ -640,6 +640,23 @@ processes:
     outputs:
       - {item: item:turret_upgrade_5, amount: 1}
 
+  # ----------------------------------------------------------------- Lab machine upgrade modules (levels 2 and 3)
+
+  # Each module takes a lab machine up one level; the id names the level it makes. Never hand-made.
+  assemble_machine_upgrade_2:
+    machine: component_assembly
+    ticks: 600
+    inputs: ["item:circuit_board:2", "item:iron_gear:2", "item:brass_ingot:1", "item:precision_barrel:1"]
+    outputs:
+      - {item: item:machine_upgrade_2, amount: 1}
+
+  assemble_machine_upgrade_3:
+    machine: heavy_weapons_assembly
+    ticks: 1200
+    inputs: ["item:targeting_unit:1", "item:optical_lens:2", "item:laser_emitter:1", "item:brass_ingot:2"]
+    outputs:
+      - {item: item:machine_upgrade_3, amount: 1}
+
 # =====================================================================================================
 #  Drills
 #

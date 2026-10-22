@@ -11,6 +11,7 @@ import io.corefactory.core.geology.GeologyService;
 import io.corefactory.core.geology.OreDefinition;
 import io.corefactory.core.process.ProcessCatalog;
 import io.corefactory.core.process.ProcessEngine;
+import io.corefactory.core.upgrade.LabLevels;
 import io.corefactory.spigot.machine.BarrelConcealment;
 import io.corefactory.spigot.machine.DrillTicker;
 import io.corefactory.spigot.machine.HopperListener;
@@ -22,6 +23,7 @@ import io.corefactory.spigot.machine.MachineMenu;
 import io.corefactory.spigot.machine.MachineStore;
 import io.corefactory.spigot.machine.MachineTicker;
 import io.corefactory.spigot.machine.DrillRates;
+import io.corefactory.spigot.machine.LabUpgradeRates;
 import io.corefactory.spigot.machine.DrillResources;
 import io.corefactory.spigot.ledger.DepositLedger;
 import io.corefactory.spigot.research.ResearchCommand;
@@ -216,6 +218,7 @@ public final class CoreFactoryPlugin extends JavaPlugin {
         DepositStore deposits = DepositLedger.open(research.database(), getLogger());
         DepositSettings depositSettings = DepositSettings.from(getConfig(), getLogger());
         DrillYield drillYield = DrillRates.read(getConfig().getDoubleList("drill-rates"), getLogger());
+        LabLevels labLevels = LabUpgradeRates.read(getConfig().getDoubleList("machine-upgrades.speed"), getLogger());
         Map<String, OreDefinition> oreById = new LinkedHashMap<>();
         for (OreDefinition ore : oreDefinitions) {
             oreById.putIfAbsent(ore.id(), ore);
@@ -312,7 +315,7 @@ public final class CoreFactoryPlugin extends JavaPlugin {
             logistics.tick();
         }, 1L, 1L);
         machineTicker = Bukkit.getScheduler().runTaskTimer(this,
-                new MachineTicker(machines, processes, engine, drillTicker, sprites, holograms, energy,
+                new MachineTicker(machines, processes, engine, drillTicker, sprites, holograms, energy, labLevels,
                         core.settings().saveIntervalTicks()),
                 1L, 1L);
         sprites.start();

@@ -4,6 +4,7 @@ import io.corefactory.core.drill.DrillSelection;
 import io.corefactory.core.drill.DrillState;
 import io.corefactory.core.process.Machine;
 import io.corefactory.core.process.MachineState;
+import io.corefactory.core.upgrade.LabLevels;
 import io.corefactory.spigot.hologram.Hologram;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -37,6 +38,7 @@ public final class PlacedMachine {
     private long lastWorkTick = Long.MIN_VALUE / 2;
     private boolean settled;
     private double workCredit;
+    private int level = LabLevels.MIN_LEVEL;
 
     PlacedMachine(Location block, Machine machine, Material host, MachineMenu menu) {
         this.block = block;
@@ -98,6 +100,21 @@ public final class PlacedMachine {
 
     void setWorkCredit(double workCredit) {
         this.workCredit = workCredit;
+    }
+
+    /**
+     * The level of a lab machine, from {@link LabLevels#MIN_LEVEL} to {@link LabLevels#MAX_LEVEL}. It sets the machine's work pace
+     * and its model. A drill is always at level I.
+     */
+    public int level() {
+        return level;
+    }
+
+    void setLevel(int level) {
+        if (level < LabLevels.MIN_LEVEL || level > LabLevels.MAX_LEVEL) {
+            throw new IllegalArgumentException("a lab machine is level " + LabLevels.MIN_LEVEL + " to " + LabLevels.MAX_LEVEL);
+        }
+        this.level = level;
     }
 
     /** The item display drawn over the host block, or null when none is shown. */

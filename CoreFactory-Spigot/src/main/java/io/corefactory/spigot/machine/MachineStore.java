@@ -8,16 +8,19 @@ import io.corefactory.core.drill.DrillDefinition;
 import io.corefactory.core.drill.DrillSelection;
 import io.corefactory.core.drill.DrillState;
 import io.corefactory.core.item.ComponentDefinition;
+import io.corefactory.core.item.ItemFactory;
 import io.corefactory.core.process.ItemRef;
 import io.corefactory.core.process.Machine;
 import io.corefactory.core.process.ProcessCatalog;
 import io.corefactory.core.process.ProcessEngine;
+import io.corefactory.core.upgrade.LabLevels;
 import io.corefactory.spigot.device.DevicePart;
 import io.corefactory.spigot.hologram.HologramService;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
@@ -25,6 +28,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.io.File;
 import java.io.IOException;
@@ -157,6 +161,17 @@ public final class MachineStore {
         }
     }
 
+    /**
+     * Sets a lab machine's level and draws it with the model of that level, in place of its old display. Its items, progress and
+     * process stay as they are. The file is written at once, so the level is kept.
+     */
+    public void upgrade(PlacedMachine placed, int level) {
+        placed.setLevel(level);
+        displays.remove(placed.display());
+        placed.setDisplay(spawnDisplay(placed));
+        save();
+    }
+
     /** Shows the display again when it is missing, for example after startup removed it. A tall drill's upper display too. */
     public void ensureDisplay(PlacedMachine placed) {
         if (placed.display() == null || Bukkit.getEntity(placed.display()) == null) {
@@ -280,7 +295,17 @@ public final class MachineStore {
                 placed.drill().restore(entry.getDouble("cycle"), entry.getInt("fuel-cycles"));
                 placed.setSelection(new DrillSelection(entry.getStringList("ignore")));
             }
-            placed.setDisplay(parseUuid(entry.getString("display")));
+            UUID display = parseUuid(entry.getString("display"));
+            if (placed.drill() == null) {
+                // An entry without a level, from an older file, is level I. A higher level is drawn with its own model, so the
+                // display saved for level I is removed and the next display check spawns the right one.
+                placed.setLevel(LabLevels.clamp(entry.getInt("level", LabLevels.MIN_LEVEL)));
+                if (placed.level() != LabLevels.MIN_LEVEL) {
+                    displays.remove(display);
+                    display = null;
+                }
+            }
+            placed.setDisplay(display);
             placed.setTopDisplay(parseUuid(entry.getString("display-top")));
             byKey.put(key(at), placed);
         }
@@ -299,6 +324,7 @@ public final class MachineStore {
             yaml.set(base + "z", at.getBlockZ());
             yaml.set(base + "id", placed.machine().id());
             yaml.set(base + "progress", placed.state().progress());
+            yaml.set(base + "level", placed.level());
             if (placed.state().processId() != null) {
                 yaml.set(base + "process", placed.state().processId());
             }
@@ -372,8 +398,25 @@ public final class MachineStore {
         ComponentDefinition definition = core.componentDefinitions().get(placed.machine().id());
         ItemStack item = definition == null
                 ? new ItemStack(placed.host() == null ? Material.STONE : placed.host())
-                : core.items().machine(definition);
+                : levelModel(core.items().machine(definition), placed);
         return displays.spawn(placed.block(), item);
+    }
+
+    /**
+     * The display item of a lab machine at a level above I: the same item, with the model of that level ({@code machine/<id>_2} or
+     * {@code machine/<id>_3}). Level I, and every drill, keep the machine's own model.
+     */
+    private static ItemStack levelModel(ItemStack item, PlacedMachine placed) {
+        if (placed.drill() != null || placed.level() == LabLevels.MIN_LEVEL) {
+            return item;
+        }
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            String key = ItemFactory.displayKey(LabLevels.modelId(placed.machine().id(), placed.level()));
+            meta.setItemModel(new NamespacedKey(ItemFactory.NAMESPACE, key));
+            item.setItemMeta(meta);
+        }
+        return item;
     }
 
     /**

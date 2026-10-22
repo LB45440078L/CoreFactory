@@ -319,6 +319,89 @@ class ArtTest {
         }
     }
 
+    /**
+     * Every lab machine has a level II and a level III model. Only the front and top faces carry the trim, so those differ from
+     * level I and the other four sides are the level I sides.
+     */
+    @Test
+    void everyLabMachineHasLevelTwoAndLevelThreeModels() {
+        assertThat(LevelArt.LAB_MACHINES).containsExactlyInAnyOrder("crusher", "roaster", "separator", "purifier",
+                "converter", "enrichment_cascade", "transmuter", "spectrometer", "particle_accelerator",
+                "antimatter_condenser", "research_console", "crude_oil_refinery", "induction_furnace", "powder_mill",
+                "cartridge_press", "bullet_swaging_machine", "ammunition_assembly", "metal_lathe", "component_assembly",
+                "heavy_weapons_assembly");
+        assertThat(LevelArt.LEVELS).containsExactly(2, 3);
+        for (String id : LevelArt.LAB_MACHINES) {
+            MachineArt.Spec base = LevelArt.base(id);
+            for (int level : LevelArt.LEVELS) {
+                MachineArt.Spec spec = LevelArt.levelSpec(base, level);
+                assertThat(spec.id()).isEqualTo(id + "_" + level);
+                for (MachineArt.Face face : MachineArt.Face.values()) {
+                    Canvas levelCanvas = new Canvas();
+                    MachineArt.paintFace(levelCanvas, spec, face);
+                    Canvas baseCanvas = new Canvas();
+                    MachineArt.paintFace(baseCanvas, base, face);
+                    boolean trimmed = face == MachineArt.Face.NORTH || face == MachineArt.Face.UP;
+                    assertThat(levelCanvas.digest() != baseCanvas.digest())
+                            .as(spec.id() + " " + face + " differs from level I").isEqualTo(trimmed);
+                }
+            }
+        }
+    }
+
+    /** The level II and III front and top faces are all different from one another, so no two levels look the same. */
+    @Test
+    void theLevelTexturesAreDistinct() {
+        Set<Long> digests = new HashSet<>();
+        for (String id : LevelArt.LAB_MACHINES) {
+            for (int level : LevelArt.LEVELS) {
+                MachineArt.Spec spec = LevelArt.levelSpec(LevelArt.base(id), level);
+                for (MachineArt.Face face : List.of(MachineArt.Face.NORTH, MachineArt.Face.UP)) {
+                    Canvas canvas = new Canvas();
+                    MachineArt.paintFace(canvas, spec, face);
+                    assertThat(digests.add(canvas.digest())).as(spec.id() + " " + face + " repeats another texture").isTrue();
+                }
+            }
+        }
+        assertThat(digests).hasSize(LevelArt.LAB_MACHINES.size() * LevelArt.LEVELS.size() * 2);
+    }
+
+    /**
+     * The animated faces of the lab machines keep their motion at every level: each level's strip has {@link MachineAnimation#FRAMES}
+     * frames that change from one to the next. Eleven lab faces are animated.
+     */
+    @Test
+    void theAnimatedFacesOfLabMachinesStayAnimatedAtEveryLevel() {
+        List<String> animated = new ArrayList<>();
+        for (String id : LevelArt.LAB_MACHINES) {
+            MachineArt.Spec base = LevelArt.base(id);
+            for (MachineArt.Face face : MachineArt.Face.values()) {
+                boolean moves = MachineAnimation.animates(base, face)
+                        || ProcessMachineArt.clip(id).filter(clip -> clip.face() == face).isPresent();
+                if (!moves) {
+                    continue;
+                }
+                animated.add(id + " " + face);
+                for (int level : LevelArt.LEVELS) {
+                    BufferedImage strip = LevelArt.strip(base, face, level);
+                    assertThat(strip.getWidth()).as(id + " level " + level).isEqualTo(MachineAnimation.FRAME);
+                    assertThat(strip.getHeight()).as(id + " level " + level)
+                            .isEqualTo(MachineAnimation.FRAMES * MachineAnimation.FRAME);
+                    for (int frame = 0; frame < MachineAnimation.FRAMES; frame++) {
+                        int next = (frame + 1) % MachineAnimation.FRAMES;
+                        assertThat(digest(frame(strip, frame, MachineAnimation.FRAME)))
+                                .as(id + " level " + level + " frame " + frame)
+                                .isNotEqualTo(digest(frame(strip, next, MachineAnimation.FRAME)));
+                    }
+                }
+            }
+        }
+        assertThat(animated).containsExactlyInAnyOrder("crude_oil_refinery UP", "particle_accelerator NORTH",
+                "antimatter_condenser NORTH", "induction_furnace NORTH", "powder_mill NORTH", "cartridge_press NORTH",
+                "bullet_swaging_machine NORTH", "ammunition_assembly NORTH", "metal_lathe NORTH",
+                "component_assembly NORTH", "heavy_weapons_assembly NORTH");
+    }
+
     @Test
     void everyTntInTntsYmlHasATexture() throws Exception {
         assertThat(ids("tnts", "tnts.yml")).containsExactlyElementsOf(

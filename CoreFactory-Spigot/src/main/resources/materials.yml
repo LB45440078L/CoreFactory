@@ -824,6 +824,26 @@ components:
       - "&8Made on the heavy weapons assembly, never by hand."
     material: DIAMOND_BLOCK
 
+  # ----------------------------------------------------------------- Lab machine upgrade modules (processed)
+
+  # A module takes a lab machine (crusher, roaster, assembler and the rest) up one level: right-click a machine you own with it.
+  # Each level is faster and wears its own model. Made by process only.
+  machine_upgrade_2:
+    name: "&bUpgrade Module II"
+    lore:
+      - "&7Takes a level 1 lab machine to level II: it works 1.5 times as fast."
+      - "&7Right-click a lab machine you own to fit it. Its items and progress stay."
+      - "&8Made on the component assembly machine, never by hand."
+    material: REDSTONE_LAMP
+
+  machine_upgrade_3:
+    name: "&bUpgrade Module III"
+    lore:
+      - "&7Takes a level II lab machine to level III, the last level: it works twice as fast."
+      - "&7Right-click a lab machine you own to fit it. Its items and progress stay."
+      - "&8Made on the heavy weapons assembly, never by hand."
+    material: SEA_LANTERN
+
   # ----------------------------------------------------------------- Extraction and survey
 
   ore_density_scanner:

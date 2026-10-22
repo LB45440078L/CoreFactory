@@ -7,6 +7,7 @@ import io.corefactory.core.drill.DrillCatalog;
 import io.corefactory.core.drill.DrillRules;
 import io.corefactory.core.process.Machine;
 import io.corefactory.core.process.ProcessCatalog;
+import io.corefactory.core.upgrade.LabLevels;
 import io.corefactory.spigot.achievement.AchievementTracker;
 import io.corefactory.spigot.energy.DeviceRegistry;
 import org.bukkit.Bukkit;
@@ -33,6 +34,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Optional;
+import java.util.OptionalInt;
 
 /**
  * Routes placing, breaking and right-clicking machines. A machine's component item places its host block and registers
@@ -218,7 +220,50 @@ public final class MachineListener implements Listener {
         if (player.isSneaking() && held != null && !held.getType().isAir()) {
             return false;
         }
+        if (held != null && applyKit(placed, player, held)) {
+            return true;
+        }
         placed.menu().open(player);
+        return true;
+    }
+
+    /**
+     * Applies a lab upgrade kit held in hand to a lab machine. The kit takes the machine up one level and is used up; a kit that
+     * is refused is kept, and the reason is told. A drill takes no kit.
+     *
+     * @return true when the held item is a kit for a lab machine, so the click is the machine's and no menu opens
+     */
+    private boolean applyKit(PlacedMachine placed, Player player, ItemStack held) {
+        if (placed.drill() != null) {
+            return false;
+        }
+        Optional<String> componentId = core.items().componentId(held);
+        if (componentId.isEmpty()) {
+            return false;
+        }
+        OptionalInt kit = LabLevels.kitLevel(componentId.get());
+        if (kit.isEmpty()) {
+            return false;
+        }
+        int current = placed.level();
+        switch (LabLevels.canUpgrade(current, kit.getAsInt())) {
+            case OK -> {
+                ItemStack inHand = player.getInventory().getItemInMainHand();
+                if (inHand.getAmount() > 1) {
+                    inHand.setAmount(inHand.getAmount() - 1);
+                } else {
+                    player.getInventory().setItemInMainHand(null);
+                }
+                store.upgrade(placed, kit.getAsInt());
+                player.sendMessage(Messages.color("&aThe " + placed.machine().name() + " &ais now level "
+                        + LabLevels.numeral(current + 1) + "."));
+            }
+            case WRONG_LEVEL -> player.sendMessage(Messages.color("&cThis kit takes a machine from level "
+                    + LabLevels.numeral(kit.getAsInt() - 1) + " to level " + LabLevels.numeral(kit.getAsInt())
+                    + "; this machine is level " + LabLevels.numeral(current) + "."));
+            case MAX_LEVEL -> player.sendMessage(Messages.color("&cThis machine is already at its top level, "
+                    + LabLevels.numeral(current) + "."));
+        }
         return true;
     }
 

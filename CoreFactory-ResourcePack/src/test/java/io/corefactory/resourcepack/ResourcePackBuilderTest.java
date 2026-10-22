@@ -5,6 +5,7 @@ import io.corefactory.resourcepack.art.ArtGenerator;
 import io.corefactory.resourcepack.art.BeltArt;
 import io.corefactory.resourcepack.art.Color;
 import io.corefactory.resourcepack.art.ComponentArt;
+import io.corefactory.resourcepack.art.LevelArt;
 import io.corefactory.resourcepack.art.MachineAnimation;
 import io.corefactory.resourcepack.art.MachineArt;
 import io.corefactory.resourcepack.art.OreArt;
@@ -45,7 +46,8 @@ class ResourcePackBuilderTest {
         int items = ResourcePackBuilder.build(art, zip, 84, "test", "1.2.3", 20261019120000L);
 
         assertThat(items).isEqualTo(TntArt.ALL.size() + ComponentArt.ALL.size() + MachineArt.ALL.size()
-                + ProcessMachineArt.ALL.size() + OreArt.ALL.size() + ParticleArt.ALL.size() + BeltArt.ALL.size());
+                + ProcessMachineArt.ALL.size() + LevelArt.LAB_MACHINES.size() * LevelArt.LEVELS.size()
+                + OreArt.ALL.size() + ParticleArt.ALL.size() + BeltArt.ALL.size());
         try (ZipFile file = new ZipFile(zip.toFile())) {
             String mcmeta = read(file, "pack.mcmeta");
             assertThat(mcmeta).contains("\"pack_format\": 84");
@@ -367,6 +369,12 @@ class ResourcePackBuilderTest {
                 String id = clip.id();
                 String path = "block/machine/" + id + "/" + clip.face().key();
                 expectedMeta.add("assets/corefactory/textures/" + path + ".png.mcmeta");
+                if (LevelArt.LAB_MACHINES.contains(id)) {
+                    for (int level : LevelArt.LEVELS) {
+                        expectedMeta.add("assets/corefactory/textures/block/machine/" + id + "_" + level + "/"
+                                + clip.face().key() + ".png.mcmeta");
+                    }
+                }
 
                 Map<String, Object> model = new Yaml().load(read(file, "assets/corefactory/models/item/machine/" + id + ".json"));
                 assertThat(((Map<String, Object>) model.get("textures")).get(clip.face().key())).as(id)

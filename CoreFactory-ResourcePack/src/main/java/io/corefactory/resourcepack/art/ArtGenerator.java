@@ -105,6 +105,7 @@ public final class ArtGenerator {
             writeText(out.resolve("specs/belt/" + spec.id() + ".yml"), beltDescriptor(spec));
         }
         ProcessMachineArt.write(out, tiles);
+        LevelArt.write(out, tiles);
         Canvas background = new Canvas();
         BackgroundArt.paint(background);
         writePng(background.toImage(), out.resolve(BackgroundArt.PATH));

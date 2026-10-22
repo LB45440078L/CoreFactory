@@ -75,6 +75,15 @@ drill-rates:
   - 4.0
   - 6.0
 
+machine-upgrades:
+  # The work pace factor of each lab machine level, level I, II and III. A machine of level II runs its process 1.5 times as
+  # fast at full power, level III twice as fast; the power it draws is unchanged. Each factor is finite and above zero, and a
+  # higher level is never slower than the one below. Read at startup, so a change needs a restart.
+  speed:
+    - 1.0
+    - 1.5
+    - 2.0
+
 charts:
   # Grid charts (/cf grid create): a hologram of a grid's satisfaction, production or storage. Read at startup, so a change
   # needs a restart. The most charts one grid may have.

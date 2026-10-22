@@ -86,9 +86,9 @@ turrets:
   # Machine gun turrets. A turret is placed on air like a generator and fires at hostile mobs in its range. Read at startup, so a change
   # needs a restart. Turn off to stop every turret: none searches, aims or fires, and none asks the network for power.
   enabled: true
-  # The turret scan rate: ticks between two searches for a target while a turret has none (20 is one second). Lower scans more often
-  # and costs more server time; higher scans less often and reacts later. A turret keeps its target between searches, while it stays
-  # alive, in range and in its arc. Allowed: 1 to 1200.
+  # The turret scan rate: ticks between two coordinated passes that give every turret in an area its targets (20 is one second).
+  # Lower scans more often and costs more server time; higher scans less often and reacts later. A turret keeps its target between
+  # passes while the target stays alive, in range and in its line of fire, and a pass also runs straight after a target dies. Allowed: 1 to 1200.
   search-interval-ticks: 20
   # The most a turret turns in one tick, in degrees.
   rotation-speed-degrees: 6
@@ -112,8 +112,8 @@ turrets:
   target-named: false
   # Fire at a tamed mob. Off keeps tamed mobs safe.
   target-tamed: false
-  # Blocks between the two targets of a dual shot. A machine gun with two cannons (levels 4 and 5) fires at a second mob only when it
-  # stands within this many blocks of the first, and in range. Kept from 0 to 64.
+  # Blocks between the two targets of a dual shot. A machine gun with two cannons (levels 4 and 5) prefers a second mob within this many
+  # blocks of its first target, and takes the nearest free mob when none is that close. Kept from 0 to 64.
   dual-spacing-blocks: 6
   # Each turret's own targets, and its friendly fire, are set in its menu (right-click it, or sneak-click). Its owner's friends are kept with
   # /cf friends. A turret never fires at a friend or its owner. A player with a target stance, or a teammate in team mode target, is the exception.

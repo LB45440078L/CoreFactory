@@ -168,4 +168,62 @@ class HopperTransferTest {
         assertThat(source.count()).isEqualTo(5);
         assertThat(destination.count()).isEqualTo(LIMIT);
     }
+
+    @Test
+    void exactlyOneItemLeavesASlotThatHoldsSeveral() {
+        FakeSlot slot = new FakeSlot(GALENA, 3);
+
+        assertThat(HopperTransfer.takeOne(slot, GALENA)).isTrue();
+
+        assertThat(slot.count()).isEqualTo(2);
+        assertThat(slot.ref()).isEqualTo(GALENA);
+    }
+
+    @Test
+    void theLastItemLeavesAndEmptiesTheSlot() {
+        FakeSlot slot = new FakeSlot(GALENA, 1);
+
+        assertThat(HopperTransfer.takeOne(slot, GALENA)).isTrue();
+
+        assertThat(slot.count()).isZero();
+        assertThat(slot.ref()).isNull();
+    }
+
+    @Test
+    void aRemovalFromAnEmptySlotOrOfAnotherItemIsRefused() {
+        FakeSlot empty = new FakeSlot(null, 0);
+        FakeSlot coal = new FakeSlot(COAL, 2);
+
+        assertThat(HopperTransfer.takeOne(empty, GALENA)).isFalse();
+        assertThat(HopperTransfer.takeOne(coal, GALENA)).isFalse();
+
+        assertThat(coal.ref()).isEqualTo(COAL);
+        assertThat(coal.count()).isEqualTo(2);
+    }
+
+    @Test
+    void aSlotThatDropsWritesIsLeftAsItWasAndTheRemovalRefused() {
+        FakeSlot slot = new FakeSlot(GALENA, 4, true, LIMIT);
+
+        assertThat(HopperTransfer.takeOne(slot, GALENA)).isFalse();
+
+        assertThat(slot.count()).isEqualTo(4);
+        assertThat(slot.ref()).isEqualTo(GALENA);
+    }
+
+    @Test
+    void aRepeatedRemovalNeverCreatesOrLosesItems() {
+        FakeSlot source = new FakeSlot(GALENA, 10);
+        FakeSlot destination = new FakeSlot(null, 0);
+
+        for (int pass = 0; pass < 15; pass++) {
+            if (HopperTransfer.takeOne(source, GALENA)) {
+                assertThat(HopperTransfer.placeOne(1, destination, GALENA, LIMIT)).isTrue();
+            }
+            assertThat(source.count() + destination.count()).isEqualTo(10);
+        }
+
+        assertThat(source.count()).isZero();
+        assertThat(destination.count()).isEqualTo(10);
+    }
 }

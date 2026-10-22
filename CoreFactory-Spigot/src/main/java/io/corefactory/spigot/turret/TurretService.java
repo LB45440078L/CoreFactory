@@ -5,12 +5,12 @@ import io.corefactory.core.energy.Consumer;
 import io.corefactory.core.energy.Pos;
 import io.corefactory.core.turret.ArmourBypass;
 import io.corefactory.core.turret.BeamPlan;
-import io.corefactory.core.turret.DualTargeting;
-import io.corefactory.core.turret.DualTargeting.Spot;
 import io.corefactory.core.turret.FireRate;
 import io.corefactory.core.turret.LaserRules;
 import io.corefactory.core.turret.Magazine;
 import io.corefactory.core.turret.RoundType;
+import io.corefactory.core.turret.TargetAssignment;
+import io.corefactory.core.turret.TargetAssignment.TurretSlot;
 import io.corefactory.core.turret.TargetKind;
 import io.corefactory.core.turret.TargetPolicy;
 import io.corefactory.core.turret.TargetRules;
@@ -77,11 +77,18 @@ import java.util.UUID;
  * 4 and 5; a laser fires an instant beam from its one cannon and needs no rounds.
  *
  * <p>A turret's stats come from its level: range, fire interval, ammunition, power, cannons and damage. A target is a mob or a player that
- * {@link TargetRules} allows, with the range measured as a sphere around the turret's head to the nearest point of the target's box. A cannon
- * keeps its target while it stays valid. When a cannon has none, and the search interval is up, the turret searches with
- * {@link DualTargeting#select}: the first cannon takes the nearest target in range, and the second one takes a target within the dual spacing
- * of the first. The turret's power demand is a consumer of the energy network while it can fire, and its fire interval grows as its
+ * {@link TargetRules} allows, with the range measured as a sphere around the turret's head to the nearest point of the target's box.
+ *
+ * <p>The turrets of a world coordinate their targets. The coordinated pass ({@link #assignTargets}) runs every search interval, and on the
+ * tick after a held target dies. It collects each turret's candidates, the entities it can fire at now, and gives all the turrets' cannons
+ * to {@link TargetAssignment} together: each cannon keeps its target while it stays a candidate, the first cannons take the nearest mob that no
+ * turret holds, and a second cannon prefers a free mob within the dual spacing of its first target. The turrets spread over the mobs before
+ * any two share one. Between passes a cannon keeps its target while the target is
+ * alive and valid. The turret's power demand is a consumer of the energy network while it can fire, and its fire interval grows as its
  * satisfaction falls.
+ *
+ * <p>Every hit on a mob is dealt with its vanilla hit delay cleared, so a turret's damage is never dropped by the delay of an earlier hit, and
+ * the turret's own fire interval is the only delay between its shots.
  */
 public final class TurretService implements EnergyService.ConsumerSource {
 
@@ -110,6 +117,7 @@ public final class TurretService implements EnergyService.ConsumerSource {
     private final LaserLight laserLight;
     private final Random random;
     private long ticks;
+    private boolean reassignSoon;
 
     /**
      * @param core       the core, for the items and the component definitions
@@ -183,6 +191,10 @@ public final class TurretService implements EnergyService.ConsumerSource {
         if (ticks % ENSURE_TICKS == 0) {
             registry.ensureEntities();
         }
+        if (reassignSoon || ticks % stats.settings().searchIntervalTicks() == 0) {
+            reassignSoon = false;
+            assignTargets();
+        }
         for (TurretDevice turret : registry.all()) {
             if (turret.isLoaded()) {
                 tickOne(turret);
@@ -203,6 +215,7 @@ public final class TurretService implements EnergyService.ConsumerSource {
         int clamped = clampLevel(level);
         TurretDevice turret = registry.add(new TurretDevice(UUID.randomUUID().toString(), kind, owner, block, facing,
                 Magazine.empty(stats.magazineCapacity(kind, clamped)), clamped));
+        reassignSoon = true;
         save();
         return turret;
     }
@@ -234,6 +247,7 @@ public final class TurretService implements EnergyService.ConsumerSource {
             turret.setMagazine(new Magazine(magazine.type(), magazine.count(), stats.magazineCapacity(turret.kind(), turret.level())));
         }
         dropTargets(turret);
+        reassignSoon = true;
         registry.rebuild(turret);
         save();
     }
@@ -325,6 +339,7 @@ public final class TurretService implements EnergyService.ConsumerSource {
     public void setPolicy(TurretDevice turret, TargetPolicy policy) {
         turret.setPolicy(policy);
         dropTargets(turret);
+        reassignSoon = true;
         save();
     }
 
@@ -372,7 +387,6 @@ public final class TurretService implements EnergyService.ConsumerSource {
         TurretSettings view = viewOf(turret);
         if (!isArmed(turret)) {
             dropTargets(turret);
-            turret.setSearchIn(0);
             turret.setSatisfaction(0.0);
             turret.setStatus(TurretStatus.NO_ROUNDS);
             refreshText(turret);
@@ -396,7 +410,6 @@ public final class TurretService implements EnergyService.ConsumerSource {
         }
         if (satisfaction <= 0.0) {
             dropTargets(turret);
-            turret.setSearchIn(0);
             turret.setStatus(TurretStatus.NO_POWER);
             refreshText(turret);
             return;
@@ -463,61 +476,36 @@ public final class TurretService implements EnergyService.ConsumerSource {
     }
 
     /**
-     * Resolves the targets of the cannons for this tick. A cannon keeps its target while it stays valid, and the held target of the first
-     * cannon always leads. A cannon with no target is filled when the search is due: with the nearest target in range, or, for a second
-     * cannon beside a held one, the nearest target within the dual spacing of it.
+     * Resolves the targets of the cannons for this tick: each cannon keeps the target the coordinated pass gave it, for as long as the target
+     * is alive and valid. A dropped target leaves its cannon empty until the next pass.
      *
      * @return the target of each cannon, null where a cannon has none
      */
     private LivingEntity[] resolveTargets(TurretDevice turret, Location barrel, TurretSettings view, int cannons) {
         LivingEntity[] kept = new LivingEntity[cannons];
-        int held = 0;
         for (int cannon = 0; cannon < cannons; cannon++) {
-            LivingEntity living = keepTarget(turret, cannon, barrel, view);
-            if (living != null) {
-                kept[held++] = living;
-            }
-        }
-        if (held < cannons) {
-            if (turret.searchIn() > 0) {
-                turret.setSearchIn(turret.searchIn() - 1);
-            } else {
-                turret.setSearchIn(view.searchIntervalTicks());
-                List<Spot<LivingEntity>> spots = spotsAround(turret, barrel, view, kept);
-                List<LivingEntity> chosen;
-                if (held == 0) {
-                    chosen = DualTargeting.select(spots, cannons, stats.spacing());
-                } else {
-                    List<Spot<LivingEntity>> seeded = new ArrayList<>(spots.size() + 1);
-                    seeded.add(new Spot<>(kept[0], nearestPointOf(barrel, kept[0]), true));
-                    seeded.addAll(spots);
-                    chosen = DualTargeting.select(seeded, cannons, stats.spacing());
-                }
-                for (int i = 0; i < chosen.size() && i < cannons; i++) {
-                    if (kept[i] == null) {
-                        kept[i] = chosen.get(i);
-                    }
-                }
-            }
-        }
-        for (int cannon = 0; cannon < cannons; cannon++) {
-            turret.setTarget(cannon, kept[cannon] == null ? null : kept[cannon].getUniqueId());
+            kept[cannon] = keepTarget(turret, cannon, barrel, view);
         }
         return kept;
     }
 
-    /** The held target of a cannon while it is still valid; the target is dropped otherwise. */
+    /**
+     * The held target of a cannon while it is still alive and valid; the target is dropped otherwise. A target that died or is gone asks
+     * for a pass on the next tick, so its cannon is given another target at once; a target that left the reach of the turret waits for the
+     * next interval.
+     */
     private LivingEntity keepTarget(TurretDevice turret, int cannon, Location barrel, TurretSettings view) {
         UUID id = turret.target(cannon);
         if (id == null) {
             return null;
         }
         Entity entity = Bukkit.getEntity(id);
-        if (!(entity instanceof LivingEntity living) || living.isDead() || !living.getWorld().equals(barrel.getWorld())) {
+        if (!(entity instanceof LivingEntity living) || living.isDead()) {
+            reassignSoon = true;
             dropTarget(turret, cannon);
             return null;
         }
-        if (verdictOf(turret, living, barrel, view) != Verdict.VALID) {
+        if (!living.getWorld().equals(barrel.getWorld()) || verdictOf(turret, living, barrel, view) != Verdict.VALID) {
             dropTarget(turret, cannon);
             return null;
         }
@@ -526,7 +514,6 @@ public final class TurretService implements EnergyService.ConsumerSource {
 
     private static void dropTarget(TurretDevice turret, int cannon) {
         turret.setTarget(cannon, null);
-        turret.setSearchIn(0);
     }
 
     private static void dropTargets(TurretDevice turret) {
@@ -536,35 +523,72 @@ public final class TurretService implements EnergyService.ConsumerSource {
     }
 
     /**
-     * The candidates of a search, nearest first, each with its nearest point and whether it can be fired at now: in range as a sphere around
-     * the turret's head, a valid target under the rules, and a clear line from the barrel. Targets already held are left out.
+     * The coordinated pass. Every loaded turret that is armed and has power offers its candidates, and the cannons of the turrets of each
+     * world are given their targets together by {@link TargetAssignment}. A turret's candidates are the entities its verdict makes VALID,
+     * nearest first, so a held target that is still valid is among them and keeps its place. The pass reads the entities in each turret's
+     * range and their line of sight, and writes the target of each cannon. Its cost is one range query and one verdict per entity near each
+     * turret, once per search interval, or on the tick after a held target dies.
      */
-    private List<Spot<LivingEntity>> spotsAround(TurretDevice turret, Location barrel, TurretSettings view, LivingEntity[] held) {
+    private void assignTargets() {
+        Map<UUID, List<TurretDevice>> byWorld = new HashMap<>();
+        for (TurretDevice turret : registry.all()) {
+            if (turret.isLoaded() && isArmed(turret) && energy.satisfaction(consumerId(turret)) > 0.0) {
+                byWorld.computeIfAbsent(turret.world(), key -> new ArrayList<>()).add(turret);
+            }
+        }
+        for (List<TurretDevice> turrets : byWorld.values()) {
+            assignWorld(turrets);
+        }
+    }
+
+    /** Gives the cannons of the turrets of one world their targets, from one assignment over all of them. */
+    private void assignWorld(List<TurretDevice> turrets) {
+        List<TurretSlot> slots = new ArrayList<>(turrets.size());
+        Map<UUID, Point> places = new HashMap<>();
+        for (TurretDevice turret : turrets) {
+            List<UUID> candidates = new ArrayList<>();
+            for (LivingEntity living : candidatesOf(turret, turret.barrel(), viewOf(turret))) {
+                candidates.add(living.getUniqueId());
+                places.put(living.getUniqueId(), pointOf(living.getBoundingBox().getCenter()));
+            }
+            List<UUID> claimed = new ArrayList<>(TurretDevice.CANNONS);
+            for (int cannon = 0; cannon < TurretDevice.CANNONS; cannon++) {
+                claimed.add(turret.target(cannon));
+            }
+            slots.add(new TurretSlot(turret.id(), stats.cannons(turret.kind(), turret.level()), claimed, candidates));
+        }
+        Map<String, List<UUID>> answer = TargetAssignment.assign(slots, stats.spacing(), places::get);
+        for (TurretDevice turret : turrets) {
+            List<UUID> assigned = answer.getOrDefault(turret.id(), List.of());
+            for (int cannon = 0; cannon < TurretDevice.CANNONS; cannon++) {
+                turret.setTarget(cannon, cannon < assigned.size() ? assigned.get(cannon) : null);
+            }
+        }
+    }
+
+    /**
+     * The entities a turret can fire at now, nearest first: the living entities in its range that its verdict makes VALID. The range is a
+     * sphere around the barrel to the nearest point of each entity's box, so an entity whose nearest point lies out of it is left out before
+     * the verdict, which would refuse it on the same range.
+     */
+    private List<LivingEntity> candidatesOf(TurretDevice turret, Location barrel, TurretSettings view) {
         World world = barrel.getWorld();
         double range = view.range();
         List<Entity> near = new ArrayList<>(world.getNearbyEntities(barrel, range, range, range,
                 entity -> entity instanceof LivingEntity));
         near.sort(Comparator.comparingDouble(entity -> distanceTo(barrel, (LivingEntity) entity)));
-        List<Spot<LivingEntity>> spots = new ArrayList<>(near.size());
+        Point head = pointOf(barrel);
+        List<LivingEntity> candidates = new ArrayList<>(near.size());
         for (Entity entity : near) {
             LivingEntity living = (LivingEntity) entity;
-            if (isAmong(living, held)) {
+            if (!TargetRules.inRange(head, nearestPointOf(barrel, living), range)) {
                 continue;
             }
-            Point nearest = nearestPointOf(barrel, living);
-            boolean fireable = verdictOf(turret, living, barrel, view) == Verdict.VALID;
-            spots.add(new Spot<>(living, nearest, fireable));
-        }
-        return spots;
-    }
-
-    private static boolean isAmong(LivingEntity living, LivingEntity[] entities) {
-        for (LivingEntity entity : entities) {
-            if (entity != null && entity.getUniqueId().equals(living.getUniqueId())) {
-                return true;
+            if (verdictOf(turret, living, barrel, view) == Verdict.VALID) {
+                candidates.add(living);
             }
         }
-        return false;
+        return candidates;
     }
 
     /** Whether the verdict lets a round or a beam harm the entity it hits. Only the entities that are not protected and are hostile are harmed. */
@@ -744,7 +768,7 @@ public final class TurretService implements EnergyService.ConsumerSource {
         if (!mayHarm(verdict)) {
             return;
         }
-        struck.damage(ArmourBypass.adjustedDamage(damage, armourOf(struck), round.armourBypass()));
+        strike(struck, ArmourBypass.adjustedDamage(damage, armourOf(struck), round.armourBypass()));
         if (round.fireTicks() > 0) {
             struck.setFireTicks(Math.max(struck.getFireTicks(), round.fireTicks()));
         }
@@ -787,7 +811,18 @@ public final class TurretService implements EnergyService.ConsumerSource {
         if (!mayHarm(verdictOf(turret, struck, barrel, view))) {
             return;
         }
-        struck.damage(LaserRules.damageAfterArmour(damage, armourOf(struck), stats.laser().armourBypass()));
+        strike(struck, LaserRules.damageAfterArmour(damage, armourOf(struck), stats.laser().armourBypass()));
+    }
+
+    /**
+     * Deals one turret hit through the normal damage call, so armour, damage events and protection apply. The mob's invulnerability window
+     * is cleared first: after an accepted hit, vanilla discards any hit no stronger than the last one for its first ten ticks, whoever dealt
+     * it, so without this a turret's shot could be dropped after another turret's, after fire, or after the mob's own hurt. The turret's own
+     * fire interval stays the only delay between its shots.
+     */
+    private static void strike(LivingEntity struck, double amount) {
+        struck.setNoDamageTicks(0);
+        struck.damage(amount);
     }
 
     /**

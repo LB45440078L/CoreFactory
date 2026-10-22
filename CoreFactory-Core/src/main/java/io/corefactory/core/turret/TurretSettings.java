@@ -15,7 +15,7 @@ import java.util.Set;
  *
  * @param enabled           whether turrets run at all
  * @param range             the reach of a turret, in blocks
- * @param searchIntervalTicks ticks between two searches for a target while a turret has none
+ * @param searchIntervalTicks ticks between two coordinated passes that give the turrets of an area their targets
  * @param firingIntervalTicks ticks between two shots at full power
  * @param rotationSpeedDegrees the most a turret turns in one tick
  * @param arcDegrees        the total sweep of a turret, centred on the way it faces when placed

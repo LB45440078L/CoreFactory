@@ -155,7 +155,8 @@ All notable changes to CoreFactory. The format follows Keep a Changelog; version
 
 - Turret upgrade levels: each turret has five levels, and a kit moves a turret you own up one level when you right-click it while holding the kit. Each level sets the damage boost, fire interval, range, belt capacity (machine gun), cannons and power, from the `levels` blocks of `config.yml`. Levels 3 to 5 are two blocks tall. The move to level 3 needs the block above free; a turret already tall owns the block above it.
 - Upgrade kits II to V (`turret_upgrade_2` to `turret_upgrade_5`): kits II and III are made in the component assembly and researched at Materials Purification; kits IV and V are made in the heavy weapons assembly and researched at Tesseract Geometry.
-- Dual cannons: a machine gun at levels 4 and 5 has two cannons, each with its own target. The second fires at a second mob within `turrets.dual-spacing-blocks` (6 blocks) of the first, and in range.
+- Dual cannons: a machine gun at levels 4 and 5 has two cannons, each with its own target, and both fire in the same tick. The second cannon prefers a mob within `turrets.dual-spacing-blocks` (6 blocks) of the first, and takes the nearest free mob in range when none is that close.
+- Turret target coordination: the turrets of one world share out the mobs. Each cannon takes the nearest mob that no other turret has claimed and keeps it while it stays in reach, and with more turrets than mobs the extra turrets share them. The pass runs every `turrets.search-interval-ticks` and on the tick after a target dies (`TargetAssignment`).
 - Spherical range: a turret's range is a sphere around its barrel, measured to the nearest point of a mob's box, so a large mob at the edge of the range is hit.
 - Turret targeting commands: `/cf turret info`, `target <mob|category> <on|off>`, `player <name> <target|spare|clear>`, `team <spare|target|ignore>` and `friendlyfire <on|off>`, for the turret you look at within 6 blocks or your nearest turret within 8 blocks. Owner only, under `corefactory.turret`, with tab completion.
 - Team modes and player stances: the owner's scoreboard team is spared as friends, targeted like strangers, or ignored, by the menu's team switch or `/cf turret team`. A single player can be set to target (even with friendly fire off) or spare, with `/cf turret player`. The owner is never a target.
@@ -168,7 +169,10 @@ All notable changes to CoreFactory. The format follows Keep a Changelog; version
 - Tall drills: a level IV or V drill asks the protection plugins about the block above when it is placed. A refusal stops the
   placement with "This spot is protected."
 - Containers: a belt, a picker or a splitter can deliver into a chest, a trapped chest, a barrel, a shulker box or a copper chest
-  (every copper chest type). The container fills until it is full, and then the belt waits. A picker takes nothing from a chest.
+  (every copper chest type). The container fills until it is full, and then the belt waits.
+- Picker input from storage: a picker can take from a chest, a trapped chest, a barrel, a shulker box, a copper chest or either half
+  of a double chest on its input side, the whole double inventory being used. It takes one item at a time, at its rate, from the
+  first plain stack. A named or enchanted item is skipped.
 - Lab tool fuel from belts: a belt or a picker feeds a lab tool's fuel slot as well as its inputs. A kiln's fuel slot takes coal,
   vanilla charcoal and the charcoal that broken coal ore drops, by click, drag, shift-click, hopper, belt or picker.
 
@@ -260,6 +264,9 @@ All notable changes to CoreFactory. The format follows Keep a Changelog; version
 - Explosions destroy devices: a blast removes every lab tool, drill, pylon, accumulator, generator, belt, picker and splitter whose block centre lies within its radius (3D distance), unless protection spares the block. Vanilla explosions use their own radii: creeper 3 (6 when powered), end crystal 6, fireball and wither skull 1, any other entity 4, and a bed or respawn anchor 5. Lab tools and drills used to be left standing.
 - `processes.yml` carries a version line (`# data-version: 2`). On start, a copy with an older or missing version is kept as `processes.yml.bak` and replaced by the shipped file; a newer copy is left alone with a warning. Its machines, processes and drills are not merged entry by entry any more.
 - The wire refusal names the wires that are allowed: a generator to a pylon, or two pylons. A wire to a consumer or an accumulator, and a wire between two generators, are refused.
+- Dual spacing is a preference, not a limit: when no unclaimed mob lies within `turrets.dual-spacing-blocks` of the first target, the second cannon takes the nearest unclaimed mob in range, and it no longer waits.
+- Red flash: a mob flashes red when it takes any hit, and a turret's hit is one. A mob that burns from an incendiary round flashes red from the fire, which is not a hit.
+- Picker claim rule for taking: a picker takes from a container on its input side only where its owner may use it, by the rule for deliveries: the owner's own claim, a GriefPrevention trust level of Inventory, Container, Build, Edit or Manage, or a WorldGuard region membership. A picker with no stored owner takes nothing from a claimed container, and a double chest counts as claimed if either half is. Splitters still take from the belt behind them only.
 
 ### Fixed
 
@@ -310,6 +317,8 @@ All notable changes to CoreFactory. The format follows Keep a Changelog; version
 - Corner belts take their turn from the corner model's input port (`Orientation.cornerYaw`), so a corner faces the side its items
   come from. The in-game check is pending; see `docs/COMPATIBILITY.md`.
 - Turret placement no longer refuses a valid spot with "This spot is protected": a placement-guard bug, now fixed.
+- Turret shots are no longer blocked by Minecraft's short invulnerability after a hit (about half a second). Each turret hit clears that window before it deals damage, so every shot lands, and only the turret's own fire interval separates its shots. The hit still uses the normal damage call, so armour, protection and damage events apply.
+- A failure while one world's logistics runs is logged, and the rest of the logistics keeps running. The failed world runs again on the next tick.
 
 ## [1.0.0] - 2026-10-18
 

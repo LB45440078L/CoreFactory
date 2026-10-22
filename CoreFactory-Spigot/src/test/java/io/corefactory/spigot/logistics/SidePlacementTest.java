@@ -62,6 +62,26 @@ class SidePlacementTest {
     }
 
     @Test
+    void aChestOnThePickersInputSideIsAnAcceptedInput() {
+        assertThat(decide(LogisticsIds.Kind.PICKER, EAST, Input.STORAGE, true, Space.FREE, PlacementReason.OK))
+                .isEqualTo(Verdict.OK);
+    }
+
+    @Test
+    void aChestOnTheSplittersSideIsRefusedBecauseASplitterTakesOnlyFromItsBelt() {
+        assertThat(decide(LogisticsIds.Kind.SPLITTER, EAST, Input.STORAGE, true, Space.FREE, PlacementReason.OK))
+                .isEqualTo(Verdict.NO_INPUT);
+    }
+
+    @Test
+    void aChestOnTheInputSideNeedsTheResearchAndAFreeSpotLikeAnyPicker() {
+        assertThat(decide(LogisticsIds.Kind.PICKER, EAST, Input.STORAGE, false, Space.FREE, PlacementReason.OK))
+                .isEqualTo(Verdict.LOCKED);
+        assertThat(decide(LogisticsIds.Kind.PICKER, EAST, Input.STORAGE, true, Space.SOLID, PlacementReason.OK))
+                .isEqualTo(Verdict.SOLID);
+    }
+
+    @Test
     void aBeltNextToThePickerSpotIsAnInputOnlyWhenItFlowsIntoOrPastTheSpot() {
         assertThat(SidePlacement.beltInput(Dir.WEST, Dir.WEST, true)).isEqualTo(Input.BELT_INTO);
         assertThat(SidePlacement.beltInput(Dir.WEST, Dir.WEST, false)).isEqualTo(Input.BELT_INTO);

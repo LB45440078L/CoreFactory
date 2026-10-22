@@ -1426,10 +1426,11 @@ Belts, pickers and splitters need power from a grid that covers them. Without po
 
 ### Belts and chests: the claim rule
 
-A belt, a picker or a splitter can put items into a chest, a trapped chest, a barrel, a shulker box or a copper chest. Where
-a claim or a region covers that container, the game asks who placed the device. A picker takes nothing from a chest.
+A belt, a picker or a splitter can put items into a chest, a trapped chest, a barrel, a shulker box or a copper chest. A picker
+can also take items out of one, from its input side. Where a claim or a region covers that container, the game asks who placed
+the device: for a put, the player who placed the belt, picker or splitter, and for a take, the player who placed the picker.
 
-- **No claim, no question.** A container that no claim or region covers takes items from any device.
+- **No claim, no question.** A container that no claim or region covers takes items from any device, and gives them to any picker.
 - **Your belt, your claim.** A belt you placed puts items into a container in your own claim. In a WorldGuard region, it works
   when you are a member or an owner of every region over the container.
 - **Someone else's claim.** Your belt puts items into a container in another player's claim only when you have been trusted
@@ -1438,9 +1439,19 @@ a claim or a region covers that container, the game asks who placed the device. 
 - **A stranger's belt is refused.** Ana places a belt that points at Ben's chest, in Ben's claim. Ben has not trusted Ana with
   a container level, so the chest refuses the belt, and the belt stops at its end. Ben trusts Ana with Build, and the belt
   delivers at once. The check runs at each insert, so a change of trust takes effect straight away.
+- **A picker takes only where its owner may use the chest.** The picker's owner is the claim check for a take, so a picker
+  takes from a chest in a claim only when its owner is the owner of that claim, or is trusted there with a container level. In
+  GriefPrevention those are Inventory, Container, Build, Edit and Manage. In WorldGuard, the owner must be a member or an owner
+  of the region. Ana places a picker beside Ben's chest, in Ben's claim: the picker takes nothing, and the chest keeps its items,
+  until Ben trusts Ana with a container level. The check runs at each take, so a change of trust takes effect straight away.
+- **A double chest is claimed if either half is.** A picker beside one half of a double chest takes from the whole chest. The
+  claim check looks at both halves, so the picker takes only when its owner may use both of them.
+- **Named and enchanted items stay put.** A picker takes one item at a time, from the first plain stack in the chest. A named or
+  enchanted item is skipped, so it stays in the chest, and the picker takes the next plain stack.
 - **Old devices are refused in any claim.** A belt, picker or splitter placed before this update does not record who placed
-  it. Inside any claim or region, it cannot put items into a container. Outside them, it works as before. To use it in a claim,
-  pick it up and place it again. A device placed after the update records its placer.
+  it. Inside any claim or region, it cannot put items into a container, and a picker placed before the update takes nothing
+  from one. Outside them, it works as before. To use it in a claim, pick it up and place it again. A device placed after the
+  update records its placer.
 - **Two owners, one chest.** Two belts with different placers that feed one chest are refused inside a claim or region. The
   game does not check each placer in turn: a chest fed by two different placers counts as fed by nobody. Let one player place
   both belts, and the chest accepts them if that player may use it.
@@ -1450,8 +1461,8 @@ a claim or a region covers that container, the game asks who placed the device. 
   devices, and the console logs a warning. Fix the plugin, or ask the server admin to check the log.
 
 What to do: place your belts and chests inside your own claim or your own region. If a chest is in someone else's claim, ask
-the owner to trust you with a container level, or to add you as a member. If an old belt stops at a claim, pick it up and place
-it again.
+the owner to trust you with a container level, or to add you as a member. If an old belt or picker stops at a claim, pick it up
+and place it again.
 
 ### Pickers
 
@@ -1467,7 +1478,9 @@ A picker is a claw. It takes one item from its input and drops it on its output.
 
 - **Placing.** Hold the picker and right-click the side of a block. You can use the north, south, east or west face. The top and the bottom do not work. The picker goes on the air beside that face.
 - **The input is the face you click.** The block you clicked is where the picker takes from. Its output is on the far side. Its input side faces the machine and its output side faces away, so its arrows always point outward. You do not need to turn it.
-- **What it takes.** It takes from a belt that points into it, from the output slots of a lab tool, or from the products of a drill. A picker placed beside a drill takes the drill's products.
+- **What it takes.** It takes from a belt that points into it, from the output slots of a lab tool, from the products of a drill, or from a chest on its input side. A picker placed beside a drill takes the drill's products.
+- **From a chest.** On its input side, a picker takes from a chest, a trapped chest, a barrel, a shulker box or a copper chest. A double chest counts as one chest, and the picker takes from the whole of it. It takes one item at a time, at its speed, from the first plain stack. A named or enchanted item is skipped.
+- **Chests and claims.** A picker takes from a chest only where its owner may use it. See [Belts and chests: the claim rule](#belts-and-chests-the-claim-rule). A chest that a stranger's picker may not use keeps its items, and the picker waits.
 - **Sideways from a belt.** A picker placed beside a straight belt, with the belt running past it, takes items off that belt. It takes only what its speed allows, and the items it leaves keep moving on the belt. A belt that turns a corner gives nothing sideways.
 - **What it gives.** It gives to a belt that starts on its output side, to a lab tool that takes the item as an input (or as fuel, where the lab tool burns it), to the fuel slot of a generator that burns the item, or into a chest, subject to the claim rule above.
 - **Only what fits.** The picker moves an item only when the output accepts it. Otherwise the item waits at the input. A belt that carries an item nothing takes is stopped, so the items behind it wait too.
@@ -1500,13 +1513,13 @@ The splitter's hologram has three lines: the name, the number of kinds on each l
 
 ### Where a picker or splitter can go
 
-A picker or a splitter needs a machine, a generator or a belt on the face you click. If the face is empty, the game refuses. These messages are the ones you may see:
+A picker needs a machine, a generator, a chest or other storage, or a belt on the face you click. A splitter needs a machine, a generator or a belt there, and it does not take from a chest. If the face is empty, the game refuses. These messages are the ones you may see:
 
 | Message | Why |
 |---|---|
 | Place it on a side face of the machine: north, south, east or west, not its top or bottom. | You aimed at the top or the bottom. |
 | Research 'NAME' is needed. | The research for the item is not finished. |
-| A picker or a splitter takes from a machine, a generator, or a belt that flows into it. | Nothing on the face you clicked gives items. |
+| A picker takes from a machine, a generator, a chest or other storage, or a straight belt that flows into it or past its side. A splitter takes from a machine, a generator, or a belt that flows into it. | Nothing on the face you clicked gives items. |
 | That side is blocked: the block beside the face you aim at must be air. | A solid block is where the device would go. |
 | Something stands in the spot where it would go. | A player, an item or a mob is there. |
 | Another device already stands there. | Another logistics device or machine is there. |
@@ -1561,8 +1574,11 @@ The turret is a placeable defence. Hold it and right-click the side of a block, 
 - **Loading.** Hold rounds and right-click the turret. It takes up to 128 rounds at level 1, and up to 768 at level 5, one kind at a time: a different kind is refused until the turret is empty.
 - **Its menu.** Right-click the turret with no rounds in your hand, or sneak-click it, to open its menu. It has three rows. The first row holds the info item (the level, range, damage per hit, cannons, fire interval, power, and the rounds and their status), a load button that takes one stack from your inventory, an eject button that gives the rounds back, the friendly-fire switch, the team switch, and four category buttons. The two rows below hold the wool toggles for each mob. The hologram above the turret shows its name and level, such as `L3`. Anyone may open a turret's menu and look at it, but only the turret's owner can change anything in it. The buttons of anyone else refuse, with a message.
 - **Targeting in the menu.** Four category buttons (monsters, phantoms, slimes and ghasts) and one wool toggle for each of 18 mobs: Zombie, Husk, Drowned, Skeleton, Stray, Wither Skeleton, Creeper, Spider, Enderman, Witch, Blaze, Pillager, Vindicator, Ravager, Phantom, Slime, Magma Cube and Ghast. Green wool means the turret fires at that kind, and red means it spares it. A single mob's wool overrides its category, and a category overrides the config. These choices are for this turret only.
-- **What it shoots.** Every hostile monster within 24 blocks at level 1 (32 at level 5), by default, in every direction. Its arc is the whole turn by default, so it reaches a mob behind it as well as in front, and its tilt is 90 degrees, so a mob straight above or below it is in reach. It turns toward a target at 6 degrees a tick. The arc is centred on the way it faced when you placed it, and a smaller arc in the config restricts the turret to a sector. It looks for a target once a second (`search-interval-ticks`, 20 by default). Once it has a target it keeps it while the mob lives, stays in range and stays in the arc. Phantoms, slimes and ghasts are spared by default. Turn them on in the menu, or add them to `targets` in the `turrets` section of `config.yml`. Reach is a sphere measured to the nearest part of the mob, so a big mob at the edge of the range is hit.
-- **The line of fire.** A solid block between the barrel and the mob stops the shot, so the turret never fires through a wall. Grass, flowers and snow layers do not block it.
+- **What it shoots.** Every hostile monster within 24 blocks at level 1 (32 at level 5), by default, in every direction. Its arc is the whole turn by default, so it reaches a mob behind it as well as in front, and its tilt is 90 degrees, so a mob straight above or below it is in reach. It turns toward a target at 6 degrees a tick. The arc is centred on the way it faced when you placed it, and a smaller arc in the config restricts the turret to a sector. It looks for targets once a second (`search-interval-ticks`, 20 by default). Once a cannon has a mob, it keeps it while the mob lives, stays in range and stays in the arc. Phantoms, slimes and ghasts are spared by default. Turn them on in the menu, or add them to `targets` in the `turrets` section of `config.yml`. Reach is a sphere measured to the nearest part of the mob, so a big mob at the edge of the range is hit.
+- **Turrets share the targets.** The turrets in one area do not all fire at the nearest mob. Each cannon takes the nearest mob that no other turret has claimed, so several turrets spread over several mobs. A cannon keeps its mob while the mob is alive and stays in its reach, and the other turrets leave that mob alone. When there are more turrets than mobs, the extra turrets share the mobs. The turrets look again once a second, and again on the tick after a mob they were firing at dies, so a free turret moves to the next mob at once. Lasers take part too.
+- **The line of fire.** A solid block between the barrel and the mob stops the shot, so the turret never fires through a wall. Grass, flowers and snow layers do not block it. A living thing on the line stops the shot too, a friend or a spared mob included, and it takes no damage.
+- **Every shot lands.** After a hit, a mob is briefly protected, for about half a second, from a hit no stronger than the last one. A turret's hit clears that short protection first, so a shot is not dropped because of the one before it. The only pause between a turret's shots is its own fire interval. A hit still counts armour, protection and the damage events, as any hit does.
+- **Red flash.** A mob flashes red when it takes any hit, so a turret's hit makes it flash red. A mob that burns from an incendiary round flashes red from the fire, which is not a turret hit.
 - **Sounds.** The idle sweep is silent. The rotation sound plays only while the turret turns onto a target it has detected. The fire sound plays on each shot, and the reload sound on each load.
 - **What it never shoots.** Its owner. Its friends. Players who are not its friends, unless friendly fire is on. A player set to spare. Villagers, golems, animals, tamed mobs, named mobs, and any mob in a protected region. Claim protection spares players as well as mobs.
 - **Friends.** Your friends are the players you add with `/cf friends add <player>`, and players trusted in the claim where the turret stands: WorldGuard members and owners of the region there, and GriefPrevention players with Access or Manage. A turret never fires at a friend, unless you set that player to target with `/cf turret player`. See [Turret commands](#turret-commands) and [COMMANDS_AND_PERMISSIONS.md](COMMANDS_AND_PERMISSIONS.md).
@@ -1579,7 +1595,7 @@ The turret is a placeable defence. Hold it and right-click the side of a block, 
 
 Every round hits for the turret's damage at its level: 6 at level 1, and more with each level's boost. The round changes only what it does on a hit.
 
-- **Two cannons.** At levels 4 and 5 a machine gun has two cannons, each with its own target. The second cannon fires at a second mob within 6 blocks of the first, and in range, so the two shots hit one area. With no such mob, the second cannon waits.
+- **Two cannons.** At levels 4 and 5 a machine gun has two cannons, each with its own target, and both fire at the same time. The second cannon prefers a mob within 6 blocks of the first cannon's mob (`turrets.dual-spacing-blocks`), so the two shots hit one area. When no free mob is that close, it takes the nearest free mob in range instead, so it still fires. A free mob is one that no other turret has claimed.
 - **Feeding it by machine.** A belt or a picker can carry rounds into a turret. A hopper cannot.
 - **Only the owner.** Only the owner, with the `corefactory.turret` permission, can load, eject, upgrade, change the targeting of, or break a turret. Anyone else can look at it, but a right-click with rounds, a kit, a menu button or a left-click is refused, and the game says who may change it.
 - **Breaking it.** A left-click breaks it. The turret and the rounds in it drop, and the turret comes back at its level. A tall turret is broken from either of its two blocks, and it drops once.

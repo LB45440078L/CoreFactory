@@ -51,6 +51,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
 /**
@@ -186,8 +187,13 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
             ensureEntities();
         }
         for (Map.Entry<UUID, Built> entry : networks.entrySet()) {
-            if (Bukkit.getWorld(entry.getKey()) != null) {
+            if (Bukkit.getWorld(entry.getKey()) == null) {
+                continue;
+            }
+            try {
                 tickWorld(entry.getKey(), entry.getValue());
+            } catch (RuntimeException e) {
+                log.severe("The logistics of a world failed this tick and will run again next tick: " + e);
             }
         }
         if (tick % HOLOGRAM_TICKS == 0) {
@@ -435,11 +441,12 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
             satisfactionOf.put(device.id(), satisfaction.getOrDefault(nodeId(device), 0.0));
         }
         Map<Pos, UUID> owners = deliveryOwners(here);
+        Map<Pos, UUID> takers = takeOwners(here);
         Map<Pos, Port> portMap = new HashMap<>();
         for (LogisticsDevice device : here) {
             for (Pos cell : cellsOf(device)) {
                 if (!occupied.contains(cell) && !portMap.containsKey(cell)) {
-                    ports.at(world, cell, owners.get(cell)).ifPresent(port -> portMap.put(cell, port));
+                    ports.at(world, cell, owners.get(cell), takers.get(cell)).ifPresent(port -> portMap.put(cell, port));
                 }
             }
         }
@@ -777,9 +784,26 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
      * has no entry.
      */
     private static Map<Pos, UUID> deliveryOwners(List<LogisticsDevice> devices) {
+        return ownersOf(devices, LogisticsService::outputsOf);
+    }
+
+    /**
+     * The owner a container cell is taken for: the owner of the pickers that take from it, by the rule of {@link #deliveryOwners}. A
+     * cell no picker takes from has no entry.
+     */
+    private static Map<Pos, UUID> takeOwners(List<LogisticsDevice> devices) {
+        return ownersOf(devices, device -> device.kind() == LogisticsIds.Kind.PICKER
+                ? List.of(device.dir().step(device.pos())) : List.of());
+    }
+
+    /**
+     * The owner of each cell the devices use, as {@code cellsOf} names them. When the devices on a cell have different owners, or one of
+     * them has none, the cell gets a null owner, which a protected container refuses.
+     */
+    private static Map<Pos, UUID> ownersOf(List<LogisticsDevice> devices, Function<LogisticsDevice, List<Pos>> cellsOf) {
         Map<Pos, UUID> owners = new HashMap<>();
         for (LogisticsDevice device : devices) {
-            for (Pos cell : outputsOf(device)) {
+            for (Pos cell : cellsOf.apply(device)) {
                 if (!owners.containsKey(cell)) {
                     owners.put(cell, device.owner());
                 } else if (!Objects.equals(owners.get(cell), device.owner())) {

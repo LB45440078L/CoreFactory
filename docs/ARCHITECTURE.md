@@ -214,7 +214,7 @@ The player-facing rules are in [MECHANICS.md](MECHANICS.md#electricity-and-logis
   `io.corefactory.spigot.machine` (see below). `LogisticsFile` and `LogisticsStore` read and write `logistics.yml`.
 
 **Ports.** A port is what a belt, picker or splitter gives to or takes from. `LogisticsPorts.at` finds the port of a block,
-and there are three kinds:
+and there are these kinds:
 
 - `LabPort` (`spigot.machine`): a lab tool's barrel. It accepts an item exactly when a hopper would, into an input slot, and
   it gives items from its output slots, first slot first. Fuel is never taken through it.
@@ -223,6 +223,13 @@ and there are three kinds:
   barrel is the only record.
 - `FuelPort` (`spigot.logistics`): a generator's fuel. It accepts one fuel item at a time while the generator keeps fewer
   than `GeneratorFuel.CAP` (64), and it has no output.
+- `VanillaContainerPort` (`spigot.machine`): a vanilla storage block, a chest, a trapped chest, a barrel, a shulker box or a copper
+  chest, as a sink and as a source. As a sink, a belt's end, a picker's output or a splitter's output puts an item in exactly when
+  the container has room, verified by `HopperTransfer.placeOne`, and the claim check asks for the owner of the device that puts.
+  As a source, a picker's input, `peekOutput` shows the first plain stack and `takeOutput` removes exactly that one item, verified
+  by `HopperTransfer.takeOne`; the claim check asks for the owner of the picker that takes. A double chest is one inventory, and its
+  claim check asks both halves.
+- `TurretPort` (`spigot.turret`): a machine gun turret's magazine, which a belt or a picker fills one round at a time. It gives nothing.
 
 **Tick order.** One repeating task runs every server tick: `energy.tick()`, then `logistics.tick()`. The machine ticker
 is registered after it, so lab tools and drills read this tick's satisfaction.
@@ -289,7 +296,7 @@ The machine gun turret is a package of its own in the Spigot module, `turret`. I
 `TurretRegistry` holds the placed turrets and their entities, `TurretService` runs the one scheduled tick that targets, aims,
 fires and reloads every turret, and `TurretStore` saves them in `turrets.yml`. The pure rules are in Core, package `turret`:
 `TargetRules` (the ordered verdict on a mob), `TurretAim` (the yaw and pitch maths), `Magazine` (one round kind at a time),
-`ArmourBypass`, `FireRate` (the interval from the power share) and `TurretSettings` (the `turrets` section). The levels are `TurretLevels` and `TurretLevel` (the stats of levels 1 to 5, read from the `levels` blocks), `TurretUpgrade` (the rule of a kit), `DualTargeting` (the second cannon's target) and `ModelKeys` (the names of the models of each level). The turret reaches
+`ArmourBypass`, `FireRate` (the interval from the power share) and `TurretSettings` (the `turrets` section). The levels are `TurretLevels` and `TurretLevel` (the stats of levels 1 to 5, read from the `levels` blocks), `TurretUpgrade` (the rule of a kit), `TargetAssignment` (the coordinated choice of each cannon's target across the turrets of a world, in three passes: sticky claims, spread and share), `DualTargeting` (the cannon count and the dual spacing) and `ModelKeys` (the names of the models of each level). The turret reaches
 the logistics network through `TurretPort`, which `LogisticsPorts` returns for a block that holds a turret.
 
 The laser turret is the second kind of turret, `TurretKind.LASER`, in the same package. It holds no rounds and fires a beam each

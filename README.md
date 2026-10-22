@@ -29,7 +29,7 @@ and [docs/COMMANDS_AND_PERMISSIONS.md](docs/COMMANDS_AND_PERMISSIONS.md).
 - **Solar panel:** a generator placed on air. Panels placed before the electrical system are daylight detectors that still power a petroleum drill next to them.
 - **Electricity and belts:** pylons carry power to the machines in their range, wires join pylons and generators into grids, grids have
   outlines and charts, and accumulators store power. Belts, pickers and splitters move items between machines. See the [player guide](docs/PLAYER_GUIDE.md#electricity).
-- **Protection and claims:** belts, pickers and splitters respect the chests in WorldGuard regions and GriefPrevention claims, so a device delivers only where its placer may use the container. Only an owner can change a turret. See [Claims and integrations](docs/MECHANICS.md#claims-and-integrations).
+- **Protection and claims:** belts, pickers and splitters respect the chests in WorldGuard regions and GriefPrevention claims, so a device delivers, and a picker takes, only where its placer may use the container. Only an owner can change a turret. See [Claims and integrations](docs/MECHANICS.md#claims-and-integrations).
 - **Ore blocks:** each special ore is a placeable block. Silk touch keeps the block when it is mined.
 - **Catalogue:** `/cf gui` browses everything in seventeen categories, each its own tab. Right-click an entry for its recipe; in the recipe view,
   click an ingredient that has a recipe of its own to open it.
@@ -74,7 +74,7 @@ blocks, weather and clock are sent back. See [docs/MECHANICS.md](docs/MECHANICS.
 
 - **WorldGuard:** a blast leaves alone any block inside a region whose `tnt` flag denies TNT.
 - **GriefPrevention:** a blast leaves alone any block inside a claim.
-- **Containers:** a belt, picker or splitter puts items into a chest in a region or claim only where its placer may use it. A device with no owner is refused there.
+- **Containers:** a belt, picker or splitter puts items into a chest in a region or claim only where its placer may use it, and a picker takes items out of a chest on its input side only where its placer may use it. A device with no owner is refused there.
 
 Both blast checks are built for speed. WorldGuard is asked once per chunk per tick, and only where a region with TNT
 rules touches the chunk, so most of the map costs one map lookup per block. GriefPrevention is asked once per

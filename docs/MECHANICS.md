@@ -594,18 +594,31 @@ is still pending (see [COMPATIBILITY.md](COMPATIBILITY.md#pending-in-game-checks
 - **A lab tool.** Its barrel is a port. It takes an item into an input slot, or into its fuel slot when the lab tool burns that
   item, exactly when a hopper would, and it gives items from its output slots, first slot first. (`LabPort`)
 - **A vanilla container.** A chest, a trapped chest, a barrel, a shulker box or a copper chest of any copper kind. It takes an
-  item when it has room for it, and the claim systems allow the device's owner to put items there. It gives nothing. A null
-  owner, from a device placed before the owner was kept or with an unknown placer, is refused in any claim or region. (`VanillaContainerPort`,
+  item when it has room for it, and the claim systems allow the device's owner to put items there. As the input of a picker it
+  gives one item at a time, from its first plain stack, and only where the claim systems allow the picker's owner to take from
+  it (see Pickers below). A null owner, from a device placed before the owner was kept or with an unknown placer, is refused in
+  any claim or region for a put, and a picker with no owner takes nothing from a claimed container. (`VanillaContainerPort`,
   `ContainerProtection`, see [Claims and integrations](#claims-and-integrations))
 - **A drill.** Its barrel is a port for its output slots, first slot first. A drill takes nothing through a port: its fuel comes
   from a hopper or by hand. (`DrillPort`)
 - **A generator.** Its fuel slot is a port. It takes one fuel item at a time, while it keeps fewer than 64, and it gives nothing.
   (`FuelPort`)
 
-**Pickers.** A picker takes one item from its input and moves it to its output. Its input is a belt that flows into it, or
-a port of a lab tool or a drill (its output slots). A vanilla container is never an input. Its output is a belt, a lab tool that
-takes the item as an input (or as fuel), a generator that burns it as fuel, or a vanilla container under the claim rule. It moves
-an item only when the output accepts it.
+**Pickers.** A picker takes one item from its input and moves it to its output. Its input is a belt that flows into it, a port of
+a lab tool or a drill (its output slots), or a vanilla container on its input side: a chest, a trapped chest, a barrel, a shulker
+box or a copper chest. A double chest is read as its whole inventory. Its output is a belt, a lab tool that takes the item as an
+input (or as fuel), a generator that burns it as fuel, or a vanilla container under the claim rule. It moves an item only when
+the output accepts it.
+
+**The take rule.** A picker takes from a vanilla container only where its owner may use it. The claim systems are asked for the
+owner of the picker, not for the owner of the container (`VanillaContainerPort.peekOutput` and `takeOutput`, `PickRule`). The take
+is allowed when the container is unclaimed, when the owner owns the claim, when the owner has a GriefPrevention container trust
+level there (Inventory, Container, Build, Edit or Manage), or when the owner is a member or an owner of every WorldGuard region
+over the container. Otherwise the picker waits, and the item stays where it is. A picker with no stored owner takes nothing from a
+claimed container. Two pickers with different owners on one chest make its take owner empty, so a claimed chest gives them
+nothing. A double chest is claimed if either half refuses the owner. The picker takes the first plain stack in slot order, one item
+per move. A named or enchanted stack is skipped and stays in the chest. A take that the count does not confirm is not made, so the
+item is neither lost nor copied. Splitters take from the belt behind them only.
 
 | Level | Item | Rate (items/s) | Power (kW) |
 |---|---|---|---|
@@ -634,7 +647,8 @@ list is reported, and nothing moves.
 **Placing a picker or a splitter.** A picker or a splitter is placed on a side face of the block a player aims at: north, south,
 east or west. It is never placed on the top or the bottom. The block on that face is its input, and the new device goes on the
 air beside the face. Its input side faces the machine and its output side faces away, so its arrows always point outward, and
-no rotation is needed. A picker or a splitter placed beside a drill takes the drill's products.
+no rotation is needed. A picker or a splitter placed beside a drill takes the drill's products. A picker placed beside a chest, a
+trapped chest, a barrel, a shulker box or a copper chest takes from it under the take rule. A splitter does not take from a chest.
 
 **Sideways pick.** A picker placed beside a straight belt, with the belt running past it, takes items off that belt. The pick
 is limited by the picker's speed (its 10-tick delay and one item per period), and the items it does not take stay on the belt
@@ -654,7 +668,7 @@ The game refuses a placement with the message of its first failing check, in thi
 |---|---|
 | Side: a picker or splitter aimed at a top or bottom face | Place it on a side face of the machine: north, south, east or west, not its top or bottom. |
 | Research not finished | Research 'NAME' is needed. (or "Research is needed for this item." when no node is named) |
-| Input: nothing that gives items on the aimed side | A picker or a splitter takes from a machine, a generator, or a belt that flows into it. |
+| Input: nothing that gives items on the aimed side | A picker takes from a machine, a generator, a chest or other storage, or a straight belt that flows into it or past its side. A splitter takes from a machine, a generator, or a belt that flows into it. |
 | Space: a solid block in the spot | That side is blocked: the block beside the face you aim at must be air. |
 | Space: an entity in the spot | Something stands in the spot where it would go. |
 | Space: a device in the spot | Another device already stands there. |
@@ -795,13 +809,30 @@ The machine gun turret is a placeable defence. It is an entity device like a gen
 interaction for clicks, and a hologram. It stands one block tall at levels 1 and 2, and two blocks tall at levels 3 to 5, on air beside the face the player clicks. It has five levels, and an upgrade kit moves it up one (see [Upgrading a turret](#upgrading-a-turret)). Its record is saved
 in `turrets.yml`, with its owner, position, facing, level, round type and round count, and its entities are made again on load. Its look is a 3D model for each level: `machine/machine_gun_turret` at level 1, and `machine/machine_gun_turret_2` to `_5`, with the upper halves of levels 3 to 5 as `machine/machine_gun_turret_3_top` to `_5_top`. Level 1 has a base plate, a pedestal, a yoke, a barrel with a muzzle brake, and an ammunition box on its west side. The casings change colour with the level: steel grey at levels 2 and 3, bronze at 4 and dark gunmetal at 5. Its front has an amber indicator that pulses every 3 ticks on every level. The model turns with the barrel, so it points at its target.
 
-**Targeting.** The scan rate is `search-interval-ticks`, 20 by default (one second; allowed 1 to 1200). Each scan, a turret without a target searches its range (24 blocks at level 1, and more at each level) for mobs, nearest first, and takes the first that passes the rules, with a clear line from its barrel. A lower value scans more often and costs more server time. The line is clear unless a solid block stands on it: grass, flowers and snow layers do not block a shot. A turret keeps its target between
+**Targeting.** The scan rate is `search-interval-ticks`, 20 by default (one second; allowed 1 to 1200). Each scan, every turret of a world offers the mobs it can fire at now: those in its range (24 blocks at level 1, and more at each level), nearest first, that pass the rules below and have a clear line from its barrel. The cannons are then given their targets together (see Coordination below). A lower value scans more often and costs more server time. The line is clear unless a solid block stands on it: grass, flowers and snow layers do not block a shot. A turret keeps its target between
 searches while the target is alive, in the same world, in range and in its arc. The rules are checked in this order
 (`TargetRules`): the owner, then the player stances, the team and the friend rules for players (see friends and friendly fire, below); villagers and
 wandering traders; golems; animals; anything in a protected region, players included; tamed mobs (unless `target-tamed` is
 on); named mobs (unless `target-named` is on); mobs whose kind is not in the turret's targets; mobs out of range; mobs out of
 the arc. A mob is a target only when its kind is in `targets`. The default is `monsters` alone, so phantoms, slimes and
 ghasts are spared until they are added to `targets`, or switched on in the turret's menu.
+
+**Coordination.** The turrets of one world share out the mobs together, in one pass of `TargetAssignment` (`TurretService.assignWorld`).
+The pass runs on each scan, and on the tick after a held target dies. It works over the turrets in id order, so the same input
+always gives the same answer, and a tie goes to the lower id. It has three passes:
+
+1. **Sticky claims.** A cannon keeps its held target while the target is still a candidate and no earlier turret kept it. A held
+   target that is no longer a candidate is released.
+2. **Spread.** Round by round, every cannon that is still empty takes the nearest candidate that no turret has claimed in this pass.
+   The first cannons of all the turrets are served before any second cannon. A second cannon first prefers an unclaimed candidate
+   within `turrets.dual-spacing-blocks` of its turret's first target, nearest to that target, and takes the nearest unclaimed
+   candidate only when none lies that close. The preference applies only in the round that fills the second cannon, so it never
+   takes a mob that another turret's first cannon could still take.
+3. **Share.** Only when every candidate is claimed does an empty cannon share one. It takes the candidate that the fewest turrets
+   hold, nearest first, that is not already one of its own targets. A turret with no candidate gets nothing.
+
+A turret with no power is left out of the pass. Between passes, a cannon keeps its target while the target is alive, in the same
+world, and still valid: in range, in the arc, and with a clear line.
 
 **Range.** A target is in range when the nearest point of its bounding box lies within a sphere of the turret's range around the turret's barrel. The range is measured to the mob's near edge, not its centre, so a large mob at the edge of the range is hit when any part of it is inside the sphere. The range is the level's `range`.
 
@@ -850,6 +881,15 @@ degrees) times the round's `spread-factor`. A shot harms the first living thing 
 owner, friends, players while friendly fire is off, villagers, golems, animals, anything in a protected region, tamed and named
 mobs as configured, and mobs whose kind is not a target. Such a shot stops with no damage.
 
+**Hits.** A turret's hit clears the mob's invulnerability window before it deals damage. After an accepted hit, vanilla discards any
+hit no stronger than the last one for its first ten ticks (about half a second), whoever dealt it, so the window is cleared first
+(`TurretService.strike`). Every shot therefore lands, and the only delay between a turret's shots is its own fire interval. The hit
+is the normal damage call, so armour, protection and the damage events apply. A shot stops at the first living thing on its line,
+a friend included, which takes no damage, as before.
+
+**Red flash.** A mob flashes red when it takes any hit, so a turret's hit flashes it red. A mob set alight by an incendiary round
+flashes red from the fire, which is not a turret hit.
+
 | Round | Armour bypass | Fire (ticks) | Spread factor |
 |---|---|---|---|---|
 | <img src="images/components/round_regular.png" width="24" height="24" align="absmiddle"> `round_regular` | 0 | 0 | 1 |
@@ -865,9 +905,11 @@ The armour bypass is the share of the target's armour the round ignores. The key
 but not used.
 
 **Cannons.** A machine gun has one cannon at levels 1 to 3 and two at levels 4 and 5. Each cannon takes its own target, and each
-shot has its own tracer. The first cannon takes the nearest target in range. The second takes the nearest other target in range
-that lies within `turrets.dual-spacing-blocks` (6) of the first, so the two fire at one area. With no such target, the second cannon
-stays idle. The two shots of one tick play one fire sound. A laser has one cannon at every level.
+shot has its own tracer. Both cannons fire in the same tick when each has a target and is aimed at it. The first cannons of all the
+turrets are given their targets before any second cannon (see Coordination). The second cannon prefers a candidate within
+`turrets.dual-spacing-blocks` (6) of the first cannon's target, the nearest to that target, so the two shots can fire at one area.
+It takes the nearest unclaimed candidate only when none lies within that spacing, so the spacing is a preference, not a limit. The
+two shots of one tick play one fire sound. A laser has one cannon at every level.
 
 **Ammo.** The magazine holds its level's `ammo-capacity` rounds of one kind at a time: 128 at level 1, then 256, 384, 512 and 768. A right-click with rounds in hand loads them up
 to the capacity, and a different kind is refused. Any other right-click, and any sneak-click, opens the turret menu (see
@@ -895,7 +937,7 @@ a placement, an upgrade into the upper block, or a break that a claim or region 
 
 **Breaking.** A left-click breaks the turret, from either of its blocks. The turret item and the rounds in it drop.
 
-**Known gaps.** A blast does not destroy a turret. The turret's firing, rotation and hitbox have not been checked in game, and neither have the upgrades, the dual shots, the team modes and the commands (see [COMPATIBILITY.md](COMPATIBILITY.md#pending-in-game-checks)).
+**Known gaps.** A blast does not destroy a turret. The turret's firing, rotation and hitbox have not been checked in game, and neither have the upgrades, the dual shots, the target coordination, the team modes and the commands (see [COMPATIBILITY.md](COMPATIBILITY.md#pending-in-game-checks)). The target coordination has been checked by reading the code and by unit tests only.
 
 ### Upgrading a turret
 
@@ -938,7 +980,7 @@ These are the defaults in code. The `levels` blocks of `config.yml` set each val
 
 The laser turret is the second turret. It is a placeable defence like the machine gun turret, and it runs on the same code: the same entity device, targeting, rotation, arc, tilt, search, idle sweep, friends, friendly fire and per-turret menu. It differs in what it fires and what it needs. It is electric, holds no rounds, and fires an instant beam. Its stats are the `laser-turret` section of `config.yml` (see [CONFIGURATION.md](CONFIGURATION.md#laser-turret)), and its five levels are the table in [Upgrading a turret](#upgrading-a-turret). It is one block tall at levels 1 and 2, and two blocks tall at levels 3 to 5, like the machine gun. It is placed on air like the machine gun turret, and its record in `turrets.yml` has the device type `laser_turret` and no rounds. Its model is `machine/laser_turret` at level 1, and `machine/laser_turret_2` to `_5`, with the upper halves of levels 3 to 5 as `_top` models. Its red lens pulses every 2 ticks, on the front of a level 1 or 2 turret and on the upper half of a tall one. From level 5 the lens is blue, and so are the beam and its impact; levels 1 to 4 are red.
 
-**Targeting.** The laser follows the machine gun's rules, in the same order and with the same kinds in `targets`, the same per-turret overrides, the same tamed and named rules, and the same protection. Its reach is its level's range: 40 blocks at level 1, where the machine gun reaches 24, and 60 blocks at level 5, where the machine gun reaches 32. A target is in range by the same sphere as the machine gun's (see its range paragraph above). A cached target is kept while it stays alive, in range and in the arc.
+**Targeting.** The laser follows the machine gun's rules, in the same order and with the same kinds in `targets`, the same per-turret overrides, the same tamed and named rules, and the same protection. Its reach is its level's range: 40 blocks at level 1, where the machine gun reaches 24, and 60 blocks at level 5, where the machine gun reaches 32. A target is in range by the same sphere as the machine gun's (see its range paragraph above). A cached target is kept while it stays alive, in range and in the arc. A laser and the machine guns of one world share their targets in the same pass (see Coordination under the machine gun turret).
 
 **Friends and friendly fire.** The owner and the friends are never targets. Other players are targets only while the friendly-fire switch is on, as for the machine gun turret.
 
@@ -1072,7 +1114,7 @@ the checks are not run at all. Placing and breaking TNT in claims is already gov
 handling, so CoreFactory does not repeat it.
 
 **Containers.** The same two plugins also decide whether a belt, a picker or a splitter may put items into a vanilla container
-(`ContainerProtection`, asked again on each insert). The rule, in order:
+(`ContainerProtection`, asked again on each insert). The rule for a put, in order:
 
 - A container that no claim or region covers takes items from any device. With no claim plugin installed, every container is open.
 - A device with an owner, the player who placed it, may insert into a container in a claim only when it owns the claim, or the
@@ -1082,7 +1124,10 @@ handling, so CoreFactory does not repeat it.
 - A device with no owner, such as a belt placed before its placer was kept, is refused in any claim or region. Two devices with
   different owners that feed one container make it ownerless, so it is refused inside a claim or region too
   (`LogisticsService.deliveryOwners`).
-- If a claim plugin is installed but its hook cannot attach, every container is refused to devices (fail closed).
+- A picker takes from a container on its input side under the same rule, with the picker's owner in place of the device's owner, and
+  the claim systems are asked again on each take (`VanillaContainerPort.takeOutput`). The rule is the take rule under Belts, pickers and splitters.
+  A picker with no owner takes nothing from a claimed container, and a double chest is claimed if either half refuses the owner.
+- If a claim plugin is installed but its hook cannot attach, every container is refused to devices and pickers (fail closed).
 - A lab tool or a hopper that moves a lab tool's output into a plain inventory is refused inside a claim, as before (`HopperListener`).
 
 The owner of a device is the player who placed it, saved with the device in `logistics.yml`. A device placed before that was kept has

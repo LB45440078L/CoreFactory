@@ -23,10 +23,11 @@ import java.util.UUID;
 
 /**
  * The ports at a block: a drill's output slots, a lab tool's barrel, a generator's fuel for a kind that burns fuel, a turret's ammunition,
- * and a vanilla storage block (a chest, a trapped chest, a barrel, a shulker box or a copper chest) as a sink. The plugin's own devices
- * are tried first, and a block a device occupies never falls through to the vanilla storage. Any other block has no port, so a belt or a
- * picker that points at it waits. A block in a world that is not loaded has none. A vanilla container that a claim system protects takes
- * items from a belt, a picker or a splitter only when the device's owner is trusted there; a device with no owner is refused.
+ * and a vanilla storage block (a chest, a trapped chest, a barrel, a shulker box or a copper chest) as a sink and as a picker's source. The
+ * plugin's own devices are tried first, and a block a device occupies never falls through to the vanilla storage. Any other block has no
+ * port, so a belt or a picker that points at it waits. A block in a world that is not loaded has none. A vanilla container that a claim
+ * system protects takes items from a belt, a picker or a splitter, and gives items to a picker, only when the owner of that device is
+ * trusted there; a device with no owner is refused.
  */
 final class LogisticsPorts {
 
@@ -48,10 +49,12 @@ final class LogisticsPorts {
     /**
      * The port at a block of a world, or empty when the block has none or its chunk is not loaded.
      *
-     * @param owner the owner of the devices that deliver into the block, or null when none is known; it is only used for a vanilla
-     *              container
+     * @param putOwner  the owner of the devices that put items into the block, or null when none is known; it is only used for a vanilla
+     *                  container
+     * @param takeOwner the owner of the pickers that take items from the block, or null when none is known; it is only used for a vanilla
+     *                  container
      */
-    Optional<Port> at(UUID world, Pos cell, UUID owner) {
+    Optional<Port> at(UUID world, Pos cell, UUID putOwner, UUID takeOwner) {
         World loaded = Bukkit.getWorld(world);
         if (loaded == null || !loaded.isChunkLoaded(cell.x() >> 4, cell.z() >> 4)) {
             return Optional.empty();
@@ -74,7 +77,8 @@ final class LogisticsPorts {
         if (machines.at(block).isPresent() || turrets.at(block).isPresent() || energy.at(block).isPresent()) {
             return Optional.empty();
         }
-        return VanillaContainerPort.of(loaded.getBlockAt(cell.x(), cell.y(), cell.z()), refs, containers, owner).map(port -> port);
+        return VanillaContainerPort.of(loaded.getBlockAt(cell.x(), cell.y(), cell.z()), refs, containers, putOwner, takeOwner)
+                .map(port -> port);
     }
 
     /** The port of a placed machine: a drill's output slots, or a lab tool's barrel. */

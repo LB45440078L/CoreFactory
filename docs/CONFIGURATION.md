@@ -146,7 +146,7 @@ restart. Setting `enabled` to `false` stops every turret: none searches, aims or
 | Key | Default | Meaning |
 |---|---|---|
 | `enabled` | `true` | Turn the turrets on or off. |
-| `search-interval-ticks` | `20` | The scan rate: ticks between two searches for a target while a turret has none. `20` is one second. A lower value scans more often, so a turret reacts sooner, but it costs more server time; a higher one scans less often. Allowed: 1 to 1200. |
+| `search-interval-ticks` | `20` | The scan rate: ticks between two passes that give the cannons of each world's turrets their targets. `20` is one second. A pass also runs on the tick after a target dies. A lower value scans more often, so a turret reacts sooner and the turrets spread over the mobs sooner, but it costs more server time; a higher one scans less often. Allowed: 1 to 1200. |
 | `rotation-speed-degrees` | `6` | The most a turret turns in one tick, in degrees. |
 | `arc-degrees` | `360` | The total sweep, centred on the way the turret faced when placed. `360` turns all round, so every hostile mob in range is in reach. A smaller value restricts the turret to a sector. |
 | `pitch-limit-degrees` | `90` | The most a turret tilts up or down. `90` reaches straight up and down; a smaller value refuses steeper targets. |
@@ -156,7 +156,7 @@ restart. Setting `enabled` to `false` stops every turret: none searches, aims or
 | `targets` | `[monsters]` | The kinds of mob a turret fires at: `monsters` (the default), `phantoms`, `slimes` and `ghasts`. Phantoms, slimes and ghasts are spared until they are listed. An empty list fires at none. |
 | `target-named` | `false` | Fire at a mob with a custom name. |
 | `target-tamed` | `false` | Fire at a tamed mob. |
-| `dual-spacing-blocks` | `6` | The most blocks between the two targets of a dual shot. A machine gun with two cannons (levels 4 and 5) fires at a second mob only within this distance of the first, and in range. Kept from 0 to 64. |
+| `dual-spacing-blocks` | `6` | The spacing the second cannon of a machine gun (levels 4 and 5) prefers: an unclaimed mob in range within this many blocks of the first cannon's mob. When no such mob exists, the second cannon takes the nearest unclaimed mob in range instead, so the spacing is a preference, not a limit. Kept from 0 to 64. |
 | `rounds.regular.armour-bypass` | `0` | The share of the target's armour the round ignores, from 0 to 1. |
 | `rounds.regular.fire-ticks` | `0` | Ticks the target is set alight. |
 | `rounds.regular.spread-factor` | `1` | Scales `accuracy-spread`: lower is tighter. |

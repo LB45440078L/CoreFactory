@@ -9,8 +9,8 @@ import java.util.function.Supplier;
 /**
  * The verdict on placing a belt, picker or splitter against the face of the block a player aims at. A picker and a splitter
  * need a side face (north, south, east or west), an input that is a machine, a generator, a belt flowing into the spot or a straight
- * belt flowing past its side, and a
- * spot that is free of blocks, devices and entities. A belt needs only the spot. The network's own rules (OCCUPIED, MERGE,
+ * belt flowing past its side, and a spot that is free of blocks, devices and entities. A picker also takes from a vanilla storage
+ * block (a chest, a barrel, a shulker box, a copper chest) on its input side; a splitter does not. A belt needs only the spot. The network's own rules (OCCUPIED, MERGE,
  * BLOCKED) are asked last, through {@link Supplier}, so they are only checked for a spot that is otherwise valid. The order of the
  * checks is the order the player's refusal names: the side, the research, the input, the space, then the network. Pure.
  *
@@ -26,6 +26,8 @@ public final class SidePlacement {
         BELT_INTO,
         /** A straight belt that flows past the spot's side: a picker beside it takes from it. */
         BELT_SIDE,
+        /** A vanilla storage block: a chest, a trapped chest, a barrel, a shulker box or a copper chest. Only a picker takes from it. */
+        STORAGE,
         /** Any other block, or a belt that flows away from the spot, or a corner beside it, or a device that gives nothing. */
         OTHER
     }
@@ -112,12 +114,13 @@ public final class SidePlacement {
 
     /**
      * Whether a picker or a splitter can take from an input. A picker takes from a belt beside it as well as from a belt that flows
-     * into it. A splitter takes only from the belt behind it, so a belt beside a splitter is not an input for it.
+     * into it, and from a vanilla storage block. A splitter takes only from the belt behind it, so a belt beside a splitter, and a
+     * storage block, is not an input for it.
      */
     private static boolean takesFrom(LogisticsIds.Kind kind, Input input) {
         return switch (input) {
             case OTHER -> false;
-            case BELT_SIDE -> kind == LogisticsIds.Kind.PICKER;
+            case BELT_SIDE, STORAGE -> kind == LogisticsIds.Kind.PICKER;
             case BELT_INTO, PORT -> true;
         };
     }

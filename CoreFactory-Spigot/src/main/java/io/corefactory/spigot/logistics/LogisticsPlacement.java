@@ -5,6 +5,7 @@ import io.corefactory.core.config.Messages;
 import io.corefactory.core.energy.Pos;
 import io.corefactory.core.logistics.Dir;
 import io.corefactory.core.research.ResearchService;
+import io.corefactory.spigot.machine.StorageKinds;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -24,7 +25,8 @@ import java.util.Optional;
  * <p>A belt flows away from the player, as before. A picker and a splitter need a side face (north, south, east or west): their
  * input faces the aimed block, and their output (a picker) or straight output (a splitter) faces away from it. A picker or a
  * splitter takes its input from the aimed block, which must be a machine, a generator or a belt that flows into the spot. A picker
- * may also take from a straight belt that flows past its side, so it can be placed beside a belt. The spot must be free of solid
+ * may also take from a straight belt that flows past its side, so it can be placed beside a belt, and from a vanilla storage block
+ * such as a chest, which a splitter does not take from. The spot must be free of solid
  * blocks, devices and entities. The network then decides OCCUPIED, MERGE or BLOCKED, through
  * {@link SidePlacement}. The research that unlocks the item and a protection plugin's cancel of the placement event are checked
  * too. Every refusal sends one message that names the reason.
@@ -70,7 +72,7 @@ public final class LogisticsPlacement {
         Location spot = new Location(clicked.getWorld(), target.x(), target.y(), target.z());
         String id = LogisticsIds.componentId(device.kind(), device.level());
         SidePlacement.Verdict verdict = SidePlacement.decide(device.kind(), face,
-                service.inputAt(clicked, PlacementAim.side(face).orElse(null)),
+                inputOf(clicked, PlacementAim.side(face).orElse(null)),
                 research.isUnlocked(player.getUniqueId(), id),
                 service.spaceAt(spot),
                 () -> service.check(device.kind(), clicked.getWorld().getUID(), plan.orElseThrow().target(), dirOf(plan.get())));
@@ -97,6 +99,18 @@ public final class LogisticsPlacement {
         return true;
     }
 
+    /**
+     * What the aimed block is as the input of the device: the belt, machine or generator the service names, else a vanilla storage block
+     * (a chest, a barrel, a shulker box or a copper chest), which only a picker takes from.
+     */
+    private SidePlacement.Input inputOf(Location clicked, Dir toward) {
+        SidePlacement.Input input = service.inputAt(clicked, toward);
+        if (input == SidePlacement.Input.OTHER && StorageKinds.isStorage(clicked.getBlock().getType().name())) {
+            return SidePlacement.Input.STORAGE;
+        }
+        return input;
+    }
+
     /** The direction a device is stored with: a belt's flow, or a picker's or splitter's input direction. */
     private static Dir dirOf(PlacementAim.Plan plan) {
         return plan.flow() != null ? plan.flow() : plan.inDir();
@@ -109,8 +123,8 @@ public final class LogisticsPlacement {
             case LOCKED -> research.nodeFor(player.getUniqueId(), id)
                     .map(node -> "&cResearch '" + node.name() + "' is needed.")
                     .orElse("&cResearch is needed for this item.");
-            case NO_INPUT -> "&cA picker takes from a machine, a generator, or a straight belt that flows into it or past its side. "
-                    + "A splitter takes from a machine, a generator, or a belt that flows into it.";
+            case NO_INPUT -> "&cA picker takes from a machine, a generator, a chest or other storage, or a straight belt that flows into it "
+                    + "or past its side. A splitter takes from a machine, a generator, or a belt that flows into it.";
             case SOLID -> "&cThat side is blocked: the block beside the face you aim at must be air.";
             case ENTITY -> "&cSomething stands in the spot where it would go.";
             case OCCUPIED -> "&cAnother device already stands there.";

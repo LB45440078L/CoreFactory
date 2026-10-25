@@ -9,7 +9,7 @@ The values in brackets are the ones in the shipped `tnts.yml`. Remove a key to u
 Contents: [How ignition works](#how-ignition-works) · [Standard blast and effects](#standard-blast-and-effect-modifiers) ·
 [Structural](#structural--physics) · [Terrain](#terrain-morphing) · [Entity](#entity--status) ·
 [Logic](#timing--logic) · [Visual / audio](#visual--audio) · [Utility](#utility--economy) ·
-[Military](#military) · [Nuclear](#nuclear) · [Lab tools](#lab-tools-hoppers-and-barrels) · [Concealment](#barrel-concealment) · [Drills](#drills) · [Electricity and logistics](#electricity-and-logistics) · [Deposits](#deposits) · [Ore blocks](#ore-blocks) · [Chemistry and ammunition](#chemistry-and-ammunition) · [Machine gun turret](#machine-gun-turret) · [Holograms](#progress-holograms) · [Effects](#effects) · [Placement, timing and chains](#placement-timing-and-chains)
+[Military](#military) · [Nuclear](#nuclear) · [Lab tools](#lab-tools-hoppers-and-barrels) · [Concealment](#barrel-concealment) · [Drills](#drills) · [Electricity and logistics](#electricity-and-logistics) · [Water](#water) · [Oil and fluids](#oil-and-fluids) · [Vertical belts](#vertical-transport-belts) · [Deposits](#deposits) · [Ore blocks](#ore-blocks) · [Chemistry and ammunition](#chemistry-and-ammunition) · [Machine gun turret](#machine-gun-turret) · [Artillery](#artillery) · [Holograms](#progress-holograms) · [Effects](#effects) · [Placement, timing and chains](#placement-timing-and-chains)
 
 ## How ignition works
 
@@ -151,9 +151,9 @@ Anyone within 3 R hears the countdown alarm. Within 3 R, for that player's clien
 at noon (below). A yield of 10 Mt or more also shows the beacon array (below).
 
 **The viewer's sky, for `beam-seconds`.** The clock holds at noon for 5 seconds, then slides back to the real time over
-20 seconds and is handed back to the server. The server re-sends the real clock every second, so the hold is applied to
-those packets on their way out, not by sending one packet. The rain is removed for the whole `beam-seconds` and then
-restored to the world's real weather.
+20 seconds and is handed back to the server. The clock is set for that viewer only, through the Paper per-player time API.
+The rain stops for the viewer for the whole `beam-seconds`, and then the world's real weather is restored. The Paper
+per-player API has no thunder, so thunder is not shown per player: a viewer sees no rain and no thunder during the blast.
 
 **The beacon array.** Only for a yield of 10 Mt or more (`yield-megatons`), so the <img src="images/tnt/nuke_ivy_mike.png" width="24" height="24" align="absmiddle"> Ivy Mike, <img src="images/tnt/nuke_castle_bravo.png" width="24" height="24" align="absmiddle"> Castle Bravo, <img src="images/tnt/nuke_mk17.png" width="24" height="24" align="absmiddle"> Mk-17 and
 <img src="images/tnt/nuke_tsar_bomba.png" width="24" height="24" align="absmiddle"> Tsar Bomba show beams and the smaller tiers do not. A 5 × 5 array of beacons, three blocks apart, stands around the centre. Each beacon is raised on
@@ -272,7 +272,7 @@ The PIN is never stored or logged. The placed TNT keeps a random salt and a salt
 
 Every lab machine (crusher to research console) and every drill stands on a host block, which is a barrel. The host's inventory is the machine's storage. The machine's menu is a view of that barrel, and the engine, the hoppers and the menu all read and write the same items.
 
-- **Slots.** A lab tool's barrel is laid out as inputs, then outputs, then fuel. A drill's barrel is laid out as its fuel slot, then nine output slots. Barrel slots the machine does not use are left alone.
+- **Slots.** A lab tool's barrel is laid out as inputs, then outputs, then fuel. A petroleum drill's barrel has one fuel slot for charcoal and no outputs. An ore drill's barrel has no fuel slot, then nine output slots. Barrel slots the machine does not use are left alone.
 - **A hopper into a lab tool.** One item goes into an input slot when some process takes it. Otherwise it goes into a fuel slot, when the machine burns fuel and the item is that fuel. Inputs win when an item is both. The first slot that already holds the item and has room is used, or else the first empty slot. A move that fits no slot is refused.
 - **A hopper out of a lab tool.** One item leaves the first output slot that holds something. Inputs and fuel never leave. If the destination is another lab tool, the item goes into one of its input or fuel slots, and only if it fits there.
 - **A drill.** A hopper into a drill puts in its fuel item only. A hopper out of a drill takes from its output slots.
@@ -289,6 +289,37 @@ Every lab machine (crusher to research console) and every drill stands on a host
   broken by hand (`ProcessEngine.FUEL`). A hopper, a belt or a picker can fill it, as well as a click, a drag or a shift-click.
   A belt or a picker can feed the input slots of a kiln too, so crushed ore reaches the kiln from a belt.
 - **Power.** A lab tool asks for `energy.consumers.lab-demand` power (4 kW shipped) and runs at the share its network supplies. With no pylon in range it stops. See [Electricity and logistics](#electricity-and-logistics).
+
+### Lab machine levels
+
+Every lab machine has a level, I, II or III. A machine is placed at level I, and a saved machine with no level loads as level I (`MachineStore`). Drills are always level I and take no kit.
+
+Levels II and III are reached with an upgrade module, a kit. `machine_upgrade_2` and `machine_upgrade_3` are the only kits (`LabLevels.kitLevel` accepts no other id).
+
+| Module | Made in | Ticks | Ingredients | Unlocked by |
+|---|---|---|---|---|
+| <img src="images/components/machine_upgrade_2.png" width="24" height="24" align="absmiddle"> `machine_upgrade_2` | Mechanical component assembly | 600 | circuit board x2, iron gear x2, brass ingot, precision barrel | Materials Purification |
+| <img src="images/components/machine_upgrade_3.png" width="24" height="24" align="absmiddle"> `machine_upgrade_3` | Heavy weapons assembly | 1200 | targeting unit, optical lens x2, laser emitter, brass ingot x2 | Tesseract Geometry |
+
+- **Applying a kit.** Hold the module in the main hand and right-click the machine, without sneaking. Sneaking with an item in hand
+  neither opens the menu nor applies the kit. A kit applies only when it is for the level above the machine's: a level I machine
+  takes `machine_upgrade_2`, and a level II machine takes `machine_upgrade_3`. An applied kit is used up, one item from its stack,
+  and no menu opens. The message is "The <machine name> is now level II." (or III).
+- **Refusals.** A refused kit stays in the hand, and no menu opens. A kit for the wrong level is refused with "This kit takes a
+  machine from level I to level II; this machine is level II.", where the numerals come from the kit and the machine. A machine at
+  level III refuses every kit with "This machine is already at its top level, III."
+- **Ownership.** Only the owner of the machine, or a friend of the owner, may apply a module to it. A machine saved before owners were
+  kept takes anyone's module. A refusal says "Only the owner or a friend of the owner can fit a module to this lab machine."
+- **Work pace.** The level sets the work pace from `machine-upgrades.speed`, which is 1.0, 1.5 and 2.0 for levels I, II and III.
+  The pace changes only the process speed: each server tick, the machine runs its process as many ticks as its pace and its
+  network's satisfaction allow. At full power a level II machine runs 1.5 process ticks per server tick on average, and a level
+  III machine runs 2.
+- **Power.** The draw does not change with the level. A machine asks for its own power figure, or for `energy.consumers.lab-demand`
+  (4 kW shipped) when it has none, at every level.
+- **Models.** Level II machines have a gold trim (#F2C230) on the front and top edges. Level III machines have a cyan trim
+  (#3FE8FF) on the same edges, and three small lamps on the front. Each level has its own model: `<id>`, `<id>_2` and `<id>_3`.
+- **Hologram.** The title is the machine's name, then `Level` and the numeral, such as `Level II`. See
+  [Progress holograms](#progress-holograms).
 
 ## Barrel concealment
 
@@ -326,7 +357,7 @@ An entity left over from an earlier run is removed when its chunk loads. A missi
 
 The ten drills are `petroleum_drill_1` to `petroleum_drill_5` (kind `petroleum`) and `ore_drill_1` to `ore_drill_5` (kind `ore`). Their levels are set in `DrillTable`, and `processes.yml` names each drill's kind and level. Every drill stands on a barrel.
 
-| Level | Area (side, blocks) | Depth (layers, shown on the info item) | Cycle (ticks, fuel clock) | Items per second at full power | Items per minute at full power | Items per minute at 0.35 (charcoal) |
+| Level | Area (side, blocks) | Depth (layers, shown on the info item) | Cycle (ticks, fuel clock) | Rate per second at full power (litres for petroleum, items for ore) | Rate per minute at full power | Rate per minute at 0.35 (charcoal) |
 |---|---|---|---|---|---|---|
 | 1 | 10 | 48 | 600 | 1.0 | 60 | 21 |
 | 2 | 14 | 96 | 480 | 1.5 | 90 | 31.5 |
@@ -334,7 +365,7 @@ The ten drills are `petroleum_drill_1` to `petroleum_drill_5` (kind `petroleum`)
 | 4 | 28 | 200 | 240 | 4.0 | 240 | 84 |
 | 5 | 40 | 280 | 120 | 6.0 | 360 | 126 |
 
-- **Rate.** The rates in the table are the shipped `drill-rates` in `config.yml` (see [CONFIGURATION.md](CONFIGURATION.md#drill-rates)). They are items per second at full power, and they apply to both kinds of drill. A drill yields its level's rate times its power efficiency, so a drill at 0.35 yields 0.35 of its rate. Fractions carry over, so the drill still makes whole items. The info item and the hologram print the rate as `%.2f/s  (%.1f/min)`, for example `1.50/s  (90.0/min)`.
+- **Rate.** The rates in the table are the shipped `drill-rates` in `config.yml` (see [CONFIGURATION.md](CONFIGURATION.md#drill-rates)). A petroleum drill's rate is litres of petroleum per second, pumped into the oil network; an ore drill's rate is items per second. A drill yields its level's rate times its power efficiency, so a drill at 0.35 yields 0.35 of its rate. Fractions carry over, so the drill still makes whole items or pumps whole litres. The info item and the hologram print the rate as `%.2f/s  (%.1f/min)`, for example `1.50/s  (90.0/min)`, without a unit for the fluid.
 - **The square.** It is centred on the drill, and it is exactly as wide as the area. An even side puts the extra block on the low side: a 10 wide square runs from x - 5 to x + 4. An odd side is centred: a 9 wide square runs from x - 4 to x + 4. No shipped level has an odd area.
 - **The depth.** The depth (48, 96, 144, 200 and 280 layers for levels I to V) is shown on the info item, but it does not limit the search. Deposits are found on x and z only: a deposit whose circle touches the drill's square is in range, whatever its height.
 - **Placing.** The block under a drill must be hard base stone: stone, granite, diorite, andesite, tuff or deepslate. Any other block cancels the placement with the message "A drill needs hard stone under it: stone, granite, diorite, andesite, tuff or deepslate."
@@ -347,24 +378,24 @@ The ten drills are `petroleum_drill_1` to `petroleum_drill_5` (kind `petroleum`)
 | Petroleum | Solar: the strongest daylight detector touching the drill | Its power over 15 | `solar` | None |
 | Petroleum | Redstone: the power the drill's block receives from its six neighbours (a redstone block gives 15) | Its power over 15 | `redstone` | None |
 | Petroleum | Charcoal in the fuel slot | 0.35 | `charcoal` | One charcoal per 8 counted cycles, only when charcoal is the source |
-| Ore | Petroleum in the fuel slot | 1 | `petroleum` | One petroleum per 2 counted cycles |
+| Ore | Petroleum from the oil network | 1 | `petroleum` | 0.5 litres per cycle, drawn every tick it runs |
 | Grid | The energy network: the satisfaction its grid gives the drill (see [Electricity and logistics](#electricity-and-logistics)) | Its satisfaction, 0 to 1 | `grid` | None |
 | None | No source above | 0 | `none` | The drill does nothing |
 
 - **Choosing.** The highest efficiency wins. A tie goes to solar, then redstone, then charcoal: a later source must be strictly stronger to take over.
 - **Shown as a percentage.** The efficiency is truncated to a whole percent. Power 5 out of 15 shows 33%, and charcoal shows 35%.
-- **Fuel.** A finished cycle that burned fuel is counted. A petroleum drill burns one charcoal every 8 counted cycles, when charcoal is its source. An ore drill burns one petroleum every 2 counted cycles while it has power.
+- **Fuel.** A finished cycle that burned fuel is counted. A petroleum drill burns one charcoal every 8 counted cycles, when charcoal is its source. An ore drill has no fuel slot and runs on petroleum alone: it draws petroleum from the oil network only on a tick when it would run (it has room, a deposit to work and that deposit has something left), at 0.5 litres per cycle. Without that petroleum it has no power and does not run, and it takes no grid power.
 - **Cycle.** The cycle no longer sets the output. It is the fuel clock: it counts the fuel use while the drill runs (see Fuel), and it drives the progress bar in the drill's menu. The cycles are 600, 480, 360, 240 and 120 ticks for levels I to V.
-- **Status.** Checked in this order, and the first that applies is shown: `No power` (petroleum drill) or `No petroleum` (ore drill); `Output full`; `No deposit in range` (no deposit that the drill's kind and selection allow touches its square); `Deposit exhausted: no items left in range` (some deposits touch the square, but all are empty, and the drill stays there until it is moved); otherwise `Running`. The info item shows the rate as `stopped` unless the drill is running.
-- **Targets.** A drill works one deposit at a time. A petroleum drill takes crude petroleum deposits, and an ore drill takes the solid ore deposits that its mine and ignore selection allows (see Resources menu below). A deposit is in range when its circle touches the drill's square: the nearest point of the square to the deposit's centre lies within the radius. The drill keeps its current deposit while that deposit is still mineable and has something left. Otherwise it takes the mineable deposit in its square with the most remaining, and a tie goes to the lower id. Empty deposits are never chosen. The drill searches every 20 ticks (one second), and at once when its deposit runs out or stops being mineable. The search reaches the largest radius a deposit may have plus the drill's area, not the `max-radius` setting, so a large deposit is found even when the setting is lowered. When the drill moves to another deposit, it keeps the old one until the items it made for the old deposit are in its outputs, so no item is dropped for want of room.
-- **Mining.** A drill takes units from its deposit, and each unit is one item: a solid ore gives its raw mineral (raw galena, for example), coal gives vanilla charcoal, and crude petroleum gives petroleum. So a deposit of N units yields N items in all. The drill takes in batches: a take runs when 10 items are waiting, or when the oldest has waited one second, and a take never exceeds what the output slots can hold. The items go to the drill's nine output slots. A full output stops the drill: it makes nothing and takes nothing, and the deposit keeps its amount.
-- **Pumping.** A petroleum drill draws its deposit down by the same rule: each unit taken is one petroleum, and the deposit's remaining amount falls by one. A deposit with nothing left is not chosen, so the drill moves on to another deposit in its square when there is one.
+- **Status.** Checked in this order, and the first that applies is shown: `No power` (petroleum drill) or `No petroleum` (ore drill); `Network full` (petroleum drill) or `Output full` (ore drill); `No deposit in range` (no deposit that the drill's kind and selection allow touches its square); `Deposit exhausted: no items left in range` (some deposits touch the square, but all are empty, and the drill stays there until it is moved); otherwise `Running`. The info item shows the rate as `stopped` unless the drill is running.
+- **Targets.** A drill works one deposit at a time. A petroleum drill takes crude petroleum deposits, and an ore drill takes the solid ore deposits that its mine and ignore selection allows (see Resources menu below). A deposit is in range when its circle touches the drill's square: the nearest point of the square to the deposit's centre lies within the radius. Among the mineable deposits in its square that still have something left, the drill takes the one with the largest remaining fraction (what is left divided by its starting amount), so every deposit in the square is mined to the same fraction over the run. A tie goes to the lower id. Empty deposits are never chosen. The drill searches every 20 ticks (one second), and at once when its deposit runs out or stops being mineable. The search reaches the largest radius a deposit may have plus the drill's area, not the `max-radius` setting, so a large deposit is found even when the setting is lowered. When the drill moves to another deposit, it keeps the old one until the items it made for the old deposit are in its outputs, so no item is dropped for want of room.
+- **Mining.** An ore drill takes units from a solid ore deposit, and each unit is one item: a solid ore gives its raw mineral (raw galena, for example), and coal gives vanilla charcoal. So a deposit of N units yields N items in all. A crude petroleum deposit gives no item (see Pumping). The drill takes in batches: a take runs when 10 items are waiting, or when the oldest has waited one second, and a take never exceeds what the output slots can hold. The items go to the ore drill's nine output slots. A full output stops the drill: it makes nothing and takes nothing, and the deposit keeps its amount.
+- **Pumping.** A petroleum drill pumps its deposit into the oil network, in litres. Each tick its rate is turned into whole litres, the network takes what it can of them, and the deposit's remaining amount falls by exactly the litres the network took. When the network refuses, the drill shows `Network full` and takes nothing. A deposit with nothing left is not chosen, so the drill moves on to another deposit in its square when there is one. The remaining amount of a crude petroleum deposit is in litres.
 - **The solar panel.** A solar panel placed before the electrical system is a daylight detector. The drill reads the six blocks around it, and the best daylight detector power counts. Several panels do not add up. Breaking any daylight detector drops a solar panel item, except in creative mode.
 - **Size.** Levels IV and V of both kinds are two blocks tall, like a door. The anchor is the lower block, which keeps the drill's barrel, status and hologram. The block above must be free, and breaking either half breaks the drill (see [Placing and breaking the energy devices](#placing-and-breaking-the-energy-devices)). The placement also asks the protection plugins about the block above: a refusal stops the placement with "This spot is protected.", and a break fires a break event for both blocks, so a refused one keeps the drill. Levels I to III are one block.
 - **Animation.** While the drill is running, its model moves up and down into the ground: four keyframes per stroke, changed every 5 ticks and interpolated between them. A drill that is not running goes back to its rest height and stays still (`DrillAnimation`).
-- **Output.** The drill's barrel holds its items. A picker or a hopper may take them out, as described in [Belts, pickers and splitters](#belts-pickers-and-splitters).
-- **Hologram.** A drill shows its hologram while it has power and room in its outputs: five lines (its level and kind, its power, its rate or its status, its deposit line, and its storage and fuel), and a sixth `Grid` line for the network. Otherwise the hologram is removed. See [Progress holograms](#progress-holograms).
-- **Info item and deposit line.** The info item lists the level, area, depth, status, rate, deposit, power and what powers the drill. The deposit line reads `Deposit <ore name> <remaining> / <initial> (<percent>%)`, for example `Deposit Galena Ore 1.2M / 2.5M (48%)`, or `Deposit none in range`. The hologram shows the same line.
+- **Output.** An ore drill's barrel holds its items. A picker or a hopper may take them out, as described in [Belts, pickers and splitters](#belts-pickers-and-splitters). A petroleum drill has no output: it pumps into the oil network (see [Oil and fluids](#oil-and-fluids)).
+- **Hologram.** A drill shows its hologram while it has power and room in its outputs: five lines (its level and kind, its power, its rate or its status, its deposit line, and its storage and fuel), and a sixth `Grid` line for the network. A petroleum drill's storage reads `Stored 0/0`, since it has no output slots. Otherwise the hologram is removed. See [Progress holograms](#progress-holograms).
+- **Info item and deposit line.** The info item lists the level, area, depth, status, rate, deposit, power and what powers the drill. The deposit line reads `Deposit <ore name> <remaining> / <initial> (<percent>%)`, for example `Deposit Galena Ore 1.2M / 2.5M (48%)`, or `Deposit none in range`. The hologram shows the same line. The amounts of a crude petroleum deposit are litres.
 - **Resources menu.** The drill's resources book lists one entry per deposit in its square that its kind may mine, as the last search saw it. Each entry shows the ore's icon, the deposit's amounts in its lore, and a toggle, `Mining` or `Ignoring`, which applies to every deposit of that ore. The menu shows six entries a page (two rows of three), with previous and next arrows and a back button. An exhausted deposit shows a grey glass pane. With no deposit in range, it reads `No deposits in range`.
 
 ## Electricity and logistics
@@ -402,6 +433,8 @@ side. It covers every block from x - R to x + R and from z - R to z + R, edges i
 | Small | `pylon_1` (Pylon I) | 5 | 11 by 11 blocks | 100 A | 23 kW |
 | Medium | `pylon_2` (Pylon II) | 9 | 19 by 19 blocks | 400 A | 92 kW |
 | Large | `pylon_3` (Pylon III) | 15 | 31 by 31 blocks | 1600 A | 368 kW |
+| Huge | `pylon_4` (Pylon IV) | 25 | 51 by 51 blocks | 4000 A | 920 kW |
+| Colossal | `pylon_5` (Pylon V) | 40 | 81 by 81 blocks | 10000 A | 2.3 MW |
 
 A pylon is placed on air: right-click the face of a block while holding it, and the block beside that face must be air.
 Pylons are joined to each other and to generators by wire (see [Wires](#wires)). A pylon's capacity is the most power it
@@ -457,22 +490,25 @@ its voltage, its supply, its capacity, its satisfaction and its colour.
 ### Generators
 
 A generator makes power. It is placed on air, like a pylon, and wired to a pylon. The nuclear generator is the one exception:
-it works only in water. The wind, charcoal, petroleum, diesel and nuclear generators are two blocks tall, like the tall drills: the anchor is the lower block, and the block above must be free. The solar panel stays one block.
+it works in water, or from water flowing through a pipe attached to it (see [Water](#water)). The wind, charcoal, petroleum, diesel and nuclear generators are two blocks tall, like the tall drills: the anchor is the lower block, and the block above must be free. The solar panel stays one block.
 
-| Kind | Item | Fuel | Output | Burn time per item | Electric energy per item |
+| Kind | Item | Fuel | Output | Burn time per item or litre | Electric energy per item or litre |
 |---|---|---|---|---|---|
 | Wind | `wind_generator` | none | 73 W to 3 kW, from the wind speed | none | none |
 | Solar | `solar_panel` | none | up to 320 W at the sun's peak, 0 at night | none | none |
 | Charcoal | `charcoal_generator` | charcoal | 25 kW while burning | 30 s | 208 Wh |
-| Petroleum | `petroleum_generator` | `petroleum` | 80 kW while burning | about 160 s | about 3.56 kWh |
-| Diesel | `diesel_generator` | `diesel` | 150 kW while burning | about 96 s | about 4.01 kWh |
+| Petroleum | `petroleum_generator` | petroleum from the oil network | 80 kW while burning | about 150 s per litre | about 3.34 kWh per litre |
+| Diesel | `diesel_generator` | diesel from the oil network | 150 kW while burning | about 96 s per litre | about 4.01 kWh per litre |
 | Nuclear | `nuclear_generator` | `nuclear_fuel_rod` | 2 MW while burning, underwater only | 178 h | 356 MWh |
 
-- **Fuel kinds.** A generator keeps up to 64 fuel items (`GeneratorFuel.CAP`). Fuel goes in through the generator's menu, or
+- **Fuel kinds.** A charcoal or nuclear generator keeps up to 64 fuel items (`GeneratorFuel.CAP`). Fuel goes in through the generator's menu, or
   from a belt or picker that points at the generator. When no item is burning and one is in the fuel, the generator takes
   one and burns it for its burn time. While an item burns, the output is the rated output. With no fuel, the output is 0.
+- **Petroleum and diesel.** These generators have no fuel slot and keep no fuel. Each tick they draw from the oil network the
+  litres that a steady rated output burns in that tick. With no petroleum (or no diesel) in the network,
+  the generator gives no power and its status reads `no fuel`. Its status row shows the litres its network holds.
 - **Energy per item** is the item's heat times its efficiency. Charcoal gives 3 MJ at 25 %, which is 750 kJ, or 208 Wh.
-  Petroleum gives 36.6 MJ at 35 %, and diesel 36.1 MJ at 40 %. A fuel item burns for its electric energy over its
+  Petroleum gives 34.4 MJ per litre at 35 %, and diesel 36.1 MJ per litre at 40 %. A fuel item burns for its electric energy over its
   rated output.
 - **Wind.** The wind speed is `v = 3 + 9 f` m/s, where `f` is the wind factor from 0 to 1:
   `f = 0.6 s + 0.4 n`. Here `s = 0.5 + 0.5 sin(2 pi t / 24000)`, with `t` the world's full time, and `n` is a noise value from 0
@@ -487,6 +523,8 @@ it works only in water. The wind, charcoal, petroleum, diesel and nuclear genera
   open sky above it. Its status at night is `night (solar)`.
 - **Nuclear.** It works only underwater. Its own block must be water, and so must the block above it and the four blocks
   beside it. Out of the water it gives 0, and its burn clock stops until it is back in water. Its fuel stays as it is.
+  A pipe on one of its joined faces is the exception: it also runs when the water network delivers water to that pipe. A pipe
+  alone is not enough, since water must flow (see [Water](#water)).
 - **Electric energy of a nuclear rod.** One fuel rod holds 356 MWh of electric energy, which needs no efficiency, so it burns
   for 178 h at 2 MW.
 
@@ -500,6 +538,8 @@ covers it, and it gives power to a consumer that shares a covering grid with it.
 | I | `accumulator_1` | 5 kWh | 5 kW | 5 kW |
 | II | `accumulator_2` | 20 kWh | 20 kW | 20 kW |
 | III | `accumulator_3` | 80 kWh | 60 kW | 60 kW |
+| IV | `accumulator_4` | 320 kWh | 200 kW | 200 kW |
+| V | `accumulator_5` | 1.28 MWh | 800 kW | 800 kW |
 
 - **Round trip.** An accumulator stores 90 % of the energy it takes in. The rest is lost when it charges.
 - **Charging.** An accumulator that did not discharge this tick charges from the grids that cover it, in grid id order, from
@@ -528,8 +568,10 @@ Each tick, the solver works in this order:
 
 1. The grids are the connected groups of pylons and wired generators. A grid's deliverable power is the lesser of its supply
    (the output of its generators) and its capacity (the sum of its pylons' capacities).
-2. Each consumer, in id order, draws from each grid that covers it. The draw is in proportion to each grid's free power, and
-   the consumer takes at most its demand in total.
+2. Each consumer draws from each grid that covers it. The draw is in proportion to each grid's free power, and the consumer
+   takes at most its demand in total. Critical consumers draw first: the water pumps that feed nuclear generators, since a
+   generator stops when its pump stops. The rest draw in id order, so on a short grid an earlier consumer can take the power
+   a later one asks for. A pump is never left out of a short grid by a turret or machine ahead of it in id order.
 3. A consumer still short takes the shortfall from the accumulators (see [Accumulators](#accumulators)).
 4. The accumulators that did not discharge charge from the grids that cover them.
 5. Each consumer's satisfaction is the part of its demand it got, from 0 to 1. Each grid's satisfaction is what it delivered,
@@ -576,7 +618,8 @@ An item moves at the belt's speed times its satisfaction.
 | III | `belt_3` | 7.5 | 0.8 |
 
 At its end, a belt gives an item to the next belt, or to the cell in front of it if that cell is a port: a lab tool that takes
-the item as an input (or as fuel, where the lab tool burns it), a generator that burns it as fuel, or a vanilla container. A belt
+the item as an input (or as fuel, where the lab tool burns it), a generator that burns it as fuel, a crafter's grid, or a vanilla
+container. A belt
 whose end refuses the item keeps the item and reports as blocked.
 
 A belt flows opposite to the player's horizontal look: a player who faces east places a belt that flows west. The belt's
@@ -604,13 +647,16 @@ is still pending (see [COMPATIBILITY.md](COMPATIBILITY.md#pending-in-game-checks
   `ContainerProtection`, see [Claims and integrations](#claims-and-integrations))
 - **A drill.** Its barrel is a port for its output slots, first slot first. A drill takes nothing through a port: its fuel comes
   from a hopper or by hand. (`DrillPort`)
+- **A crafter.** Its nine grid slots are a port, in both directions. A belt's end or a picker's output puts an item into it,
+  and a picker at its input takes one item out of it, by the crafter rules under "A crafter in a chain" in the pickers part
+  below. (`CrafterPort`, `CrafterGrid`)
 - **A generator.** Its fuel slot is a port. It takes one fuel item at a time, while it keeps fewer than 64, and it gives nothing.
   (`FuelPort`)
 
 **Pickers.** A picker takes one item from its input and moves it to its output. Its input is a belt that flows into it, a port of
-a lab tool or a drill (its output slots), or a vanilla container on its input side: a chest, a trapped chest, a barrel, a shulker
+a lab tool or an ore drill (its output slots), a crafter's grid, or a vanilla container on its input side: a chest, a trapped chest, a barrel, a shulker
 box or a copper chest. A double chest is read as its whole inventory. Its output is a belt, a lab tool that takes the item as an
-input (or as fuel), a generator that burns it as fuel, or a vanilla container under the claim rule. It moves an item only when
+input (or as fuel), a generator that burns it as fuel, a crafter's grid, or a vanilla container under the claim rule. It moves an item only when
 the output accepts it.
 
 **The take rule.** A picker takes from a vanilla container only where its owner may use it. The claim systems are asked for the
@@ -622,6 +668,18 @@ claimed container. Two pickers with different owners on one chest make its take 
 nothing. A double chest is claimed if either half refuses the owner. The picker takes the first plain stack in slot order, one item
 per move. A named or enchanted stack is skipped and stays in the chest. A take that the count does not confirm is not made, so the
 item is neither lost nor copied. Splitters take from the belt behind them only.
+
+**A crafter in a chain.** A crafter is vanilla's crafting block: a 3 by 3 grid of nine slots, some of which its own setting can
+disable. The grid is a port in both directions. A picker at the crafter takes one item out of it, from the first enabled slot that
+holds a plain item, in slot order (the top row first, left to right). A disabled slot is never taken from, and its items stay in it.
+A belt that ends in front of the crafter, or a picker that gives to it, puts an item into the first enabled slot that holds the same
+item with room, or else into the first enabled empty slot. When no enabled slot takes the item, the belt or picker waits. The claim
+rule applies to both directions, as it does for a chest. The port keeps no output slot of its own.
+
+Vanilla crafts only when the crafter receives a redstone pulse, so the grid fills and waits until a pulse arrives. On the pulse, the
+crafter pushes its product into the block it faces, such as a chest or a barrel, and a picker on that block can take it on. The
+chain that works end to end is: a belt ends in front of a picker, the picker gives to the crafter, the crafter faces a chest, and a
+picker on the chest's far side gives the product to a belt. The vanilla output and the pulse are not yet checked in game.
 
 | Level | Item | Rate (items/s) | Power (kW) |
 |---|---|---|---|
@@ -651,7 +709,8 @@ list is reported, and nothing moves.
 east or west. It is never placed on the top or the bottom. The block on that face is its input, and the new device goes on the
 air beside the face. Its input side faces the machine and its output side faces away, so its arrows always point outward, and
 no rotation is needed. A picker or a splitter placed beside a drill takes the drill's products. A picker placed beside a chest, a
-trapped chest, a barrel, a shulker box or a copper chest takes from it under the take rule. A splitter does not take from a chest.
+trapped chest, a barrel, a shulker box or a copper chest takes from it under the take rule. A picker placed beside a crafter takes
+from its grid. A splitter does not take from a chest.
 
 **Sideways pick.** A picker placed beside a straight belt, with the belt running past it, takes items off that belt. The pick
 is limited by the picker's speed (its 10-tick delay and one item per period), and the items it does not take stay on the belt
@@ -671,7 +730,7 @@ The game refuses a placement with the message of its first failing check, in thi
 |---|---|
 | Side: a picker or splitter aimed at a top or bottom face | Place it on a side face of the machine: north, south, east or west, not its top or bottom. |
 | Research not finished | Research 'NAME' is needed. (or "Research is needed for this item." when no node is named) |
-| Input: nothing that gives items on the aimed side | A picker takes from a machine, a generator, a chest or other storage, or a straight belt that flows into it or past its side. A splitter takes from a machine, a generator, or a belt that flows into it. |
+| Input: nothing that gives items on the aimed side | A picker takes from a machine, a generator, a chest, a crafter or other storage, or a straight belt that flows into it or past its side. A splitter takes from a machine, a generator, or a belt that flows into it. |
 | Space: a solid block in the spot | That side is blocked: the block beside the face you aim at must be air. |
 | Space: an entity in the spot | Something stands in the spot where it would go. |
 | Space: a device in the spot | Another device already stands there. |
@@ -704,7 +763,7 @@ A left-click breaks a device. It drops its item, and a generator also drops its 
 wires go with it, and nothing is refunded for them. In creative mode nothing drops.
 
 **Two-block devices.** The generators named under [Generators](#generators) (except solar), drill levels IV and V, and the machine
-gun and laser turrets at levels 3 to 5 take two blocks, one above the other. The device's position is the lower block, and it owns the block above. Both blocks must be free:
+gun and laser turrets at levels 3 to 5, and a rail gun at level 3, take two blocks, one above the other. The device's position is the lower block, and it owns the block above. Both blocks must be free:
 air, or water for the nuclear generator, or a replaceable block that is not a liquid. A turret needs air in both blocks. A break of either block breaks the whole
 device once. A blast reaches the device when either block's centre is in range, and it is spared when either block is protected.
 The list is `Footprint.TALL_IDS`. A single-block device from before this change that now stands tall may have a block above it,
@@ -714,12 +773,13 @@ which the new footprint overlaps; there is no migration.
 
 - **Pylon hologram.** Two lines, as described in [Grids and outlines](#grids-and-outlines).
 - **Accumulator hologram.** Two lines, as described in [Accumulators](#accumulators).
-- **Generator hologram.** One line: the name, then the output in W or kW with `fuel N` (for a fuel kind) while the generator
-  produces, or the status word when it does not. The status words are `running`, `no fuel`, `closed (wind)`, `night (solar)` and
+- **Generator hologram.** One line: the name, then the output in W or kW with the output in W or kW while the generator produces,
+  or the status word when it does not. A charcoal or nuclear generator adds `fuel N`. A petroleum or diesel generator adds
+  `network` with the litres its oil network holds and the litres per second it burns. The status words are `running`, `no fuel`, `closed (wind)`, `night (solar)` and
   `not underwater (nuclear)`.
 - **Generator menu.** Right-click a generator with no energy wire in hand. The menu has 27 slots. The fuel slot is index 11,
-  and it takes only the kind's fuel, from the cursor or by shift-click. Fuel can be taken back out. The status row shows the
-  output (redstone), the power made since the generator was placed (gold nugget), the fuel count and the burn clock (coal),
+  and it takes only the kind's fuel, from the cursor or by shift-click. Fuel can be taken back out. A petroleum or diesel generator has no fuel slot. The status row shows the
+  output (redstone), the power made since the generator was placed (gold nugget), the fuel count and the burn clock (coal), or for a petroleum or diesel generator the litres its oil network holds,
   and the status (dye). Only one player can have a generator's menu open. A second player who tries to open it gets `Someone is already using this generator.`
 - **Generator particles.** A charcoal generator gives smoke, 3 particles per puff, while it burns. Petroleum and diesel give
   cosy campfire smoke while they burn. A nuclear generator gives end-rod particles while it produces. A puff is sent every
@@ -742,6 +802,206 @@ which the new footprint overlaps; there is no migration.
 - A belt, picker or splitter in an unloaded chunk has satisfaction 0, so its items wait.
 - A pylon and an accumulator take part in the solve whether or not their chunk is loaded.
 
+## Water
+
+The water network carries water from pumps, through pipes and splitters, to lab machines and nuclear generators. It is solved
+per world, since a pipe does not cross worlds. Its settings are under `water` in `config.yml`, read at startup.
+
+### Pumps
+
+A pump is placed on air or water, on the block the player aims at, and it needs no water under it. Its source is the water its
+network reaches, not the water under the pump. Each pump, pipe and splitter of the network (the pump itself included) counts the
+water it stands in or touches; a lab machine or a nuclear generator does not. From each such block, a 6-connected flood fill counts
+the `Material.WATER` blocks (flowing water counts too). Water in a chunk that is not loaded does not count. The pump uses the largest count that any block of its network reaches.
+The count is capped at `water.source-min-blocks` + 1 (101 by default), so a large lake is not counted to its end. A source needs
+`water.source-min-blocks` (100) blocks. A pump with fewer has no source and stops. A pump is never refused at placement for its
+source.
+
+A pipe that stands in water, or on land beside water, and is joined to the pump, is a source tube: the water it reaches is the
+pump's source. The pump's own block may also touch water, and then that water counts without a pipe.
+
+The source is checked every `water.source-check-ticks` (200, ten seconds), and each check measures it again. A change in the source,
+up or down, is noticed within those 200 ticks. A pump below the minimum stops. A pump with a source and fuel (level I), with
+diesel in its oil network (level II), or with power (levels III to V) runs and supplies the network.
+
+| Level | Flow (units/s) | Runs on | Power draw |
+|---|---|---|---|
+| I | 2 | coal, charcoal or the charcoal component | none |
+| II | 4 | diesel from the oil network, 1 litre a minute | none |
+| III | 8 | electricity | 60 kW |
+| IV | 12 | electricity | 120 kW |
+| V | 16 | electricity | 240 kW |
+
+The flows are `water.pump-flow` and the power draws are `water.pump-power-w`. There are five levels (`PumpLevels.MAX_LEVEL`).
+
+- **Kits.** The kits `water_pump_upgrade_2` to `water_pump_upgrade_5` each take a pump up one level. Right-click the pump with the
+  kit in the main hand. A successful kit is used up, one item, and the pump is told "Pump upgraded to level N." A refused kit is
+  kept. The refusals are "Fit the level N kit first. This kit needs the pump at level M.", "This pump is already level N or higher.",
+  "This pump is already at its top level." and "This kit does not fit this pump.". Only the owner of the pump, or a friend of the
+  owner, can upgrade it: anyone else gets "Only the owner or a friend of the owner can upgrade this pump.", whatever the level. This
+  is the only owner check on pumps.
+- **Fuel.** Level I takes fuel items: right-click the pump with coal, charcoal or the charcoal component in the main hand to add
+  it. A pump holds up to 16 items (`PumpFuel.CAPACITY`), and the rest stays in the hand. The items it takes are those of
+  `ProcessEngine.FUEL`, and each burns for 1200 ticks (60 seconds), one after another, and only while the network wants the pump.
+- **Diesel.** Level II takes no items and has no fuel slot. It draws diesel from its oil network, one litre a minute (1 litre
+  per 1200 ticks), and only while the network wants the pump. With no diesel in the network it stops. See [Oil and fluids](#oil-and-fluids).
+- **Power.** Levels III to V are consumers of the energy network. A powered pump gives its full flow at any power share above zero,
+  and stops only when it gets none. Its power line shows the share.
+- **Status in chat.** Right-click the pump with an empty hand, or with an item that is not fuel, to show the three status lines in chat.
+- **Tall levels.** Levels IV and V stand two blocks tall: the pump's block and the block above it (`PumpLevels.height`). The block
+  above must be free when the pump is placed or upgraded. Free means no device, machine or water part stands there and the block is
+  not solid. A placement is refused with "A level N pump stands two blocks tall, and the block above this spot is in the way.", and
+  an upgrade to level IV or V is refused, and the kit kept, with "A level N pump stands two blocks tall, and the block above it is in
+  the way." The upper block is part of the pump: its interaction is two blocks tall, so a click on the upper block works as a click on
+  the pump. Its model is `water_pump_4_<front>_top` or `water_pump_5_<front>_top`, and the hologram sits above the upper block.
+- **Sound.** A running pump plays the pump sound, `water_pump` (see [Sounds](#sounds)), once every 2 seconds, at its own block. Each
+  level sounds a tenth higher than the one below it: the pitch is 0.9 at level I, plus 0.1 for each level above I
+  (`MachineSounds.pumpRun`).
+- **Who may change a pump.** Only the kits are limited, to the owner and the owner's friends. Any player may add fuel to a level I pump
+  or break it, and protection plugins still apply.
+
+**The hologram** has four lines (`WaterService.pumpLines`): the title, then the flow, the source and the fuel or power.
+
+- The title: `Water pump Level II`.
+- The flow: `Flow  4 of 4 /s`, the pump's share of what the network delivers, of its flow. It reads 0 when no machine draws
+  water, even while the pump runs.
+- The source: `Source  Infinite`, or `Source  50 of 100 blocks` while the source is below the minimum.
+- The fuel, or on a powered pump the power: `Fuel  N coal or charcoal`, then `· burning` or `· waiting`; `Fuel  Empty` for no
+  item; for level II `Fuel  diesel from the oil network` with the same state word. A powered pump shows `Power  P% of X kW`,
+  `Power  none needed`, `Power  No grid` or `Power  waiting for a source`. N counts the item burning now (`PumpFuel.Burn.held()`),
+  so a pump on its last item shows `Fuel  1 ...`, never `Empty`, until that item is used up.
+
+### Pipes and splitters
+
+A pipe (`water_pipe`) is made two at a time. A splitter is `water_splitter_t` or `water_splitter_x`.
+
+- **Joins.** A pipe joins a neighbouring pump, pipe, splitter, lab machine or nuclear generator on the faces the two share. Pumps,
+  pipes and splitters join each other. A consumer (a lab machine or a nuclear generator) joins only a pipe, not a pump or a splitter
+  directly. A join needs the shared face in the face set of both pieces. Pumps and pipes have all six faces, and a splitter has only
+  its allowed faces.
+- **Shape.** A pipe is a bend when it has exactly two joins and they are not opposite faces. Any such pair makes a bend, including
+  up and down, so a pipe can curve up or down as well as sideways. The bend lies in the plane its two faces span. It is a quarter
+  arc of radius 8 model units (half a block; a block is 16), centred on the inner corner, so both ends are perpendicular to the faces
+  they join and the tube bulges toward the block's centre. Otherwise a pipe is straight along the axis with the most joins. A tie goes
+  east-west, then north-south, then up-down. A pipe with one vertical join therefore stands on end, and a pipe with no join is straight
+  east-west (`WaterOrientation.pipe`, `WaterFrame.bend`).
+- **T splitter.** It joins its input face and the two faces at right angles to it. It has no straight-through face.
+- **X splitter.** It joins four faces: its input and the face opposite it, and its output and the face opposite that. A horizontal X
+  has four horizontal arms. A vertical X has its arms up and down, and across.
+- **Input face.** A horizontal splitter takes its input from the face toward the player who places it: a splitter placed while the
+  player looks east takes its input from the west. A splitter placed on the top or the bottom face of a block is vertical. Its input
+  points into the block it was clicked on, so a splitter placed on top of a block has its input facing down. Its outputs run across the
+  player's view, to the left and right of the way the player looks. A horizontal splitter's output is `WaterOrientation.defaultOutput`
+  of its input.
+- **Placement.** Pipes, pumps and splitters go on air or water. They never go on a solid block, a machine or an energy device. A T or
+  X clicked on the top or bottom face is placed vertically, as described under Input face.
+
+### The network and its sharing
+
+Every `water.solve-ticks` (5 ticks), the network of each world is rebuilt from the pumps, pipes and splitters of its loaded chunks, and
+from the lab machines and nuclear generators that have a pipe. Then the water is shared:
+
+- The supply is the sum of the flows of the running pumps in the network.
+- Each consumer makes a request. The supply is shared by max-min fairness, which is water filling: a consumer whose request is at or
+  below the equal share gets all of it, and the rest is shared equally among the larger requests. When the supply covers every request,
+  each consumer gets its full request.
+- Each pump's output is its flow's share of what the network delivers, in proportion to its flow. It is never more than its flow.
+
+### Lab machines and nuclear generators
+
+- **Lab machines.** A lab process whose inputs include a water bucket (`ProcessEngine.takesWater`) takes water from a connected pipe in
+  place of the bucket. The run asks for `water.unit-per-process-run` (1) unit, spread over the run's length, so the rate is 20 divided
+  by the run's ticks, in units per second. A run of 100 ticks asks for 0.2 units per second. The machine runs when its network delivers
+  that rate. Without a pipe, the bucket is still needed. A request expires after 2 × `solve-ticks` (10 ticks) unless it is renewed.
+- **Nuclear generators.** The rule is in [Nuclear](#nuclear). A pipe on a joined face lets the generator run when the network delivers
+  water to that pipe.
+
+### Data file
+
+`water.yml` is in the plugin's data folder. It has a `version` key, then numbered entries, each with `type` (the component id), `id`,
+`owner`, `world`, `x`, `y` and `z`. The other keys are used where they apply: `face` (a splitter's input face), `level` (a pump),
+`fuel` (the items in a pump) and `burn-ticks`. A pump's source is not saved, since it is counted again when the pump loads.
+
+## Oil and fluids
+
+Petroleum and diesel are fluids, not items. A fluid is measured in litres (volume) and litres per second (rate), and it is
+shown in cubic metres above 1000 litres. No petroleum or diesel item exists, and no recipe takes one.
+
+- **Tubes.** The oil tubes `oil_pipe`, `oil_splitter_t` and `oil_splitter_x` join the way water pipes join (see [Water](#water)).
+  Each tube holds up to `oil.tube-capacity-litres` (100 shipped) of one fluid. A network is the tubes joined together and the
+  devices that touch them.
+- **One fluid per network.** A network holds one fluid at a time. A tube that would join a petroleum network to a diesel network
+  is refused with "Petroleum and diesel cannot share a pipe." A drill, generator or pump that would join such networks is refused
+  with "This would mix petroleum and diesel in one oil network." A refinery is never refused, since it keeps its networks apart.
+- **Flow.** A network moves at most `oil.pipe-flow-litres-per-second` (4 shipped) litres per second, which is 0.2 litres per
+  server tick (0.05 s), counted over supply and draw together. A fraction that a tick does not move is carried to the next tick.
+  A network whose fluids disagree moves nothing.
+- **Start-up.** A saved network that holds two fluids is settled when the plugin loads: the fluid that fewer of its tubes hold
+  is emptied, and a warning is logged. On a tie, petroleum is kept.
+- **Who gives and takes.** A petroleum drill gives petroleum into its network (see [Drills](#drills)). A petroleum or diesel
+  generator, an ore drill and a level II water pump take from it. A refinery takes petroleum from each network beside it that
+  holds petroleum, and gives diesel into each network beside it that holds diesel (see the refinery entry below).
+- **Refinery** (`crude_oil_refinery`). A lab machine on a barrel with no input, output or fuel slot. It has no outlet face: an
+  oil tube may stand on any of its four faces, and the refinery joins each network beside it in turn.
+  - Each network beside the refinery is either an **intake**, an **output** or **neither**. A network that holds petroleum,
+    from its tanks or from a petroleum drill joined to it, is an intake. A network that holds diesel, or that is empty with a
+    diesel generator or a level II pump on it, is an output. Any other network, an empty tube with no drill and no diesel
+    consumer, is neither: the refinery leaves it alone. An empty tube beside a refinery therefore stays empty until a drill is
+    placed on it, so a petroleum drill can still be placed on it later.
+  - The refinery never joins two networks together. A tube beside it joins only the tubes it is joined to, so a petroleum tube
+    and a diesel tube on two faces stay apart, and each is joined to the refinery on its own.
+  - A pass takes 3 litres of petroleum and gives 2 litres of diesel over 600 ticks at full speed, so it draws 0.1 litres of
+    petroleum per second. It takes petroleum from the intakes, and pushes its diesel into the first output that takes it. It
+    never draws more petroleum than the outputs can take.
+  - It is stuck with `No petroleum` when no network beside it holds petroleum, and with `No output takes diesel` when no output
+    beside it takes diesel. Its info item shows the petroleum in its networks, the diesel in its outputs and the number of outputs.
+- **Generators.** The petroleum generator burns 80 kW at 35 % efficiency, and the diesel generator 150 kW at 40 %. Each draws the
+  litres it burns from its network while it runs. See [Generators](#generators).
+- **Pumps.** A level II water pump burns diesel from its oil network, one litre a minute. See [Pumps](#pumps).
+- **Crude petroleum deposits.** A deposit of crude petroleum gives no item when it is mined by hand, and it takes nothing from
+  the deposit. A petroleum drill pumps it into the network in litres (see [Deposits](#deposits)).
+- **Saved file.** `oil.yml` holds the tubes with their fluid and litres, as numbered entries under a `version` key (version 2).
+- **Unverified in game.** The fluid network's flow, the refinery's output faces and the start-up settlement of a saved mixed
+  network (the oil load check) have not been checked in game.
+
+## Vertical transport belts
+
+A vertical transport belt carries items up or down a tower, rather than along the ground. It has three levels, and it draws no power
+from a grid: its speed does not depend on the grid's state.
+
+| Level | Item | Speed (blocks/s) | Capacity (items per block) |
+|---|---|---|---|
+| I | `vertical_belt_1` | 1.875 | 4 |
+| II | `vertical_belt_2` | 3.75 | 8 |
+| III | `vertical_belt_3` | 7.5 | 12 |
+
+The speeds and capacities are `vertical-belt.speed` and `vertical-belt.capacity`. Levels I and II are unlocked by Materials
+Purification, and level III by Tesseract Geometry.
+
+- **Towers.** A tower is a vertical run of vertical belts. Its level and owner are those of its output-end belt, and a tower may mix
+  belt levels. Each belt stores its own direction, UP or DOWN.
+- **Placing.** Right-click a block with a vertical belt in the main hand, and the belt goes on the free air beside the face clicked.
+  Placement follows the same checks as a logistics device: the research is unlocked, the spot is free, and a protection plugin
+  does not cancel it.
+- **Direction.** Right-click a belt with an empty main hand, not sneaking, to open its menu. The menu has 27 slots: UP is in slot 11,
+  the info item in slot 13 and DOWN in slot 15. The info item shows the tower's length, level, number of items and direction.
+  Setting one belt sets the direction of the whole tower above and below it, with no height limit in the code. The items on the
+  tower keep their heights and move the new way.
+- **Ownership of direction.** Only the owner of the clicked belt, or a friend of the owner, may change the tower's direction. A belt with
+  no stored owner can be changed by anyone.
+- **Input.** A regular belt or a picker whose output cell is a belt of a tower puts items into that belt, from a horizontal face of
+  the belt. Nothing enters from above or below. The belt's entry must have room. Pickers can fill a tower, but cannot take items from one.
+- **Output.** The cell beyond the output end (above the top for UP, below the bottom for DOWN) is served in this order. A regular belt
+  there receives the item. Otherwise, any port there takes the item if it accepts it: a machine, a chest or other storage, under the
+  tower owner's claim rules. A tower gives at most one item per tick, which is 20 per second. A full or missing target keeps the item
+  at the output end, and the tower waits.
+- **Displays.** Items on a tower are shown as small item displays. At most `vertical-belt.max-item-displays` (600) are shown at once.
+  Past that, the items are carried but not shown, and one warning is logged. The cap counts the displays on towers only.
+- **Breaking.** Any player may break a vertical belt, and protection plugins still apply. The belt drops its own item.
+- **Explosions.** Known limitation: no code in the vertical package handles explosions, so a blast does not remove a vertical belt.
+- **Saved state.** `vertical.yml` holds the placed belts (`id`, `owner`, `world`, `x`, `y`, `z`, `level` and `direction`) and the items
+  carried on towers (`world`, `x`, `y`, `z`, and the item's `kind` and `id`).
+
 ## Deposits
 
 A deposit is a circular patch of one ore on the surface, with an amount that is left in it. Its ore is one of the eleven solid ores, or crude petroleum. Drills take the amount down, one unit for each item, and it never goes below zero. The numbers that shape deposits are in the `deposits` section of `config.yml` (see [CONFIGURATION.md](CONFIGURATION.md#deposits)).
@@ -752,7 +1012,7 @@ A deposit is a circular patch of one ore on the surface, with an amount that is 
 - **Repeatable.** Every choice is a hash of the world seed, the world name and the cell. The same world always has the same deposits, and no stored state is needed to plan them.
 - **Laying.** When a chunk of 16 by 16 blocks first loads, every deposit whose circle touches it is planned and laid into it. In each block of the patch that lies in the ore's height range (`min-y` to `max-y` in `ores.yml`) and is one of the ore's replace blocks, mostly stone, the ore's host block is placed with a chance of 0.3 (`ore-block-density`). So the patch shows as host blocks over stone, about 30 percent of them ore blocks. The choice is fixed by a hash of the deposit and the position, so it never changes.
 - **Once per chunk.** The chunk is marked `corefactory:deposits` in its persistent data, so a chunk is laid once, and a restart adds no ore blocks. Chunks generated before this version have no marker, so they are laid the first time they load after the upgrade. There is no retrofit command.
-- **Hand-mining.** Breaking a patch block by hand gives one item of the deposit's ore and takes one unit from that deposit. The item is the ore's component: raw minerals, charcoal for coal and petroleum for crude petroleum. Silk touch gives the same item. An empty deposit gives nothing, and the block still breaks. A block that a claim or a region protects, and so cannot be broken, gives nothing (`GeologyListener.givePatchOre`). Hand-mined patch blocks count toward the mining achievements when they give their item.
+- **Hand-mining.** Breaking a patch block by hand gives one item of the deposit's ore and takes one unit from that deposit. The item is the ore's component: raw minerals, and charcoal for coal. A crude petroleum block gives no item and takes nothing, since its petroleum is pumped (see [Oil and fluids](#oil-and-fluids)). Silk touch gives the same item. An empty deposit gives nothing, and the block still breaks. A block that a claim or a region protects, and so cannot be broken, gives nothing (`GeologyListener.givePatchOre`). Hand-mined patch blocks count toward the mining achievements when they give their item.
 - **Patch exclusions.** A host block of the ore on a patch site gives no ore when a player placed it there, when a piston moved it onto the site, or when a dispenser put it there (`PatchExclusions`, `GeologyListener`). The exclusion is kept per chunk in the chunk's persistent data, so a placed host block on a mined-out site gives no ore either. Host blocks already in the stone when the chunk was laid, such as natural coal ore, are excluded too. Explosions give no ore. The rule covers placements made through game events only: a block placed by WorldEdit or a command that places without events can still count as a patch block.
 - **Scanner.** The Ore Density Scanner is a held item that finds the deposits near you (see [The Ore Density Scanner](PLAYER_GUIDE.md#the-ore-density-scanner)). A right-click, in the air or on a block, scans the deposits within `deposits.scanner-radius` (96 blocks). A deposit counts when its circle reaches within that radius. The action bar names the nearest one with its direction, distance, richness and what is left, and the chat lists up to five. A scan waits `deposits.scan-cooldown-ticks` (60 ticks) after the last one. Sneak and right-click moves the ore filter on, sneak and left-click surveys up to ten deposits (their exact centre and radius, in chat, without breaking a block), and the nearest eight are outlined in their ore's colour for `deposits.outline-seconds` (20). The filter and the cooldown are kept per player, in memory, and end when the player leaves.
 - **Richness.** A deposit's richness is set by what is left: Poor under 1,000,000, Rich from 1,000,000 to 9,999,999, and Exceptional from 10,000,000 (`RichnessTier`).
@@ -760,11 +1020,11 @@ A deposit is a circular patch of one ore on the surface, with an amount that is 
 - **Listing.** `/cf geology deposits [radius]` lists every deposit whose circle comes within the radius (64 blocks by default, up to 512) of the player, nearest first, in the scanner's chat line: its ore, direction, distance, richness and share left. It has no limit of five.
 - **Database.** The remaining amount of each deposit is kept in the `corefactory_deposits` table of the research database: SQLite (`research.db`), or PostgreSQL when `storage.type` is set to it. The amounts survive a restart. A take is one conditional update, so a deposit never goes below zero.
 - **Without the database.** The deposits are kept in memory, and they are lost when the server stops (a warning is logged). Chunks laid before a restart keep their ore blocks, but no deposit is in the store for them, so drills find nothing there. This is the current behaviour, and it is on the pending in-game checks (see [COMPATIBILITY.md](COMPATIBILITY.md#pending-in-game-checks)).
-- **Drills.** Drills are the source of raw minerals and petroleum from deposits. Each drill's square, rates, status and resources menu are in [Drills](#drills).
+- **Drills.** Drills take raw minerals from deposits, and a petroleum drill pumps crude petroleum into the oil network. Each drill's square, rates, status and resources menu are in [Drills](#drills).
 
 ## Ore blocks
 
-The ore blocks are the vanilla host blocks that a deposit's patch shows, and the placeable ore block item. They are defined in `ores.yml`, which has twelve entries: eleven solid ores, coal included, and crude petroleum. Each entry has a host block, a drop and a height range. The world lays the patches (see [Deposits](#deposits)), and drills take the raw minerals and petroleum from them. The table gives each ore's host block, the item a placed ore block gives, and its height range.
+The ore blocks are the vanilla host blocks that a deposit's patch shows, and the placeable ore block item. They are defined in `ores.yml`, which has twelve entries: eleven solid ores, coal included, and crude petroleum. Each entry has a host block, a drop and a height range. The world lays the patches (see [Deposits](#deposits)), and drills take the raw minerals from them, and a petroleum drill pumps crude petroleum. The table gives each ore's host block, the item a placed ore block gives, and its height range.
 
 | Ore | Host block | Drop | Drop amount | Y range |
 |---|---|---|---|---|
@@ -775,7 +1035,7 @@ The ore blocks are the vanilla host blocks that a deposit's patch shows, and the
 | galena_ore | LIGHT_GRAY_GLAZED_TERRACOTTA | raw_galena | 2 to 5 | -32 to 40 |
 | cinnabar_ore | RED_GLAZED_TERRACOTTA | raw_cinnabar | 2 to 4 | -32 to 24 |
 | fluorite_ore | PURPLE_GLAZED_TERRACOTTA | raw_fluorite | 3 to 6 | -48 to 64 |
-| crude_petroleum_deposit | WHITE_GLAZED_TERRACOTTA | petroleum | 1 to 2 | -64 to 0 |
+| crude_petroleum_deposit | WHITE_GLAZED_TERRACOTTA | none (a fluid, pumped in litres) | none | -64 to 0 |
 | <img src="images/ores/saltpeter_deposit.png" width="24" height="24" align="absmiddle"> saltpeter_deposit | LIME_GLAZED_TERRACOTTA | <img src="images/components/raw_saltpeter.png" width="24" height="24" align="absmiddle"> raw_saltpeter | 2 to 4 | -32 to 80 |
 | <img src="images/ores/sulfur_deposit.png" width="24" height="24" align="absmiddle"> sulfur_deposit | ORANGE_GLAZED_TERRACOTTA | <img src="images/components/raw_sulfur.png" width="24" height="24" align="absmiddle"> raw_sulfur | 2 to 4 | -48 to 32 |
 | <img src="images/ores/zinc_deposit.png" width="24" height="24" align="absmiddle"> zinc_deposit | CYAN_GLAZED_TERRACOTTA | <img src="images/components/raw_sphalerite.png" width="24" height="24" align="absmiddle"> raw_sphalerite | 2 to 4 | -48 to 48 |
@@ -786,8 +1046,8 @@ The ore blocks are the vanilla host blocks that a deposit's patch shows, and the
   and dropped, which gives the raw mineral. With silk touch, the ore's block item drops instead. The ore break effect plays,
   and the achievement tracker is told.
 - **A patch block dug by hand.** A block of a deposit's patch is not registered, so it is not a placed ore block. Breaking it
-  by hand gives one item from its deposit, and takes one unit from the deposit: the ore's raw mineral, charcoal for coal, or
-  petroleum for crude petroleum. Silk touch does not change that, and it never gives the block item. Drills take the rest (see
+  by hand gives one item from its deposit, and takes one unit from the deposit: the ore's raw mineral, or charcoal for coal.
+  Crude petroleum gives nothing and takes nothing (see [Oil and fluids](#oil-and-fluids)). Silk touch does not change that, and it never gives the block item. Drills take the rest (see
   [Drills](#drills)). The rules are under Hand-mining in [Deposits](#deposits).
 - **The ore block item.** It is the host block, named after the ore, with the lore "Placeable. Mine it for raw ore; silk
   touch keeps the block." It carries the ore's id, so placing it registers the block as that ore. A placement is refused
@@ -891,20 +1151,20 @@ owner nor a friend. Claim protection still applies: a stranger inside a protecte
 **The turret menu.** Right-click a turret with no round in hand, or sneak-click it, to open its menu (27 slots, three rows). A right-click
 with a round in hand loads a machine gun instead. The first row holds, from left to right: the info item (the level, range, damage per
 hit, cannons, fire interval and power; for a machine gun also its rounds, their armour bypass and its status; for a laser its armour
-bypass and status), a load button that takes one stack of one round type from the player's inventory and an eject button that gives
+bypass and status; for a rail gun its charge, reload and status), a load button that takes one stack of one round type from the player's inventory and an eject button that gives
 every round back (both on a machine gun only), the friendly-fire switch, the team switch (spared, targeted or ignored, which it cycles
 in that order), and four category toggles (monsters, phantoms, slimes and ghasts). The two rows below hold 18 wool toggles, one for each entity type: Zombie, Husk,
 Drowned, Skeleton, Stray, Wither Skeleton, Creeper, Spider, Enderman, Witch, Blaze, Pillager, Vindicator, Ravager, Phantom, Slime,
 Magma Cube and Ghast. Green wool is a target and red is spared. Each toggle says whether it is set for this turret or follows
-the config. Only the owner, with `corefactory.turret`, can change the menu's choices; anyone else is told that only the owner
-can change its targeting. The menu has no level button: the level is on the info item, and the turret's hologram shows it as `L1`
+the config. Only the owner, with `corefactory.turret`, can change the menu's choices; anyone else, a friend included, is told
+that only the owner can change its targeting. The menu has no level button: the level is on the info item, and the turret's hologram shows it as `L1`
 to `L5` beside its name.
 
 **Aim.** The turret turns toward its target by at most `rotation-speed-degrees` (6) per tick. Its sweep is `arc-degrees` (360 by
 default, the whole turn), centred on the way it faced when placed, and it tilts up to `pitch-limit-degrees` (90 by default, straight
 up and down). So a mob in any direction, and a mob straight above or below, is in reach. With `idle-sweep` on, it sweeps the arc
 slowly while it has no target, and the sweep makes no sound. Existing servers keep their saved values: an `arc-degrees` of 180 must be
-changed to 360, and a smaller `pitch-limit-degrees` to 90, by hand (see [COMPATIBILITY.md](COMPATIBILITY.md#changes-for-existing-worlds)). It fires only when its barrel is within 3 degrees of the target on both axes. The display is
+changed to 360, and a smaller `pitch-limit-degrees` to 90, by hand (see [CHANGELOG.md](../CHANGELOG.md)). It fires only when its barrel is within 3 degrees of the target on both axes. The display is
 turned on a left rotation with a 2-tick interpolation.
 
 **Fire.** Each shot uses `ammo-per-shot` (1) round of the loaded kind. The spread is a random angle up to `accuracy-spread` (3
@@ -959,9 +1219,11 @@ The rotation sound plays only while the turret turns onto a target it has detect
 The idle sweep is silent. The reload sound plays on each load. The sounds are `turret_fire`, `turret_reload` and `turret_rotate`. They are
 quieter than before: the pack volume is about a quarter of its earlier value, and the server plays them at volume 0.35.
 
-**Owner only.** Only the owner, with `corefactory.turret`, can load, eject, upgrade, change the targeting of, or break a turret. Anyone
-else may open the menu and look, but a load, an eject, a kit, a targeting button or a break is refused, with the message that
-only the owner can change it (`TurretMenu.mayChange`, `TurretAccess`).
+**Owner and friends.** The owner of a turret, or a friend of the owner (`FriendAccess.mayUse`, `DeviceAccess.mayUse`), with
+`corefactory.turret`, can load, eject, switch a rail gun's power, upgrade or break it. Only the owner can change its targeting: the
+friendly-fire switch, the team mode and the stances (`TurretMenu.mayChange`). Anyone else may open the menu and look, but a load, an
+eject, a kit, a power button or a break is refused, with the message that only the owner or a friend of the owner can change it
+(`TurretMenu.mayUse`, `TurretAccess`).
 
 **Tall turrets.** A turret at level 3 or higher occupies the block above its anchor. Protection plugins are asked about both blocks:
 a placement, an upgrade into the upper block, or a break that a claim or region refuses on either block does not happen.
@@ -972,10 +1234,10 @@ a placement, an upgrade into the upper block, or a break that a claim or region 
 
 ### Upgrading a turret
 
-A turret has five levels. Each upgrade kit moves one turret up one level, and a turret moves one level at a time. Right-click a
+A machine gun turret and a laser turret have five levels, and a rail gun turret has three (see [Rail gun turret](#rail-gun-turret)). Each upgrade kit moves one turret up one level, and a turret moves one level at a time. Right-click a
 turret you own while holding a kit. The kit must be the level just above the turret's: a kit II moves a level 1 turret to level 2,
 and a kit V moves a level 4 turret to level 5. The kit is used up. A turret at level 5 takes no kit, and a kit of the wrong level is
-refused with the level it needs. Only the owner can upgrade a turret.
+refused with the level it needs. Only the owner or a friend of the owner can upgrade a turret.
 
 Moving from level 2 to level 3 makes the turret two blocks tall, so the block above it must be free. That is the only move that needs
 room: a turret at level 3 or higher already owns its upper block, so the moves to levels 4 and 5 need nothing above. If the block is
@@ -1031,22 +1293,68 @@ The laser turret is the second turret. It is a placeable defence like the machin
 
 **Known gaps.** The look of the beam and the light, the blue beam of level 5, and the laser's sounds have not been checked in game. The light is white. A blast does not destroy a laser turret, as with the machine gun turret.
 
+## Rail gun turret
+
+The rail gun turret is the third turret, and the strongest. It is electric, like the laser turret: it holds no rounds, so no belt, picker or hopper feeds it, and every right-click on it opens its menu. It runs on the same code as the laser: the same entity device, targeting pass, scan interval, arc, tilt, friends, friendly fire and per-turret menu. It differs in its shot. Before each shot it charges for a set time, then fires one heavy beam that flies to its target. Its stats are the `railgun` section of `config.yml` (see [CONFIGURATION.md](CONFIGURATION.md#railgun)). It is placed on air like the other turrets, and its record in `turrets.yml` has the device type `railgun` and no rounds.
+
+**Levels.** It has three levels. Level 1 is the rail gun as placed. The kit `turret_upgrade_2` moves it to level 2, and the kit `turret_upgrade_3` moves it to level 3, which is two blocks tall, as the upper levels of the other turrets are. The block above must be free for that move, and a level 3 rail gun cannot be placed where that block is blocked. Its top turns with the body and does not tilt. A rail gun has no level 4.
+
+| Level | Damage (HP) | Power (W) | Range (blocks) | Charge (seconds) | Reload (seconds) | Height |
+|---|---|---|---|---|---|---|
+| 1 | 400 | 2,000,000 | 60 | 6 | 10 | 1 block |
+| 2 | 1,200 | 4,000,000 | 80 | 5 | 9 | 1 block |
+| 3 | 3,500 | 8,000,000 | 110 | 4 | 8 | 2 blocks |
+
+These are the defaults in `config.yml`, and its `levels` block for each level sets each value. Damage is per shot, and 2 HP is one heart.
+
+**The cycle.** Once it holds a target in reach, it charges for the level's charge time, and it draws the level's power while it charges. Its light rises from 0 to `max-light` (15 by default) over the charge, and is full when the rail gun is charged. The light is held on the rail gun's own block. When the charge is complete and the barrel is on the target, it fires: the light goes out, and it reloads for the reload time without drawing power. The time from one shot to the next is the charge plus the reload, so 16, 14 and 12 seconds at levels 1 to 3. A target lost during the charge drops the charge at once, and the next charge starts from nothing. A charge advances at the share of power the rail gun gets, so a rail gun short of power charges more slowly.
+
+**Power.** The power switch is the second item in the menu's top row, in slot 1, right of the info item: green dye when it is on, red when it is off. Off, it stays idle and draws no power, and switching it off during a charge drops that charge. A reload still runs down while it is off, so switching off and on does not skip the reload. With `railgun.enabled` off, no rail gun searches, aims or fires, and none asks the network for power.
+
+**Screen.** A black text screen on the front of the body, which turns with the rail gun. It has five lines: the header RAIL GUN; Power, the watts it uses now, of the watts it asks for; Satisfied, the grid's share, green when whole, yellow below that, or "no grid"; Charge, a ten-cell bar of the charge and its percentage, or "off"; and Switch, ON with idle, charging or reloading, or OFF.
+
+**Targeting.** It shares the laser's targeting pass and its scan interval. Its arc, its targets and its friendly-fire switch work as they do for the laser, and its reach is its level's range.
+
+**The shot.** The shot is a timed beam, not an instant one. A flame frontier leaves the barrel and moves toward the target's centre: a red helix with a flame at its front, with four red strands. The frontier moves at the helix speed, 2 blocks a second at level 1, 9 blocks a second at level 3, and halfway between at level 2. After `spiral-delay-seconds` (0.5 seconds) a blue spiral follows it. When the frontier reaches the target, the target takes the damage, after the armour the shot does not ignore. `armour-bypass` is 0.75 by default, so a quarter of the armour still counts. A blue burst marks the hit. If the target dies or is removed before the frontier arrives, the shot ends with no damage. The strands are sampled every `sample-spacing-blocks` from the barrel, and turn about the path at `spin-turns-per-second`, so the helix flows toward the target. A path too long for the budget is drawn with wider spacing, not cut short. The beam draws at most `particle-budget` points a tick (96 by default), with the frontier drawn first, then the strands, then the spiral. All the shots in flight share `max-particles-per-tick` (192 by default).
+
+**Research and recipes.** The rail barrel is turned on the metal lathe from 2 precision barrels and 2 high-purity graphite (800 ticks). The rail coil is made in the heavy weapons assembly from 2 superconducting magnets, 2 pulse capacitors, an antiproton capsule and 8 copper ingots, and makes 2 coils (1200 ticks, 250 kW). The rail gun turret is made there from 2 rail barrels, 4 rail coils, 2 enriched uranium, a tesseract lattice, a targeting unit and a turret mechanism (2400 ticks, 250 kW). The rail coils are researched at Rail Coils, which needs Tesseract Geometry; the turret is researched at Railgun Turret, which needs Rail Coils. Tesseract Geometry also unlocks the heavy weapons assembly. The upgrade kits are the same as for the other turrets, and their recipes are in [Chemistry and ammunition](#chemistry-and-ammunition).
+
+## Artillery
+
+The artillery fires shells up to 14 400 blocks at the longest, from seven piece levels, with three charge tiers and nine shells. The player's view, with the tables, is in the [Artillery section of the player guide](PLAYER_GUIDE.md#artillery). The numbers are in the `artillery` and `command-center` sections of [CONFIGURATION.md](CONFIGURATION.md#artillery). The code is in `CoreFactory-Core/.../core/artillery` (the rules) and `CoreFactory-Paper/.../spigot/artillery` (the pieces, the Command Center and the Set Target mode).
+
+- **Level.** With level `n` from 1 to 7, `p = (n - 1) / 6`. Range = `levels.range-level-1-blocks` x (range VII / range I)^p, times the charge's range multiplier. Reload = (reload I + (reload VII - reload I) x p) ticks, times the reload multiplier, rounded to a whole tick. Scatter (the standard deviation of the landing, on each axis) at 1000 blocks = scatter I x (scatter VII / scatter I)^p, times the scatter multiplier. At another range it is the same value times range / 1000.
+- **Charge.** Tier I is 1, 1 and 1. Tier II is 1.25, 1.25 and 1.2. Tier III is 1.6, 1.5 and 1.5, for range, reload and scatter.
+- **Magazine.** A piece holds up to `magazine-capacity` (16) shells and 16 charges. It holds one shell kind and one charge tier: the shell and the tier the Command Center is set to at the load. A load takes one shell and one charge of that kind out of the inventory of the player who clicks, which may be the owner or a friend of the owner, and adds them, and is refused when the magazine is full or the owner carries none. An unload gives back everything in the magazine. Breaking a piece gives its magazine back with it. Each accepted shot uses one shell and one charge.
+- **Flight.** A shell is integrated once per tick with a fourth-order Runge-Kutta step, under gravity (9.8 m/s², one block a metre, 0.05 s a tick) and linear drag (`ballistics.drag-per-second`). The muzzle speed is found by bisection, so the shell lands on the aim at the barrel's elevation.
+- **Landing.** A two-dimensional Gaussian around the aim point, with the scatter as its standard deviation on both axes.
+- **Blast.** The radius of a blast is max(15, 1.15 x cube root of the tons) blocks. The nuclear shells take their yields from `tnts.yml`.
+- **Cloud.** A white phosphorus cloud has a radius of 8 blocks. It deals 0.05 HP per tick at full strength, halving every 20 s, for 60 s. It is checked every 10 ticks.
+- **Safety.** A shot first needs its magazine: a shell and a charge, of the kind the piece holds. Then every shot passes the firing rules in order: charge, level, elevation (5 to 85 degrees), range, minimum distance (50, 200 or 2000 blocks), blast clearance, the nuclear fallout zone, the antimatter cooldown (12 hours) and power. The first rule that fails refuses the shot. For the antimatter shell at 2000 blocks, the fallout zone is 3 x 913 + 3 x 24 = about 2810 blocks: 913 is the blast reach, and 24 is the scatter's standard deviation at 2000 blocks, so 3 sigma is 72 blocks.
+- **Command Center.** A piece is connected to a center when it has the same owner as the center, is in the same world and is in the same grid. A friend of the owner who runs the center fires those pieces. The center draws no power of its own: its block must lie in a grid, which a pylon's reach gives, or no piece is connected. A launch fires the center's shell and tier from each connected piece's magazine, and a piece with an empty magazine is refused in the launch summary. The Set Target mode ends after `listen-timeout-seconds` with no click. Its map is drawn on a wall of `map-wall-size` by `map-wall-size` item frames (3 or 5), one block in front of the screen and above it, with the lowest row one block above the center's block, each frame holding one tile of the map. A barrier block stands behind each frame and gives back the block it replaced when the wall comes down. The wall is placed only while a session is open on the center, and is removed when the session ends (a confirmed, cancelled or timed-out target), when the center breaks, and when its chunk unloads. The target itself is kept on the center and its screen. Its frames are fixed, and a click on a frame does not turn it. The map's terrain is the top block of each column, coloured by a table of common surfaces. A chunk that is loaded is read as it is. A chunk that is not loaded is read through the shared terrain loader, which never keeps it loaded: an explored chunk is loaded for its callback, sampled, and left to unload as any chunk does, and its 16 by 16 colours are kept in a cache of `command-center.terrain-cache-chunks` chunks (4096 by default, the least recently used dropped first). An unexplored chunk is read first, found not generated, and then generated. At most `command-center.terrain-reads-in-flight` reads (8 by default) and `command-center.terrain-generations-in-flight` generations (4 by default) are in flight at once, and the nearest chunks go first. A chunk nobody has asked for within 12 ticks is dropped before it starts, so a chunk the player turned away from is not generated. While a tile is loading, it is a dark tile with a light band sweeping across it, one step every 4 ticks, and the map is drawn again at that cadence; when nothing is loading, it is drawn only when the view or the buttons change. A loaded chunk whose terrain is kept is sampled again as it unloads, so a block change shows later. A world that unloads loses its kept terrain, and the cache is in memory, so a restart clears it. When a map changes, only the maps of the wall whose tiles changed are sent to the players near it. While the target is set, the target area is held: the chunk of the aim and the eight chunks around it, through the plugin's chunk tickets, so the place aimed at loads by itself. The area is let go when the target is cleared, when a new target replaces it, and when the center is removed. A launch whose aim chunk is not loaded fires nothing and says so in one line: the target area is loading while it is held, and it is not loaded (the player walks near it) when it is not held.
+- **Chunks.** The pieces and the Command Centers hold the chunks they stand in through the plugin's chunk tickets, under one owner of their own. The device keeper's cap (`chunks.max-forced`) does not apply to them and their chunks do not take the keeper's order, so a piece keeps its chunk loaded whatever the other devices need. The holds follow `chunks.keep-loaded`: when it is false, neither the pieces nor the target areas are held. A piece found in an unloaded chunk is refused with its coordinates, and it loads again by itself while its chunk is held.
+
 ## Progress holograms
 
-A hologram is a stack of short text lines that floats above a machine. Each line is its own invisible armour stand with a visible name. The server sends the lines by packet, so nothing is written to the world, and only the players who can see the hologram receive it.
+A hologram is a stack of short text lines that floats above a machine. Each hologram is one `TextDisplay` entity, drawn at half size (`HologramLayout.SCALE` 0.5). The game draws it to the players in its view range. The plugin sends no packets for holograms, and nothing is written to the world.
 
 - **A lab tool: three lines.** The process name (the machine's name when idle), a bar of 20 segments, and the percentage with the time left. The percentage is truncated, so an unfinished run never reads 100 percent. The time left is shown as `about N s`, rounded up, or `finishing` when no ticks remain. An idle tool shows `idle` and an empty bar. A fourth line at the bottom, the Grid line such as `Grid 230.0 V  4.0 kW  100 %`, shows the network (see [Electricity and logistics](#electricity-and-logistics)).
 - **A drill: five lines.** The level and kind, such as `L1 Petroleum drill`. The power, such as `Power: solar 33%`. The rate while it runs, such as `Extracting 1.00/s  (60.0/min)`, or else its status, such as `No deposit in range`. The deposit it works on, such as `Deposit Galena Ore 1.2M / 2.5M (48%)`, or `Deposit none in range`. The storage and fuel, such as `Stored 0/576 · fuel 0`, where 576 is nine stacks of 64. A sixth line, the Grid line, follows.
-- **When it shows.** A lab tool's hologram shows while a process runs or can start on what the tool holds. A drill's shows while it has power and room in its outputs.
-- **Removal.** The hologram is removed when the lab tool is idle, when a drill has no power or its outputs are full, when its chunk unloads, and when the machine breaks.
-- **Where it stands.** 1.6 blocks above the centre of the host block. Each line below the first is 0.25 blocks lower.
-- **Who sees it.** A player in the same world, within `holograms.view-distance` blocks (32 shipped). Viewers are checked every 20 ticks, and the text is sent every 10 ticks.
-- **Off switch.** `holograms.enabled` turns the lines off. Both keys are read at startup. A packet that fails turns holograms off for the rest of the run, and the failure is logged once.
+- **When it shows.** A lab tool's hologram shows while a process runs or can start on what the tool holds, or while it waits for water from a pipe. A drill's shows while it has power and room in its outputs. A lab tool's title shows its level as a numeral (I, II or III), and a machine waiting for water adds the line `Water: x of y /s` (delivered of requested) as its last line.
+- **Removal.** The hologram is removed when the lab tool is idle and not waiting for water, when a drill has no power or its outputs are full, when its chunk unloads, and when the machine breaks.
+- **Where it stands.** The bottom line is anchored 0.3 blocks above the top of the device, centred on its block, and the lines grow
+  upward, so a tall device never reaches into its text.
+- **Background tone.** A faint green while the device works, a faint red while it is stuck, and none when it is idle or its state
+  is not a fault. Machines, drills, generators, turrets and pumps have tones; pylons, accumulators, belts and charts do not. The
+  colours are unverified in game.
+- **Who sees it.** A player sees a hologram within `holograms.view-distance` blocks (32 shipped), as the view range of its display.
+  The plugin checks no players for holograms.
+- **Off switch.** `holograms.enabled` turns the holograms off. Both keys are read at startup.
 
 ## Effects
 
 Effects are short shows made of sprites: each sprite is an item display carrying one of the 15 particle textures. The
-core asks for an effect by its name. The sprite layer lives in the Spigot module, and the core default shows nothing.
+core asks for an effect by its name. The sprite layer lives in the Paper module, and the core default shows nothing.
 
 - `effects.enabled` (true) turns the sprites on or off. It is read at startup.
 - `effects.max-sprites` (600) caps the sprites alive at once. An effect that would take the count over the cap is dropped
@@ -1087,14 +1395,16 @@ ticks. Research completion plays `research_complete`, and breaking an ore plays 
 
 ### Sounds
 
-The resource pack has 40 sounds, under the keys `corefactory:<key>` in `sounds.json`. Nine are recordings from CC0 sources,
+The resource pack has 41 sounds, under the keys `corefactory:<key>` in `sounds.json`. Nine are recordings from CC0 sources,
 edited with ffmpeg: the turret's fire and reload, the laser's fire and charge (phaser sweeps from Kenney's Digital SFX), the diesel
-engine, the generator hum, the press stamp, the purifier's bubbling and the induction hiss. The other 31 are procedural, made by
-`CoreFactory-ResourcePack/tools/sounds/make_sounds.py`, including the turret's rotation sound, which was rewritten this round. The
-procedural sounds are quiet by design: the hums are normalised to about -15 dBFS, and the transients to about -12 dBFS. The sources,
-licences and edits are in `CoreFactory-ResourcePack/art/sounds/SOURCES.md`, and the credits are in [CREDITS.md](CREDITS.md). Sounds
-longer than 2.5 seconds are streamed. The turret and laser sounds were turned down this round: their pack volume is about a quarter of its earlier value, and the server plays them at volume 0.35. Their loudness has not been checked in game, and the 30 procedural sounds that were not
-rewritten have not been reviewed by ear.
+engine, the generator hum, the press stamp, the purifier's bubbling and the induction hiss. The other 32 are procedural, made by
+`CoreFactory-ResourcePack/tools/sounds/make_sounds.py`, including the turret's rotation sound, which was rewritten this round, and
+the pump sound `water_pump`, which is new this round. The procedural sounds are quiet by design: the hums are normalised to about
+-15 dBFS, and the transients to about -12 dBFS. The sources, licences and edits are in
+`CoreFactory-ResourcePack/art/sounds/SOURCES.md`, and the credits are in [CREDITS.md](CREDITS.md). Sounds longer than 2.5 seconds
+are streamed. The turret and laser sounds were turned down this round: their pack volume is about a quarter of its earlier value, and
+the server plays them at volume 0.35. Their loudness has not been checked in game, and the 31 procedural sounds that were not
+rewritten, the pump sound included, have not been reviewed by ear.
 
 Each device kind has its own sound. A generator plays the sound of its kind, a drill the sound of its kind, and each process
 machine its own.
@@ -1108,6 +1418,7 @@ machine its own.
 | `press_stamp` | When a cartridge press finishes a batch | Wired |
 | `turret_fire`, `turret_reload`, `turret_rotate` | Shots, loads and turning | Wired |
 | `laser_fire`, `laser_charge` | A laser turret's shot, and its charge when it picks up a target | Wired |
+| `water_pump` | Every 2 seconds while a pump runs, at its own block; each level a tenth higher than the one below | Wired |
 | `pylon_hum`, `accumulator_charge`, `belt_hum`, `picker_clunk` | Not played yet. The files are in the pack, and no code calls them. | Packed only |
 | `generator_hum`, `drill_run` | Not played any more: the per-kind sounds above replaced them. They are still in the pack. | Packed only |
 
@@ -1118,7 +1429,7 @@ machine its own.
 - **Breaking** a placed TNT drops its custom item, not vanilla TNT.
 - **Devices in a blast.** Every custom detonation destroys the devices within the TNT's radius, measured as a 3D distance from
   the blast centre to each block's centre, unless protection spares the block. The devices are lab tools and drills, energy
-  devices (pylons, accumulators and generators) and logistics devices (belts, pickers and splitters). The machine gun turret and the laser turret are not in this list yet: a blast does not destroy either. A destroyed lab tool or drill
+  devices (pylons, accumulators and generators) and logistics devices (belts, pickers and splitters), water parts (pumps, pipes and splitters; a tall pump counts both of its blocks) and vertical transport belts. The machine gun turret, the laser turret and the rail gun turret are not in this list yet: a blast does not destroy any of them. A destroyed lab tool or drill
   drops its barrel's items and its machine item. A destroyed energy or logistics device drops its items, and its wires or belt
   items go with it. A vanilla explosion uses the vanilla power of its source: a creeper 3 (6 when powered), an end crystal 6, a
   fireball or wither skull 1, any other entity 4, and a bed or respawn anchor 5. A device in an unloaded chunk is left as it is.

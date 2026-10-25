@@ -35,8 +35,9 @@ class DrillStatusTest {
         assertThat(DrillStatus.NO_POWER.text(DrillKind.PETROLEUM)).isEqualTo("No power");
         assertThat(DrillStatus.NO_POWER.text(DrillKind.ORE)).isEqualTo("No petroleum");
         assertThat(DrillStatus.FULL.text(DrillKind.ORE)).isEqualTo("Output full");
+        assertThat(DrillStatus.FULL.text(DrillKind.PETROLEUM)).isEqualTo("Network full");
         assertThat(DrillStatus.NO_TARGET.text(DrillKind.ORE)).isEqualTo("No deposit in range");
         assertThat(DrillStatus.EXHAUSTED.text(DrillKind.PETROLEUM))
-                .isEqualTo("Deposit exhausted: no items left in range");
+                .isEqualTo("Deposit exhausted");
     }
 }

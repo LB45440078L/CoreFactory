@@ -1,9 +1,9 @@
 package io.corefactory.core.process;
 
-import org.bukkit.configuration.file.YamlConfiguration;
+import io.corefactory.core.config.TestConfig;
 import org.junit.jupiter.api.Test;
 
-import java.io.StringReader;
+import java.util.Map;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -15,7 +15,7 @@ class ProcessCatalogTest {
     private static final Logger LOG = Logger.getLogger("ProcessCatalogTest");
 
     private static ProcessCatalog parse(String yaml) {
-        return ProcessCatalog.parse(YamlConfiguration.loadConfiguration(new StringReader(yaml)), LOG);
+        return ProcessCatalog.parse(TestConfig.yaml(yaml), LOG);
     }
 
     @Test

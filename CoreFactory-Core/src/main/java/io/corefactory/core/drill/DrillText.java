@@ -21,7 +21,10 @@ public final class DrillText {
     private DrillText() {
     }
 
-    /** The rate of a drill as {@code 1.50/s  (90.0/min)}, from its items per second, with no colour codes. */
+    /**
+     * The rate of a drill as {@code 1.50/s  (90.0/min)}, from its rate per second, with no colour codes. The unit is litres for a
+     * petroleum drill and items for an ore drill, as the yield table gives it.
+     */
     public static String rate(double itemsPerSecond) {
         double perSecond = Math.max(0, itemsPerSecond);
         return String.format(Locale.ROOT, "%.2f/s  (%.1f/min)", perSecond, perSecond * 60);
@@ -98,7 +101,8 @@ public final class DrillText {
      * @param spec           the drill's level
      * @param power          the drill's power this moment
      * @param status         the drill's status
-     * @param itemsPerSecond the items the drill yields per second now, its level's rate times its power
+     * @param itemsPerSecond the units the drill yields per second now, litres for a petroleum drill and items for an ore drill: its
+     *                       level's rate times its power
      * @param depositLine    the deposit line from {@link #deposit}
      */
     public static List<String> infoLines(DrillKind kind, DrillSpec spec, DrillPower power, DrillStatus status,
@@ -123,7 +127,7 @@ public final class DrillText {
     /** What powers a drill of this kind, one short phrase per source, with no colour codes. */
     static List<String> poweredBy(DrillKind kind) {
         if (kind == DrillKind.ORE) {
-            return List.of("petroleum in the fuel slot");
+            return List.of("petroleum from the oil network");
         }
         return List.of("a redstone block or wire next to it", "a solar panel next to it", "charcoal in the fuel slot");
     }

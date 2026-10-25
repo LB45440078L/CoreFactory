@@ -1,26 +1,32 @@
 package io.corefactory.core.turret;
 
-import org.bukkit.configuration.ConfigurationSection;
+import io.corefactory.core.config.ConfigValues;
+import io.corefactory.core.railgun.RailgunSettings;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
 /**
- * The upgrade levels of one turret kind: five {@link TurretLevel}s, level 1 first. The tables in code are the defaults; each level's
- * entry under the {@code levels} section of the kind's config section overrides them, key by key. The tall flag is not configurable: it
- * follows the upgrade rule ({@link TurretUpgrade#TALL_FROM}), so a turret is two blocks high from level 3 on.
+ * The upgrade levels of one turret kind: {@link TurretType#maxLevel()} {@link TurretLevel}s, level 1 first. The machine gun and the laser
+ * have five levels each, and the railgun three. The tables in code are the defaults; each level's entry under the {@code levels} section of
+ * the kind's config section overrides them, key by key. The tall flag is not configurable: it follows the upgrade rule
+ * ({@link TurretUpgrade#TALL_FROM}), so a turret is two blocks high from level 3 on.
  *
  * <p>A laser has no ammunition belt, so its levels have no ammo capacity, and an {@code ammo-capacity} key under the laser's levels is
  * ignored. A machine gun's capacity is at least one round. A laser's levels also read {@code rotation-degrees-per-tick}, the most the
- * laser turns in one tick; a machine gun's levels keep the turrets' shared rotation speed.
+ * laser turns in one tick; a machine gun's levels keep the turrets' shared rotation speed. A railgun's levels are read by
+ * {@link RailgunSettings}, which holds its damage, range, power and its charge and reload times; its levels here are derived from those,
+ * and they keep the shared rotation speed.
  *
  * @param type   the kind the levels belong to
- * @param levels the five levels, level 1 first
+ * @param levels the levels, level 1 first, one for each level of the kind
  */
 public record TurretLevels(TurretType type, List<TurretLevel> levels) {
 
-    /** The highest level a turret can be upgraded to. */
+    /** The highest level of any turret kind: the machine gun's and the laser's five. A kind's own top is {@link TurretType#maxLevel()}. */
     public static final int MAX_LEVEL = 5;
 
     /** The machine gun's levels, with the defaults in code. */
@@ -29,11 +35,23 @@ public record TurretLevels(TurretType type, List<TurretLevel> levels) {
     /** The laser turret's levels, with the defaults in code. */
     public static final TurretLevels LASER = defaults(TurretType.LASER);
 
+    /** The railgun's levels, with the defaults in code. */
+    public static final TurretLevels RAILGUN = defaults(TurretType.RAILGUN);
+
+    /** The reach ceiling of a machine gun's and a laser's level, in blocks. A config value above it is clamped to it. */
+    private static final double OLD_MAX_RANGE_BLOCKS = 64.0;
+
+    /** The damage ceiling of a machine gun's and a laser's level, in HP. A config value above it is clamped to it. */
+    private static final double OLD_MAX_DAMAGE = 1000.0;
+
+    /** The power ceiling of a machine gun's and a laser's level, in W. A config value above it is clamped to it. */
+    private static final int OLD_MAX_POWER_W = 1_000_000;
+
     public TurretLevels {
         Objects.requireNonNull(type, "type");
         levels = List.copyOf(levels);
-        if (levels.size() != MAX_LEVEL) {
-            throw new IllegalArgumentException("a turret has " + MAX_LEVEL + " levels, not " + levels.size());
+        if (levels.size() != type.maxLevel()) {
+            throw new IllegalArgumentException(name(type) + " has " + type.maxLevel() + " levels, not " + levels.size());
         }
         for (int i = 0; i < levels.size(); i++) {
             if (levels.get(i).level() != i + 1) {
@@ -48,21 +66,29 @@ public record TurretLevels(TurretType type, List<TurretLevel> levels) {
      * @param type the kind
      */
     public static TurretLevels defaults(TurretType type) {
-        return new TurretLevels(type, type == TurretType.MACHINE_GUN ? machineGunDefaults() : laserDefaults());
+        return switch (type) {
+            case MACHINE_GUN -> new TurretLevels(type, machineGunDefaults());
+            case LASER -> new TurretLevels(type, laserDefaults());
+            case RAILGUN -> RailgunSettings.defaults().turretLevels();
+        };
     }
 
     /**
      * The levels of a kind as the configuration gives them. A missing section, or a missing level or key, keeps the default in code.
      *
      * @param type   the kind
-     * @param config the root configuration, or any section that holds the kind's section
+     * @param config the root configuration as plain data, or any section that holds the kind's section
      */
-    public static TurretLevels from(TurretType type, ConfigurationSection config) {
-        ConfigurationSection kind = config == null ? null : config.getConfigurationSection(type.section());
-        ConfigurationSection table = kind == null ? null : kind.getConfigurationSection("levels");
+    public static TurretLevels from(TurretType type, Map<String, Object> config) {
+        if (type == TurretType.RAILGUN) {
+            return RailgunSettings.from(config).turretLevels();
+        }
+        Map<String, Object> kind = ConfigValues.optionalSection(config, type.section());
+        Map<String, Object> table = kind == null ? null : ConfigValues.optionalSection(kind, "levels");
         List<TurretLevel> read = new ArrayList<>();
         for (TurretLevel fallback : defaults(type).levels()) {
-            ConfigurationSection section = table == null ? null : table.getConfigurationSection(String.valueOf(fallback.level()));
+            Map<String, Object> section = table == null ? null
+                    : ConfigValues.optionalSection(table, String.valueOf(fallback.level()));
             read.add(section == null ? fallback : readLevel(type, fallback, section));
         }
         return new TurretLevels(type, read);
@@ -71,32 +97,40 @@ public record TurretLevels(TurretType type, List<TurretLevel> levels) {
     /**
      * The stats of one level.
      *
-     * @param level the level, from 1 to {@link #MAX_LEVEL}
-     * @throws IllegalArgumentException when the level is outside 1 to {@link #MAX_LEVEL}
+     * @param level the level, from 1 to {@link TurretType#maxLevel()} of the kind
+     * @throws IllegalArgumentException when the level is outside 1 to the kind's top level, such as a railgun's level 4
      */
     public TurretLevel level(int level) {
-        if (level < 1 || level > MAX_LEVEL) {
-            throw new IllegalArgumentException("no turret level " + level);
+        if (level < 1 || level > type.maxLevel()) {
+            throw new IllegalArgumentException("no " + name(type) + " level " + level + "; its levels are 1 to " + type.maxLevel());
         }
         return levels.get(level - 1);
     }
 
-    private static TurretLevel readLevel(TurretType type, TurretLevel fallback, ConfigurationSection section) {
-        int ammo = type == TurretType.LASER ? 0 : Math.max(1, section.getInt("ammo-capacity", fallback.ammoCapacity()));
-        double rotation = type == TurretType.LASER
-                ? section.getDouble("rotation-degrees-per-tick", fallback.rotationDegreesPerTick())
-                : fallback.rotationDegreesPerTick();
+    /** The highest level of this kind: {@link TurretType#maxLevel()}. */
+    public int maxLevel() {
+        return type.maxLevel();
+    }
+
+    private static TurretLevel readLevel(TurretType type, TurretLevel fallback, Map<String, Object> section) {
+        int ammo = type.hasMagazine() ? Math.max(1, ConfigValues.integer(section, "ammo-capacity", fallback.ammoCapacity())) : 0;
+        double rotation = type.hasMagazine() ? fallback.rotationDegreesPerTick()
+                : ConfigValues.number(section, "rotation-degrees-per-tick", fallback.rotationDegreesPerTick());
         return new TurretLevel(
                 fallback.level(),
-                section.getDouble("damage", fallback.damage()),
-                section.getInt("damage-boost-percent", fallback.damageBoostPercent()),
-                section.getInt("fire-interval-ticks", fallback.fireIntervalTicks()),
-                section.getDouble("range", fallback.range()),
+                Math.min(OLD_MAX_DAMAGE, ConfigValues.number(section, "damage", fallback.damage())),
+                ConfigValues.integer(section, "damage-boost-percent", fallback.damageBoostPercent()),
+                ConfigValues.integer(section, "fire-interval-ticks", fallback.fireIntervalTicks()),
+                Math.min(OLD_MAX_RANGE_BLOCKS, ConfigValues.number(section, "range", fallback.range())),
                 ammo,
-                section.getInt("cannons", fallback.cannons()),
-                section.getInt("power-demand-w", fallback.powerDemandW()),
+                ConfigValues.integer(section, "cannons", fallback.cannons()),
+                Math.min(OLD_MAX_POWER_W, ConfigValues.integer(section, "power-demand-w", fallback.powerDemandW())),
                 fallback.tall(),
                 rotation);
+    }
+
+    private static String name(TurretType type) {
+        return type.name().toLowerCase(Locale.ROOT).replace('_', ' ');
     }
 
     private static List<TurretLevel> machineGunDefaults() {

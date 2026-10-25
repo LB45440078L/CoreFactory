@@ -8,18 +8,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 class TurretAccessTest {
 
     @Test
-    void theOwnerWithThePermissionMayChangeTheTurret() {
+    void anAllowedPlayerWithThePermissionMayChangeTheTurret() {
         assertThat(TurretAccess.decide(true, true)).isEqualTo(Verdict.ALLOW);
     }
 
     @Test
-    void theOwnerWithoutThePermissionMayNot() {
+    void anAllowedPlayerWithoutThePermissionMayNot() {
         assertThat(TurretAccess.decide(true, false)).isEqualTo(Verdict.NO_PERMISSION);
     }
 
     @Test
-    void aPlayerWhoIsNotTheOwnerMayNotChangeTheTurretWhateverThePermission() {
-        assertThat(TurretAccess.decide(false, true)).isEqualTo(Verdict.NOT_OWNER);
-        assertThat(TurretAccess.decide(false, false)).isEqualTo(Verdict.NOT_OWNER);
+    void aPlayerWhoIsNotAllowedMayNotChangeTheTurretWhateverThePermission() {
+        assertThat(TurretAccess.decide(false, true)).isEqualTo(Verdict.NOT_ALLOWED);
+        assertThat(TurretAccess.decide(false, false)).isEqualTo(Verdict.NOT_ALLOWED);
     }
 }

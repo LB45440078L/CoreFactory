@@ -41,6 +41,7 @@ class PlaceableItemsTest {
         }
         assertThat(PlaceableItems.ENERGY_DEVICES).contains("wind_generator", "charcoal_generator", "petroleum_generator",
                 "diesel_generator", "nuclear_generator");
+        assertThat(PlaceableItems.ENERGY_DEVICES).contains("pylon_4", "pylon_5", "accumulator_4", "accumulator_5");
         assertThat(PlaceableItems.allowed(Kind.COMPONENT, "energy_wire", PlaceableItemsTest::machine)).isFalse();
     }
 

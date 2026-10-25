@@ -73,4 +73,26 @@ public final class LogisticsTable {
             case III -> 1500.0;
         };
     }
+
+    /**
+     * The items a belt duplex takes in per second, at full satisfaction, summed over its two outputs. Level I and II equal what a
+     * full belt of that level delivers ({@link #BELT_CAPACITY} items a block times its speed: 7.5 and 15 items a second), so a
+     * duplex keeps up with a line of its own level; level III is capped below a full level III belt (30 items a second).
+     */
+    public static double duplexItemsPerSecond(LogisticsLevel level) {
+        return switch (level) {
+            case I -> 7.5;
+            case II -> 15.0;
+            case III -> 22.5;
+        };
+    }
+
+    /** The power a belt duplex asks for, in W: 0.5 kW, 1 kW and 1.5 kW, as a splitter. */
+    public static double duplexPowerW(LogisticsLevel level) {
+        return switch (level) {
+            case I -> 500.0;
+            case II -> 1000.0;
+            case III -> 1500.0;
+        };
+    }
 }

@@ -1,8 +1,8 @@
 package io.corefactory.core.item;
 
 import io.corefactory.api.TntDefinition;
-import io.corefactory.core.config.Messages;
 import io.corefactory.core.geology.OreDefinition;
+import io.corefactory.core.text.Text;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -79,8 +79,8 @@ public final class ItemFactory {
         if (meta == null) {
             return item;
         }
-        meta.setDisplayName(Messages.color(definition.displayName()));
-        meta.setLore(color(definition.lore()));
+        meta.displayName(Text.item(definition.displayName()));
+        meta.lore(Text.lore(definition.lore()));
         meta.setItemModel(new NamespacedKey(NAMESPACE, modelKey(TNT, definition.id())));
         meta.getPersistentDataContainer().set(tntKey, PersistentDataType.STRING, definition.id());
         item.setItemMeta(meta);
@@ -93,8 +93,8 @@ public final class ItemFactory {
         if (meta == null) {
             return item;
         }
-        meta.setDisplayName(Messages.color(definition.displayName()));
-        meta.setLore(color(definition.lore()));
+        meta.displayName(Text.item(definition.displayName()));
+        meta.lore(Text.lore(definition.lore()));
         meta.setItemModel(new NamespacedKey(NAMESPACE, modelKey(COMPONENT, definition.id())));
         meta.getPersistentDataContainer().set(componentKey, PersistentDataType.STRING, definition.id());
         item.setItemMeta(meta);
@@ -103,7 +103,7 @@ public final class ItemFactory {
 
     /**
      * The ore block item: the ore's host block, named and modelled as the ore, carrying the ore's id. Empty when the
-     * host is not a block material. Placing it registers the block as the ore (see the Spigot geology listener).
+     * host is not a block material. Placing it registers the block as the ore (see the Paper geology listener).
      */
     public Optional<ItemStack> ore(OreDefinition ore, int amount) {
         Material host = Material.matchMaterial(ore.host());
@@ -115,8 +115,8 @@ public final class ItemFactory {
         if (meta == null) {
             return Optional.empty();
         }
-        meta.setDisplayName(Messages.color(ore.name()));
-        meta.setLore(List.of(Messages.color(ORE_LORE)));
+        meta.displayName(Text.item(ore.name()));
+        meta.lore(List.of(Text.item(ORE_LORE)));
         meta.setItemModel(new NamespacedKey(NAMESPACE, modelKey(ORE, ore.id())));
         meta.getPersistentDataContainer().set(oreKey, PersistentDataType.STRING, ore.id());
         item.setItemMeta(meta);
@@ -133,7 +133,7 @@ public final class ItemFactory {
         if (meta == null) {
             return item;
         }
-        meta.setDisplayName(Messages.color(definition.displayName()));
+        meta.displayName(Text.item(definition.displayName()));
         meta.setItemModel(new NamespacedKey(NAMESPACE, displayKey(definition.id())));
         item.setItemMeta(meta);
         return item;
@@ -163,7 +163,4 @@ public final class ItemFactory {
         return Optional.ofNullable(meta.getPersistentDataContainer().get(key, PersistentDataType.STRING));
     }
 
-    private static List<String> color(List<String> lines) {
-        return lines.stream().map(Messages::color).toList();
-    }
 }

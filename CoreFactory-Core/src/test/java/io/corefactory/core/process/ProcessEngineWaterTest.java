@@ -1,10 +1,10 @@
 package io.corefactory.core.process;
 
-import org.bukkit.configuration.file.YamlConfiguration;
+import io.corefactory.core.config.TestConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.StringReader;
+import java.util.Map;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -29,6 +29,7 @@ class ProcessEngineWaterTest {
                 inputs: ["material:WATER_BUCKET:1"]
                 outputs:
                   - {item: item:steam, amount: 1}
+                  - {item: material:BUCKET, amount: 1}
             """;
 
     private ProcessCatalog catalog;
@@ -36,7 +37,7 @@ class ProcessEngineWaterTest {
 
     @BeforeEach
     void setUp() {
-        catalog = ProcessCatalog.parse(YamlConfiguration.loadConfiguration(new StringReader(YAML)),
+        catalog = ProcessCatalog.parse(TestConfig.yaml(YAML),
                 Logger.getLogger("ProcessEngineWaterTest"));
         engine = new ProcessEngine(catalog, ProcessEngine.FUEL, ref -> 64);
     }
@@ -89,6 +90,29 @@ class ProcessEngineWaterTest {
         engine.tick(state, fixed(0.0), true);
 
         assertThat(count(inputs, BUCKET)).isEqualTo(1);
+    }
+
+    @Test
+    void aPipeWateredRunGivesNoEmptyBucket() {
+        MachineState state = new MachineState("boiler", MemoryStack.slots(2), MemoryStack.slots(2), List.of());
+
+        engine.tick(state, fixed(0.0), true);
+        engine.tick(state, fixed(0.0), true);
+
+        assertThat(count(state.outputs(), ProcessEngine.BUCKET)).isZero();
+        assertThat(count(state.outputs(), STEAM)).isEqualTo(1);
+    }
+
+    @Test
+    void aBucketRunGivesTheEmptyBucketBack() {
+        List<Stack> inputs = MemoryStack.slots(2);
+        MemoryStack.fill(inputs, 0, BUCKET, 1);
+        MachineState state = new MachineState("boiler", inputs, MemoryStack.slots(2), List.of());
+
+        engine.tick(state, fixed(0.0));
+        engine.tick(state, fixed(0.0));
+
+        assertThat(count(state.outputs(), ProcessEngine.BUCKET)).isEqualTo(1);
     }
 
     @Test

@@ -2,7 +2,8 @@ package io.corefactory.core.turret;
 
 import io.corefactory.core.turret.DualTargeting.Spot;
 import io.corefactory.core.turret.TargetRules.Point;
-import org.bukkit.configuration.MemoryConfiguration;
+import io.corefactory.core.config.TestConfig;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -89,20 +90,20 @@ class DualTargetingTest {
 
     @Test
     void theSpacingDefaultsToSixBlocks() {
-        assertThat(DualTargeting.spacingOf(new MemoryConfiguration())).isEqualTo(6.0);
+        assertThat(DualTargeting.spacingOf(Map.of())).isEqualTo(6.0);
         assertThat(DualTargeting.DEFAULT_SPACING_BLOCKS).isEqualTo(6.0);
     }
 
     @Test
     void theSpacingIsReadFromTheTurretsSectionAndKeptInARange() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("turrets.dual-spacing-blocks", 4);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "turrets.dual-spacing-blocks", 4);
         assertThat(DualTargeting.spacingOf(config)).isEqualTo(4.0);
 
-        config.set("turrets.dual-spacing-blocks", 500);
+        TestConfig.set(config, "turrets.dual-spacing-blocks", 500);
         assertThat(DualTargeting.spacingOf(config)).isEqualTo(64.0);
 
-        config.set("turrets.dual-spacing-blocks", -3);
+        TestConfig.set(config, "turrets.dual-spacing-blocks", -3);
         assertThat(DualTargeting.spacingOf(config)).isZero();
     }
 }

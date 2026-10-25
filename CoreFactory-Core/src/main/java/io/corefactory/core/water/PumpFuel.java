@@ -1,12 +1,13 @@
 package io.corefactory.core.water;
 
+import io.corefactory.core.oil.Fluid;
 import io.corefactory.core.process.ItemRef;
 import io.corefactory.core.process.ProcessEngine;
 
 /**
  * The fuel of a pump at levels 1 and 2. A fuel item burns for {@link #ITEM_TICKS} ticks while the pump is wanted, one after another, and
- * a pump that is not wanted burns nothing. Level 1 takes coal or charcoal, level 2 diesel. Pure: the pump keeps the count and the ticks
- * left on the item it burns.
+ * a pump that is not wanted burns nothing. Level 1 takes coal or charcoal. Level 2 burns diesel that it draws from the oil network,
+ * a litre a minute, so it keeps no items. Pure: the pump keeps the count and the ticks left on the item it burns.
  */
 public final class PumpFuel {
 
@@ -16,8 +17,11 @@ public final class PumpFuel {
     /** The most fuel items a pump holds. */
     public static final int CAPACITY = 16;
 
-    /** The diesel component id, which level 2 burns. */
-    public static final String DIESEL = "diesel";
+    /** The diesel a level 2 pump draws from the oil network each tick it runs: one litre a minute, the burn of the item it replaces. */
+    public static final double DIESEL_LITRES_PER_TICK = 1.0 / ITEM_TICKS;
+
+    /** The fluid a level 2 pump burns. */
+    public static final Fluid FLUID = Fluid.DIESEL;
 
     private PumpFuel() {
     }
@@ -42,6 +46,13 @@ public final class PumpFuel {
         /** An empty pump: no items and no burn. */
         public static Burn empty() {
             return new Burn(0, 0);
+        }
+
+        /**
+         * The fuel the pump still has: the items held, plus the item burning now, which has left the held count as it caught.
+         */
+        public int held() {
+            return items + (ticksLeft > 0 ? 1 : 0);
         }
     }
 
@@ -88,8 +99,8 @@ public final class PumpFuel {
     }
 
     /**
-     * True when a pump at this level takes this item as fuel: coal or charcoal at level 1, diesel at level 2. Levels 3 to 5 draw power and
-     * take no fuel.
+     * True when a pump at this level takes this item as fuel: coal or charcoal at level 1. Level 2 takes no item, since it draws
+     * diesel from the oil network, and levels 3 to 5 draw power.
      *
      * @param level the pump's level
      * @param item  the item's reference, or null for an empty hand
@@ -98,9 +109,21 @@ public final class PumpFuel {
         if (item == null) {
             return false;
         }
-        if (level == 1) {
-            return ProcessEngine.FUEL.contains(item);
-        }
-        return level == 2 && item.equals(ItemRef.item(DIESEL));
+        return level == 1 && ProcessEngine.FUEL.contains(item);
+    }
+
+    /** True when a pump at this level burns a fluid from the oil network instead of an item: level 2. */
+    public static boolean drawsFluid(int level) {
+        return level == 2;
+    }
+
+    /**
+     * The litres of diesel a pump wants from the oil network in a tick it runs: {@link #DIESEL_LITRES_PER_TICK} at level 2, 0 at any
+     * other level.
+     *
+     * @param level the pump's level
+     */
+    public static double litresWanted(int level) {
+        return drawsFluid(level) ? DIESEL_LITRES_PER_TICK : 0.0;
     }
 }

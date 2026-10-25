@@ -42,6 +42,19 @@ class WaterSourceTest {
     }
 
     @Test
+    void aBlockOnLandBesideWaterCountsTheWaterItTouches() {
+        WaterSource.BlockProbe cube = (x, y, z) -> inCube(x, y, z, 0, 2);
+        assertThat(WaterSource.sourceAround(5, 1, 1, cube, 1000)).isZero();
+        assertThat(WaterSource.sourceAround(3, 1, 1, cube, 1000)).isEqualTo(27);
+        assertThat(WaterSource.sourceAround(3, 1, 1, cube, 10)).isEqualTo(10);
+    }
+
+    @Test
+    void aBlockInWaterCountsItsOwnWaterToo() {
+        assertThat(WaterSource.sourceAround(1, 1, 1, CUBE, 1000)).isEqualTo(27);
+    }
+
+    @Test
     void capMustBeAtLeastOne() {
         assertThatThrownBy(() -> WaterSource.sourceBlocks(1, 1, 1, CUBE, 0))
                 .isInstanceOf(IllegalArgumentException.class);

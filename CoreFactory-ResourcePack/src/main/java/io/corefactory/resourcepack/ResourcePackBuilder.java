@@ -121,6 +121,9 @@ public final class ResourcePackBuilder {
             writeText(zip, "assets/" + NAMESPACE + "/models/item/" + reference + ".json",
                     "{\n  \"parent\": \"minecraft:item/generated\",\n  \"textures\": {\n    \"layer0\": \""
                             + NAMESPACE + ":" + texturePath + "\"\n  }\n}\n");
+            if (spec.get("animation") != null) {
+                addSpriteAnimation(zip, art, spec);
+            }
         } else {
             throw new IllegalStateException("Unknown model '" + model + "' for " + id);
         }
@@ -297,6 +300,20 @@ public final class ResourcePackBuilder {
                 "model", ordered("type", "minecraft:model", "model", NAMESPACE + ":item/belt/" + id + "/corner"))));
         writeText(zip, "assets/" + NAMESPACE + "/items/belt/" + id + "/corner_right.json", json(ordered(
                 "model", ordered("type", "minecraft:model", "model", NAMESPACE + ":item/belt/" + id + "/corner_right"))));
+    }
+
+    /**
+     * The {@code .mcmeta} of an animated sprite, such as a shell with a flickering band. Its texture is a strip of square frames,
+     * checked against the descriptor's frame count, and the {@code .mcmeta} gives the frame time beside the PNG, as the machine
+     * faces and belt tops do.
+     */
+    private static void addSpriteAnimation(ZipOutputStream zip, Path art, Map<String, Object> spec) throws IOException {
+        String id = text(spec, "id");
+        String texture = text(spec, "texture");
+        Map<String, Object> animation = map(spec, "animation");
+        checkStrip(art.resolve(texture), id, number(animation, "frames", id));
+        writeText(zip, "assets/" + NAMESPACE + "/" + texture + ".mcmeta",
+                json(ordered("animation", ordered("frametime", number(animation, "frametime", id)))));
     }
 
     /** Fails unless an animated texture is {@code frames} square frames stacked top to bottom. */

@@ -60,7 +60,8 @@ public final class DrillState {
 
     /** True when the fuel counter has reached the kind's burn interval, so one fuel item is used now. */
     public boolean fuelDue() {
-        return fuelCycles >= definition.kind().burnEvery();
+        int burnEvery = definition.kind().burnEvery();
+        return burnEvery > 0 && fuelCycles >= burnEvery;
     }
 
     /** Resets the fuel counter after one fuel item was used. */

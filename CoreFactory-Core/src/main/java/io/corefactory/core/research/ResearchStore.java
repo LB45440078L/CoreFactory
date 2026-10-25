@@ -4,7 +4,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Where research progress is kept permanently. The Spigot module adapts the database to this interface, so the core
+ * Where research progress is kept permanently. The Paper module adapts the database to this interface, so the core
  * has no database types. Calls block, so the research service only makes them off the main thread.
  */
 public interface ResearchStore {

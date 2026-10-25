@@ -63,7 +63,8 @@ final class SoundPack {
             new Sound("component_assembly", 0.5, false),
             new Sound("heavy_weapons_assembly", 0.6, false),
             new Sound("pylon_hum", 0.4, false),
-            new Sound("accumulator_charge", 0.5, false));
+            new Sound("accumulator_charge", 0.5, false),
+            new Sound("water_pump", 0.5, false));
 
     private SoundPack() {
     }

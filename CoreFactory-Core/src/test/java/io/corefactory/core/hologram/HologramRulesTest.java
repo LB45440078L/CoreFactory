@@ -5,11 +5,11 @@ import io.corefactory.core.process.MachineState;
 import io.corefactory.core.process.ProcessCatalog;
 import io.corefactory.core.process.ProcessEngine;
 import io.corefactory.core.process.Stack;
-import org.bukkit.configuration.file.YamlConfiguration;
+import io.corefactory.core.config.TestConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.StringReader;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -53,7 +53,7 @@ class HologramRulesTest {
 
     @BeforeEach
     void setUp() {
-        ProcessCatalog catalog = ProcessCatalog.parse(YamlConfiguration.loadConfiguration(new StringReader(YAML)),
+        ProcessCatalog catalog = ProcessCatalog.parse(TestConfig.yaml(YAML),
                 Logger.getLogger("HologramRulesTest"));
         engine = new ProcessEngine(catalog, ProcessEngine.FUEL, ref -> 64);
     }

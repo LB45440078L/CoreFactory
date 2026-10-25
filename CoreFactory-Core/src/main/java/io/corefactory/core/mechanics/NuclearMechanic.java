@@ -10,6 +10,9 @@ import io.corefactory.api.TntDefinition;
 import io.corefactory.core.engine.Tasks;
 import io.corefactory.core.radiation.Radiation;
 import io.corefactory.core.radiation.RadiationSuit;
+import io.corefactory.core.text.Text;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -25,6 +28,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -42,7 +46,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * </ul>
  * Each area is named in the countdown and the detonation titles. For a yield of
  * {@link #BEACON_MEGATONS} or more, a 5x5 array of beacons draws beams to the sky, for the player's client only, and
- * the rain stops and the clock holds at noon, then slides back to the real time (PacketEvents). Smaller blasts show
+ * the rain stops and the clock holds at noon, then slides back to the real time. Smaller blasts show
  * only the weather and clock change.
  *
  * <p>The ground is cut by one of two shapes (see {@link Shape}) and everything above it out to the flatten radius is
@@ -108,7 +112,7 @@ final class NuclearMechanic extends AbstractMechanic {
             int remaining = seconds - step;
             for (Player player : kit.effects().nearby(origin, warning)) {
                 Optional<Zone> zone = Zone.of(player.getLocation().distance(origin), radius);
-                zone.ifPresent(area -> player.sendTitle(area.title(), "§eT-minus " + remaining + "s", 0, 25, 5));
+                zone.ifPresent(area -> showTitle(player, area.title(), Text.parse("&eT-minus " + remaining + "s"), 0, 25, 5));
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 0.5f);
             }
         }, () -> {
@@ -135,7 +139,8 @@ final class NuclearMechanic extends AbstractMechanic {
             kit.effects().visual("nuclear_fallout", origin, radius * FALLOUT_FRACTION);
         }
 
-        BlockChangeSet beams = megatons >= BEACON_MEGATONS ? beaconArray(world, origin) : null;
+        boolean skipUnloaded = ctx.settings().getInt("skip-unloaded-chunks", 0) == 1;
+        BlockChangeSet beams = megatons >= BEACON_MEGATONS ? beaconArray(world, origin, skipUnloaded) : null;
         for (Player player : world.getPlayers()) {
             if (player.getGameMode() == GameMode.CREATIVE || player.getGameMode() == GameMode.SPECTATOR) {
                 continue;
@@ -155,7 +160,7 @@ final class NuclearMechanic extends AbstractMechanic {
                     continue;
                 }
             }
-            player.sendTitle(zone.get().title(), "§7Get underground. Now.", 5, 70, 20);
+            showTitle(player, zone.get().title(), Text.parse("&7Get underground. Now."), 5, 70, 20);
             player.playSound(player.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 10.0f, 0.6f);
             showToViewer(api, player, world, beams, beamSeconds);
         }
@@ -172,9 +177,9 @@ final class NuclearMechanic extends AbstractMechanic {
         Cut cut = new Cut(Shape.of(ctx.settings().getString("shape", "saucer")), craterRadius, reach,
                 ctx.settings().getDouble("crater-depth", Math.max(3.0, radius * 0.2)),
                 ctx.settings().getDouble("sink-depth", 0.0));
-        BlockGenerator crater = new Crater(world, cx, cz, cut, world.getMinHeight(), api.protection());
+        BlockGenerator crater = new Crater(world, cx, cz, cut, world.getMinHeight(), api.protection(), skipUnloaded);
         int debrisCount = Math.max(1, ctx.settings().getInt("debris-count", (int) (radius * 3)));
-        BlockGenerator debris = new Debris(world, cx, cz, craterRadius, reach, debrisCount, api.protection());
+        BlockGenerator debris = new Debris(world, cx, cz, craterRadius, reach, debrisCount, api.protection(), skipUnloaded);
         api.submitBlockGenerator(world, crater, () -> api.submitBlockGenerator(world, debris, () -> {
         }));
 
@@ -259,19 +264,25 @@ final class NuclearMechanic extends AbstractMechanic {
         return Math.min(MAX_REDUCTION, levels * REDUCTION_PER_LEVEL);
     }
 
+    /** Shows a title and a subtitle, with the fade-in, stay and fade-out times given in ticks. */
+    private static void showTitle(Player player, Component title, Component subtitle, int fadeIn, int stay, int fadeOut) {
+        player.showTitle(Title.title(title, subtitle, Title.Times.times(
+                Duration.ofMillis(fadeIn * 50L), Duration.ofMillis(stay * 50L), Duration.ofMillis(fadeOut * 50L))));
+    }
+
     /** The three areas of a blast, from the centre out, each with the title a player in it sees. */
     enum Zone {
-        FIREBALL("§4§lYOU ARE IN THE FIREBALL RADIUS - INSTANT DEATH"),
-        BLAST("§c§lYOU ARE IN THE BLAST AREA - HIGH DAMAGE"),
-        FALLOUT("§6§lYOU ARE IN THE RADIATION FALLOUT AREA; LEAVE IMMEDIATELY");
+        FIREBALL(Text.parse("&4&lYOU ARE IN THE FIREBALL RADIUS - INSTANT DEATH")),
+        BLAST(Text.parse("&c&lYOU ARE IN THE BLAST AREA - HIGH DAMAGE")),
+        FALLOUT(Text.parse("&6&lYOU ARE IN THE RADIATION FALLOUT AREA; LEAVE IMMEDIATELY"));
 
-        private final String title;
+        private final Component title;
 
-        Zone(String title) {
+        Zone(Component title) {
             this.title = title;
         }
 
-        String title() {
+        Component title() {
             return title;
         }
 
@@ -302,10 +313,10 @@ final class NuclearMechanic extends AbstractMechanic {
      *       itself, so each column also gets an invisible light block at the top of the world. A light block at level
      *       0 lets the beam through.</li>
      * </ul>
-     * The blocks exist only in the player's client, sent with PacketEvents: restoring the view is re-sending the real
+     * The blocks exist only in the player's client, sent through the player API: restoring the view is re-sending the real
      * blocks.
      */
-    private static BlockChangeSet beaconArray(World world, Location origin) {
+    private static BlockChangeSet beaconArray(World world, Location origin, boolean skipUnloaded) {
         BlockData beacon = Material.BEACON.createBlockData();
         BlockData base = Material.IRON_BLOCK.createBlockData();
         Light sky = (Light) Material.LIGHT.createBlockData();
@@ -316,6 +327,9 @@ final class NuclearMechanic extends AbstractMechanic {
             for (int j = -2; j <= 2; j++) {
                 int x = origin.getBlockX() + i * 3;
                 int z = origin.getBlockZ() + j * 3;
+                if (skipUnloaded && !world.isChunkLoaded(x >> 4, z >> 4)) {
+                    continue;
+                }
                 int y = Math.min(top - 2, world.getHighestBlockYAt(x, z) + 2);
                 for (int dx = -1; dx <= 1; dx++) {
                     for (int dz = -1; dz <= 1; dz++) {
@@ -367,13 +381,15 @@ final class NuclearMechanic extends AbstractMechanic {
         private final Cut cut;
         private final int minY;
         private final ProtectionService protection;
+        private final boolean skipUnloaded;
         private final int side;
         private final int total;
         private final BlockChangeSet pending = new BlockChangeSet(64);
         private int pendingOffset;
         private int index;
 
-        Crater(World world, int cx, int cz, Cut cut, int minY, ProtectionService protection) {
+        Crater(World world, int cx, int cz, Cut cut, int minY, ProtectionService protection, boolean skipUnloaded) {
+            this.skipUnloaded = skipUnloaded;
             this.world = world;
             this.cx = cx;
             this.cz = cz;
@@ -413,6 +429,9 @@ final class NuclearMechanic extends AbstractMechanic {
         }
 
         private void column(int x, int z) {
+            if (skipUnloaded && !world.isChunkLoaded(x >> 4, z >> 4)) {
+                return;
+            }
             double distance = Math.hypot(x - cx, z - cz);
             int top = Math.min(world.getMaxHeight() - 1, world.getHighestBlockYAt(x, z));
             int ground = groundY(x, z, top);
@@ -484,12 +503,13 @@ final class NuclearMechanic extends AbstractMechanic {
         private final double outerRadius;
         private final int clumps;
         private final ProtectionService protection;
+        private final boolean skipUnloaded;
         private final BlockChangeSet pending = new BlockChangeSet(64);
         private int pendingOffset;
         private int emitted;
 
         Debris(World world, int cx, int cz, double innerRadius, double outerRadius, int clumps,
-               ProtectionService protection) {
+               ProtectionService protection, boolean skipUnloaded) {
             this.world = world;
             this.cx = cx;
             this.cz = cz;
@@ -497,6 +517,7 @@ final class NuclearMechanic extends AbstractMechanic {
             this.outerRadius = outerRadius;
             this.clumps = clumps;
             this.protection = protection;
+            this.skipUnloaded = skipUnloaded;
         }
 
         @Override
@@ -534,6 +555,9 @@ final class NuclearMechanic extends AbstractMechanic {
             for (int step = 0; step < size; step++) {
                 x += random.nextInt(3) - 1;
                 z += random.nextInt(3) - 1;
+                if (skipUnloaded && !world.isChunkLoaded(x >> 4, z >> 4)) {
+                    continue;
+                }
                 int y = world.getHighestBlockYAt(x, z) + 1 + random.nextInt(2);
                 if (y >= world.getMaxHeight()) {
                     continue;

@@ -70,9 +70,24 @@ public final class DrillRules {
         return grid > local.efficiency() ? new DrillPower(PowerSource.GRID, grid) : local;
     }
 
-    /** The power of an ore drill: full power from the petroleum in its fuel slot, none without it. */
+    /** The power of an ore drill: full power when the oil network gave it the petroleum it wants this tick, none without it. */
     public static DrillPower orePower(boolean petroleum) {
         return petroleum ? new DrillPower(PowerSource.PETROLEUM, 1.0) : DrillPower.NONE;
+    }
+
+    /**
+     * True when a drill draws its fluid fuel from the oil network this tick. Only a kind with a fluid fuel draws, and it draws only
+     * when it would run if the fuel came: its outputs have room, a deposit it may mine touches its square and that deposit has
+     * something left. An idle drill draws nothing. The fuel is what powers the drill, so the power it then has is not an input: a
+     * draw the network refuses leaves the drill without power, and {@link #status} reports that.
+     *
+     * @param kind          the drill's kind
+     * @param roomLeft      true when its output slots can take another item
+     * @param targetInRange true when a deposit its kind and selection allow touches its square
+     * @param working       true when the drill has a deposit with something left to work on
+     */
+    public static boolean drawsFuel(DrillKind kind, boolean roomLeft, boolean targetInRange, boolean working) {
+        return kind.fluid().isPresent() && status(true, roomLeft, targetInRange, working) == DrillStatus.RUNNING;
     }
 
     /** True when a petroleum drill burns charcoal in its fuel cycle: only when charcoal is the source that powers it. */

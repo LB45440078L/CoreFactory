@@ -3,11 +3,10 @@ package io.corefactory.core.drill;
 import io.corefactory.core.deposit.Deposit;
 import io.corefactory.core.deposit.DepositSettings;
 
+import java.math.BigInteger;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalLong;
 import java.util.function.Predicate;
 
 /**
@@ -84,32 +83,28 @@ public final class DrillDeposits {
     }
 
     /**
-     * The deposit with the most remaining amount, with a tie going to the lower id. A deposit with nothing left is never picked.
+     * The deposit a drill works on now: the one with the largest remaining fraction, which is what it has left over what it started
+     * with. Every deposit of the square is then mined to the same fraction, so each ore of the area is produced over the run. A tie
+     * goes to the lower id, and a deposit with nothing left is never chosen, so with every deposit empty the result is empty.
      *
-     * @param deposits the candidates, in any order
+     * @param mineable the deposits in range that the drill's selection mines, with their current remaining amounts
      */
-    public static Optional<Deposit> pick(Collection<Deposit> deposits) {
-        return deposits.stream()
+    public static Optional<Deposit> choose(Collection<Deposit> mineable) {
+        return mineable.stream()
                 .filter(deposit -> deposit.remaining() > 0)
-                .max(Comparator.comparingLong(Deposit::remaining).thenComparing(Comparator.comparingLong(Deposit::id).reversed()));
+                .max((a, b) -> {
+                    int share = compareShare(a, b);
+                    return share != 0 ? share : Long.compare(b.id(), a.id());
+                });
     }
 
     /**
-     * The deposit a drill works on now. A drill keeps working its current deposit while that deposit is still mineable and has
-     * something left, so it works one deposit at a time; otherwise it takes {@link #pick}.
-     *
-     * @param mineable the deposits in range that the drill's selection mines, with their current remaining amounts
-     * @param current  the id of the deposit the drill works on, if any
+     * Compares the remaining fractions of two deposits exactly, by cross multiplication, so no rounding can make two different
+     * fractions equal. Both deposits must have something left, which makes their initial amounts positive.
      */
-    public static Optional<Deposit> choose(Collection<Deposit> mineable, OptionalLong current) {
-        if (current.isPresent()) {
-            Optional<Deposit> kept = mineable.stream()
-                    .filter(deposit -> deposit.id() == current.getAsLong() && deposit.remaining() > 0)
-                    .findFirst();
-            if (kept.isPresent()) {
-                return kept;
-            }
-        }
-        return pick(mineable);
+    private static int compareShare(Deposit a, Deposit b) {
+        BigInteger left = BigInteger.valueOf(a.remaining()).multiply(BigInteger.valueOf(b.initialAmount()));
+        BigInteger right = BigInteger.valueOf(b.remaining()).multiply(BigInteger.valueOf(a.initialAmount()));
+        return left.compareTo(right);
     }
 }

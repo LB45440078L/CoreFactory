@@ -23,16 +23,18 @@ public final class PlaceableItems {
      * generator device now, so it is placed here and never as a daylight detector.
      */
     public static final Set<String> ENERGY_DEVICES = Set.of(
-            "pylon_1", "pylon_2", "pylon_3", "accumulator_1", "accumulator_2", "accumulator_3",
+            "pylon_1", "pylon_2", "pylon_3", "pylon_4", "pylon_5",
+            "accumulator_1", "accumulator_2", "accumulator_3", "accumulator_4", "accumulator_5",
             SOLAR_PANEL, "wind_generator", "charcoal_generator", "petroleum_generator", "diesel_generator",
             "nuclear_generator");
 
     /**
-     * The component ids of the belts, pickers and splitters, placed on air by the logistics listener. Their items are vanilla
-     * items with a plugin identity, so they are placed only as devices, never as their vanilla material.
+     * The component ids of the belts, belt duplexes, pickers and splitters, placed on air by the logistics listener. Their items are
+     * vanilla items with a plugin identity, so they are placed only as devices, never as their vanilla material.
      */
     public static final Set<String> LOGISTICS_DEVICES = Set.of(
-            "belt_1", "belt_2", "belt_3", "picker_1", "picker_2", "picker_3", "splitter_1", "splitter_2", "splitter_3");
+            "belt_1", "belt_2", "belt_3", "belt_duplex_1", "belt_duplex_2", "belt_duplex_3",
+            "picker_1", "picker_2", "picker_3", "splitter_1", "splitter_2", "splitter_3");
 
     /** The component ids of the vertical transport belts, placed on air by the vertical belt listener. */
     public static final Set<String> VERTICAL_DEVICES = Set.of("vertical_belt_1", "vertical_belt_2", "vertical_belt_3");

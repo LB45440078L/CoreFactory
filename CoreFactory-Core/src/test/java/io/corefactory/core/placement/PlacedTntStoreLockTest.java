@@ -1,10 +1,10 @@
 package io.corefactory.core.placement;
 
 import io.corefactory.api.PinLock;
+import io.corefactory.core.config.TestConfig;
 import io.corefactory.core.lock.PinHash;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
+import org.yaml.snakeyaml.Yaml;
 
 import java.util.HashMap;
 import java.util.HexFormat;
@@ -15,16 +15,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class PlacedTntStoreLockTest {
 
-    /** Writes the lock inside a placed entry as placed-tnt.yml does, then reads the file back. */
-    private static Map<?, ?> roundTrip(PinLock lock) throws InvalidConfigurationException {
+    /** Writes the lock inside a placed entry as the YAML file holds it, then reads the text back. */
+    private static Map<?, ?> roundTrip(PinLock lock) {
         Map<String, Object> entry = new HashMap<>();
         entry.put("id", "nuke_little_boy");
         entry.put("lock", PlacedTntStore.encodeLock(lock));
-        YamlConfiguration written = new YamlConfiguration();
-        written.set("placed", List.of(entry));
-        YamlConfiguration read = new YamlConfiguration();
-        read.loadFromString(written.saveToString());
-        return (Map<?, ?>) read.getMapList("placed").get(0).get("lock");
+        String text = new Yaml().dump(Map.of("placed", List.of(entry)));
+        Map<String, Object> read = TestConfig.yaml(text);
+        return (Map<?, ?>) ((Map<?, ?>) ((List<?>) read.get("placed")).get(0)).get("lock");
     }
 
     @Test

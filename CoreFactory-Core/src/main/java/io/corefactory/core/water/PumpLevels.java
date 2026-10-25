@@ -67,9 +67,16 @@ public final class PumpLevels {
         return "This kit does not fit this pump.";
     }
 
-    /** The model key of a pump at a level: {@code water_pump} for level 1, {@code water_pump_N} above it. */
-    public static String modelKey(int level) {
-        return level <= 1 ? WaterPart.PUMP.componentId() : WaterPart.PUMP.componentId() + "_" + level;
+    /** The first level that stands two blocks tall: the upper block holds the rest of the pump. */
+    public static final int FIRST_TALL_LEVEL = 4;
+
+    /**
+     * The number of blocks a pump at this level fills, from its block upward: 2 at level 4 and 5, otherwise 1.
+     *
+     * @param level the pump's level, 1 to 5
+     */
+    public static int height(int level) {
+        return level >= FIRST_TALL_LEVEL ? 2 : 1;
     }
 
     /** True when a pump at this level draws power rather than burning fuel. */

@@ -61,6 +61,7 @@ None of these use a recording. Each builder in the script says how its sound is 
 | heavy_weapons_assembly | 2.00 | -15.0 |
 | pylon_hum | 2.00 | -15.7 |
 | accumulator_charge | 1.20 | -14.7 |
+| water_pump | 2.00 | -13.8 |
 
 `turret_rotate` was rewritten as a procedural servo whine. The other procedural builders are unchanged from the earlier
 version of the script. Their sound has not been checked by ear.

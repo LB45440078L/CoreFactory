@@ -1,7 +1,7 @@
 package io.corefactory.core.config;
 
-import org.bukkit.ChatColor;
-import org.bukkit.configuration.MemoryConfiguration;
+import io.corefactory.core.text.Text;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,7 +10,7 @@ class CoreSettingsLocksTest {
 
     @Test
     void theLockSettingsHaveTheirDocumentedDefaults() {
-        CoreSettings settings = CoreSettings.from(new MemoryConfiguration());
+        CoreSettings settings = CoreSettings.from(Map.of());
 
         assertThat(settings.lockMaxAttempts()).isEqualTo(3);
         assertThat(settings.lockoutSeconds()).isEqualTo(30);
@@ -18,9 +18,9 @@ class CoreSettingsLocksTest {
 
     @Test
     void theLockSettingsAreReadFromTheLocksSection() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("locks.max-attempts", 5);
-        config.set("locks.lockout-seconds", 60);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "locks.max-attempts", 5);
+        TestConfig.set(config, "locks.lockout-seconds", 60);
 
         CoreSettings settings = CoreSettings.from(config);
 
@@ -30,15 +30,15 @@ class CoreSettingsLocksTest {
 
     @Test
     void anAttemptLimitBelowOneIsRaisedToOne() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("locks.max-attempts", 0);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "locks.max-attempts", 0);
 
         assertThat(CoreSettings.from(config).lockMaxAttempts()).isEqualTo(1);
     }
 
     @Test
     void theLockedMessageHasTheWordingOfTheBrief() {
-        String text = ChatColor.stripColor(new Messages(null).raw("locked-tnt"));
+        String text = Text.plain(new Messages(null).raw("locked-tnt"));
 
         assertThat(text).isEqualTo("This nuclear TNT is locked.");
     }

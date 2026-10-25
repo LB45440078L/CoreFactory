@@ -1,7 +1,7 @@
 # API
 
 CoreFactory can be extended by another plugin, or by a mechanic of your own, through the **Api** module. It has no
-implementation, only contracts, and it depends on Spigot-API alone.
+implementation, only contracts, and it depends on the Paper API alone.
 
 ## Adding the dependency
 
@@ -20,7 +20,8 @@ mvn install -pl CoreFactory-Api
 </dependency>
 ```
 
-Declare `CoreFactory` as a dependency (`depend:` or `softdepend:`) of your plugin, so it loads first.
+Declare `CoreFactory` as a dependency of your plugin, so it loads first: `depend:` or `softdepend:` in a `plugin.yml`, or
+under `dependencies: server:` with `load: BEFORE` in a `paper-plugin.yml`.
 
 ## Getting the service facade
 
@@ -148,16 +149,16 @@ public void onDetonate(TntDetonateEvent event) {
 
 ## Extension points inside the plugin
 
-The Api module is the stable surface. The classes below are inside the plugin, in Core and Spigot. A developer who
+The Api module is the stable surface. The classes below are inside the plugin, in Core and the Paper module. A developer who
 works on the plugin or forks it can use them. They may change between releases, so an addon should not depend on them.
 
 | Type | Module | What it does |
 |---|---|---|
-| `Visuals` | Core, `engine` | A functional interface with one method, `play(String effect, Location at, double scale)`. The core asks for a named effect and the platform draws it. `Visuals.NONE` shows nothing. The Spigot plugin supplies `SpriteEffects`, which implements it, with `CoreFactoryCore.setVisuals`. |
+| `Visuals` | Core, `engine` | A functional interface with one method, `play(String effect, Location at, double scale)`. The core asks for a named effect and the platform draws it. `Visuals.NONE` shows nothing. The Paper plugin supplies `SpriteEffects`, which implements it, with `CoreFactoryCore.setVisuals`. |
 | `VisualCatalog` | Core, `engine` | The 22 named effects, their shapes and sprites. `VisualCatalog.find(name)` returns one, and `VisualCatalog.placements(effect, scale)` lays out its sprites. A new effect is one entry in `EFFECTS`, plus its sprites in `SPRITES`. |
-| `ProcessCatalog` | Core, `process` | The lab tool kinds and processes of `processes.yml`. `ProcessCatalog.parse(ConfigurationSection, Logger)` reads them. Query with `machines()`, `machine(id)`, `process(id)`, `processesFor(machineId)`, `acceptsInput(machineId, ItemRef)` and `inputsOf(machineId)`. |
-| `DrillCatalog` | Core, `drill` | The drills of `processes.yml` (`drills:`). `DrillCatalog.parse(ConfigurationSection, Map<String, ComponentDefinition>, Logger)` reads them. Query with `drills()`, `drill(id)` and `machine(id)`. `DrillTable.level(n)` gives a level's area, depth and cycle. |
-| `HologramService` | Spigot, `hologram` | Creates and removes the progress holograms. `create(Location, List<String>)` returns an `Optional<Hologram>` with one line per text, top first. `remove(Hologram)` removes one, `spotAbove(Location)` gives the point 1.6 blocks above a block, and `enabled()` reports the `holograms.enabled` setting. `Hologram.setLines(List<String>)` changes the text of the lines, with `&` colour codes. |
+| `ProcessCatalog` | Core, `process` | The lab tool kinds and processes of `processes.yml`. `ProcessCatalog.parse(Map<String, Object>, Logger)` reads them from the file's data as plain maps. Query with `machines()`, `machine(id)`, `process(id)`, `processesFor(machineId)`, `acceptsInput(machineId, ItemRef)` and `inputsOf(machineId)`. |
+| `DrillCatalog` | Core, `drill` | The drills of `processes.yml` (`drills:`). `DrillCatalog.parse(Map<String, Object>, Map<String, ComponentDefinition>, Logger)` reads them. Query with `drills()`, `drill(id)` and `machine(id)`. `DrillTable.level(n)` gives a level's area, depth and cycle. |
+| `HologramService` | Paper module, `hologram` | Creates and removes the holograms, one `TextDisplay` each. `create(Location, List<String>)` returns an `Optional<Hologram>` with one line per text, top first. `remove(Hologram)` removes one. `spotAbove(Location, int height)` gives the point `height + 0.3` blocks above a block, the centre of a device's top. `enabled()` reports the `holograms.enabled` setting. `Hologram.setLines(List<String>)` changes the text of the lines, with ampersand codes or MiniMessage tags. |
 | `Database` and `StorageSettings` | Storage | `Database.open(StorageSettings, Logger)` opens the pool and runs the migrations. `query(SqlFunction)` and `execute(SqlConsumer)` run work on a pooled connection, and `close()` releases the pool. `StorageSettings` is the record of the `storage:` section. |
 
 Two rules hold for each of these. The catalogs, the visuals and the holograms are used on the main thread, as the Api is.
@@ -172,10 +173,10 @@ sprite count. For a new drill level, the code in `DrillTable` is the only place 
 ## Stability
 
 The Api module is what addons should depend on. `CoreFactoryCore`, the `engine` and `mechanics` packages, and the
-Spigot module are implementation: they may change between releases. Every Api type is a `public` contract with
+Paper module are implementation: they may change between releases. Every Api type is a `public` contract with
 Javadoc; the record components of `TntDefinition` and `DetonationContext` are part of it.
 
 The power network and the logistics devices are not part of the Api. The facade has no method for pylons, accumulators,
 generators, wires, belts, pickers or splitters. The pure models (`io.corefactory.core.energy` and
-`io.corefactory.core.logistics`) and the Bukkit side (`io.corefactory.spigot.energy` and `io.corefactory.spigot.logistics`)
+`io.corefactory.core.logistics`) and the Bukkit side (`io.corefactory.paper.energy` and `io.corefactory.paper.logistics`)
 are internal to the plugin, and they can change between releases.

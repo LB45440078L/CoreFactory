@@ -2,7 +2,9 @@ package io.corefactory.resourcepack;
 
 import io.corefactory.api.PackVersion;
 import io.corefactory.resourcepack.art.ArtGenerator;
+import io.corefactory.resourcepack.art.ArtilleryArt;
 import io.corefactory.resourcepack.art.BeltArt;
+import io.corefactory.resourcepack.art.Canvas;
 import io.corefactory.resourcepack.art.Color;
 import io.corefactory.resourcepack.art.ComponentArt;
 import io.corefactory.resourcepack.art.LevelArt;
@@ -11,6 +13,8 @@ import io.corefactory.resourcepack.art.MachineArt;
 import io.corefactory.resourcepack.art.OreArt;
 import io.corefactory.resourcepack.art.ParticleArt;
 import io.corefactory.resourcepack.art.ProcessMachineArt;
+import io.corefactory.resourcepack.art.RailgunArt;
+import io.corefactory.resourcepack.art.ShellArt;
 import io.corefactory.resourcepack.art.TntArt;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -71,14 +75,15 @@ class ResourcePackBuilderTest {
                         "assets/corefactory/models/item/machine/" + spec.id() + ".json",
                         "assets/corefactory/items/machine/" + spec.id() + ".json");
             }
-            for (String id : List.of("energy_wire", "diesel", "nuclear_fuel_rod", "pylon_1", "pylon_2", "pylon_3",
-                    "accumulator_1", "accumulator_2", "accumulator_3", "wind_generator", "solar_panel",
+            for (String id : List.of("energy_wire", "nuclear_fuel_rod", "pylon_1", "pylon_2", "pylon_3", "pylon_4", "pylon_5",
+                    "accumulator_1", "accumulator_2", "accumulator_3", "accumulator_4", "accumulator_5", "wind_generator",
+                    "solar_panel",
                     "charcoal_generator", "petroleum_generator", "diesel_generator", "nuclear_generator",
                     "crude_oil_refinery")) {
                 assertThat(names).as(id).contains("assets/corefactory/items/component/" + id + ".json");
             }
-            for (String id : List.of("pylon_1", "pylon_2", "pylon_3", "accumulator_1", "accumulator_2", "accumulator_3",
-                    "wind_generator", "solar_panel", "charcoal_generator", "petroleum_generator", "diesel_generator",
+            for (String id : List.of("pylon_1", "pylon_2", "pylon_3", "pylon_4", "pylon_5", "accumulator_1", "accumulator_2",
+                    "accumulator_3", "accumulator_4", "accumulator_5", "wind_generator", "solar_panel", "charcoal_generator", "petroleum_generator", "diesel_generator",
                     "nuclear_generator", "crude_oil_refinery", "picker_1", "picker_2", "picker_3", "splitter_1",
                     "splitter_2", "splitter_3")) {
                 assertThat(names).as(id).contains("assets/corefactory/models/item/machine/" + id + ".json");
@@ -138,9 +143,11 @@ class ResourcePackBuilderTest {
                 List<Map<String, Object>> elements = (List<Map<String, Object>>) model.get("elements");
                 assertThat(elements).as(spec.id()).isNotEmpty();
                 for (Map<String, Object> element : elements) {
+                    // The vanilla range for every axis of every model: -16 to 32, which an artillery model uses in full.
                     for (String corner : List.of("from", "to")) {
-                        for (Object value : (List<Object>) element.get(corner)) {
-                            assertThat(((Number) value).doubleValue()).as(spec.id()).isBetween(0.0, 16.0);
+                        List<Object> values = (List<Object>) element.get(corner);
+                        for (int axis = 0; axis < 3; axis++) {
+                            assertThat(((Number) values.get(axis)).doubleValue()).as(spec.id()).isBetween(-16.0, 32.0);
                         }
                     }
                     Map<String, Object> faces = (Map<String, Object>) element.get("faces");
@@ -390,11 +397,146 @@ class ResourcePackBuilderTest {
                     strip = ImageIO.read(in);
                 }
                 assertThat(strip.getWidth()).as(id).isEqualTo(MachineAnimation.FRAME);
-                assertThat(strip.getHeight()).as(id).isEqualTo(MachineAnimation.FRAMES * strip.getWidth());
+                assertThat(strip.getHeight()).as(id).isEqualTo(clip.frames() * strip.getWidth());
             }
             Set<String> written = new HashSet<>();
             file.stream().map(ZipEntry::getName)
                     .filter(name -> name.startsWith("assets/corefactory/textures/block/machine/") && name.endsWith(".png.mcmeta"))
+                    .forEach(written::add);
+            assertThat(written).containsExactlyInAnyOrderElementsOf(expectedMeta);
+        }
+    }
+
+    /**
+     * Every artillery model and the command center has its six face textures and its descriptor in the art output, and its model
+     * and item definitions in the pack. The upper model of level VII has no inventory sprite, so it has no component item.
+     * Every shell and charge has its texture, descriptor, model and item definition in the pack.
+     */
+    @Test
+    void everyArtilleryMachineAndShellHasItsTextureAndModel() throws IOException {
+        Path art = dir.resolve("art");
+        ArtGenerator.main(new String[]{art.toString()});
+        Path zip = dir.resolve("pack.zip");
+        ResourcePackBuilder.build(art, zip, 84, "test", "1.2.3", 20261019120000L);
+
+        try (ZipFile file = new ZipFile(zip.toFile())) {
+            for (MachineArt.Spec spec : ArtilleryArt.ALL) {
+                String id = spec.id();
+                for (MachineArt.Face face : MachineArt.Face.values()) {
+                    assertThat(art.resolve("textures/block/machine/" + id + "/" + face.key() + ".png")).as(id + " " + face).exists();
+                }
+                assertThat(art.resolve("specs/machine/" + id + ".yml")).as(id).exists();
+                assertThat(file.getEntry("assets/corefactory/models/item/machine/" + id + ".json")).as(id).isNotNull();
+                assertThat(file.getEntry("assets/corefactory/items/machine/" + id + ".json")).as(id).isNotNull();
+            }
+            for (ComponentArt.Spec spec : ArtilleryArt.SPRITES) {
+                String id = spec.id();
+                assertThat(art.resolve("textures/item/component/" + id + ".png")).as(id).exists();
+                assertThat(file.getEntry("assets/corefactory/items/component/" + id + ".json")).as(id).isNotNull();
+            }
+            for (ComponentArt.Spec spec : ShellArt.SPRITES) {
+                String id = spec.id();
+                assertThat(art.resolve("textures/item/component/" + id + ".png")).as(id).exists();
+                assertThat(art.resolve("specs/component/" + id + ".yml")).as(id).exists();
+                assertThat(file.getEntry("assets/corefactory/models/item/component/" + id + ".json")).as(id).isNotNull();
+                assertThat(file.getEntry("assets/corefactory/items/component/" + id + ".json")).as(id).isNotNull();
+            }
+        }
+    }
+
+    /**
+     * Every artillery model and the command center, read back from the zip, has every element inside -16 and 32 on all three axes,
+     * the range a vanilla block or item model accepts. This fails on the models from before the change, where levels III to VII had
+     * elements up to y 40, 40, 40, 48 and 60: those are over 32. Levels I and II, up to y 24, always passed. Each model is written from
+     * y -16 now, so every level passes.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    void everyArtilleryModelElementIsWithinTheVanillaRange() throws IOException {
+        Path art = dir.resolve("art");
+        ArtGenerator.main(new String[]{art.toString()});
+        Path zip = dir.resolve("pack.zip");
+        ResourcePackBuilder.build(art, zip, 84, "test", "1.2.3", 20261019120000L);
+
+        try (ZipFile file = new ZipFile(zip.toFile())) {
+            for (MachineArt.Spec spec : ArtilleryArt.ALL) {
+                String id = spec.id();
+                Map<String, Object> model = new Yaml().load(read(file, "assets/corefactory/models/item/machine/" + id + ".json"));
+                List<Map<String, Object>> elements = (List<Map<String, Object>>) model.get("elements");
+                assertThat(elements).as(id).isNotEmpty();
+                for (Map<String, Object> element : elements) {
+                    for (String corner : List.of("from", "to")) {
+                        List<Object> values = (List<Object>) element.get(corner);
+                        assertThat(values).as(id + " " + corner).hasSize(3);
+                        for (Object value : values) {
+                            assertThat(((Number) value).doubleValue()).as(id + " " + corner + " " + element)
+                                    .isBetween(-16.0, 32.0);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Every railgun model has its six face textures in the art output and its model and item definition in the pack, every animated north
+     * face is a strip of frames with its frame time, and the turret and its two parts have their inventory sprites in the pack.
+     */
+    @Test
+    void everyRailgunModelAndPartHasItsTextureAndModel() throws IOException {
+        Path art = dir.resolve("art");
+        ArtGenerator.main(new String[]{art.toString()});
+        Path zip = dir.resolve("pack.zip");
+        ResourcePackBuilder.build(art, zip, 84, "test", "1.2.3", 20261019120000L);
+
+        try (ZipFile file = new ZipFile(zip.toFile())) {
+            for (MachineArt.Spec spec : RailgunArt.ALL) {
+                String id = spec.id();
+                for (MachineArt.Face face : MachineArt.Face.values()) {
+                    assertThat(art.resolve("textures/block/machine/" + id + "/" + face.key() + ".png")).as(id + " " + face).exists();
+                }
+                assertThat(file.getEntry("assets/corefactory/models/item/machine/" + id + ".json")).as(id).isNotNull();
+                assertThat(file.getEntry("assets/corefactory/items/machine/" + id + ".json")).as(id).isNotNull();
+                assertThat(file.getEntry("assets/corefactory/textures/block/machine/" + id + "/north.png")).as(id).isNotNull();
+            }
+            for (ComponentArt.Spec spec : RailgunArt.SPRITES) {
+                String id = spec.id();
+                assertThat(art.resolve("textures/item/component/" + id + ".png")).as(id).exists();
+                assertThat(file.getEntry("assets/corefactory/items/component/" + id + ".json")).as(id).isNotNull();
+            }
+        }
+    }
+
+    /**
+     * Every animated sprite is packed as a strip of square frames, with a {@code .mcmeta} beside its PNG that gives the frame time,
+     * and the other sprites have no {@code .mcmeta}.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    void everyAnimatedSpriteHasItsStripAndFrametime() throws IOException {
+        Path art = dir.resolve("art");
+        ArtGenerator.main(new String[]{art.toString()});
+        Path zip = dir.resolve("pack.zip");
+        ResourcePackBuilder.build(art, zip, 84, "test", "1.2.3", 20261019120000L);
+
+        try (ZipFile file = new ZipFile(zip.toFile())) {
+            Set<String> expectedMeta = new HashSet<>();
+            for (ShellArt.Clip clip : ShellArt.CLIPS) {
+                String texture = "assets/corefactory/textures/item/component/" + clip.id() + ".png";
+                expectedMeta.add(texture + ".mcmeta");
+                Map<String, Object> meta = new Yaml().load(read(file, texture + ".mcmeta"));
+                assertThat(((Map<String, Object>) meta.get("animation")).get("frametime")).as(clip.id())
+                        .isEqualTo(clip.frametime());
+                BufferedImage strip;
+                try (var in = file.getInputStream(file.getEntry(texture))) {
+                    strip = ImageIO.read(in);
+                }
+                assertThat(strip.getWidth()).as(clip.id()).isEqualTo(Canvas.SIZE);
+                assertThat(strip.getHeight()).as(clip.id()).isEqualTo(clip.frames() * Canvas.SIZE);
+            }
+            Set<String> written = new HashSet<>();
+            file.stream().map(ZipEntry::getName)
+                    .filter(name -> name.startsWith("assets/corefactory/textures/item/component/") && name.endsWith(".png.mcmeta"))
                     .forEach(written::add);
             assertThat(written).containsExactlyInAnyOrderElementsOf(expectedMeta);
         }

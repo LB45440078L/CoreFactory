@@ -105,7 +105,7 @@ class DrillTextTest {
         List<String> lines = DrillText.infoLines(DrillKind.ORE, DrillTable.level(3), DrillRules.orePower(true),
                 DrillStatus.NO_TARGET, 0.0, "&7Deposit &cnone in range");
 
-        assertThat(lines).contains("&8- petroleum in the fuel slot", "&7Status &cNo deposit in range");
+        assertThat(lines).contains("&8- petroleum from the oil network", "&7Status &cNo deposit in range");
         assertThat(lines).noneMatch(line -> line.contains("charcoal") || line.contains("solar"));
     }
 

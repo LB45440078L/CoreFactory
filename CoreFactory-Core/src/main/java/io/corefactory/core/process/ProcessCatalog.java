@@ -1,6 +1,6 @@
 package io.corefactory.core.process;
 
-import org.bukkit.configuration.ConfigurationSection;
+import io.corefactory.core.config.ConfigValues;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,25 +40,25 @@ public final class ProcessCatalog {
     /**
      * Reads {@code machines:} and {@code processes:} from processes.yml.
      *
-     * @param root the root of the file, or null for an empty catalog
+     * @param root the root of the file as plain data, or null for an empty catalog
      * @param log  receives one warning per skipped entry
      */
-    public static ProcessCatalog parse(ConfigurationSection root, Logger log) {
+    public static ProcessCatalog parse(Map<String, Object> root, Logger log) {
         Map<String, Machine> machines = new LinkedHashMap<>();
-        ConfigurationSection machineSection = root == null ? null : root.getConfigurationSection("machines");
+        Map<String, Object> machineSection = ConfigValues.optionalSection(root, "machines");
         if (machineSection != null) {
-            for (String id : machineSection.getKeys(false)) {
-                Machine machine = readMachine(id, machineSection.getConfigurationSection(id), log);
+            for (String id : machineSection.keySet()) {
+                Machine machine = readMachine(id, ConfigValues.optionalSection(machineSection, id), log);
                 if (machine != null) {
                     machines.put(id, machine);
                 }
             }
         }
         Map<String, ProcessDefinition> processes = new LinkedHashMap<>();
-        ConfigurationSection processSection = root == null ? null : root.getConfigurationSection("processes");
+        Map<String, Object> processSection = ConfigValues.optionalSection(root, "processes");
         if (processSection != null) {
-            for (String id : processSection.getKeys(false)) {
-                ProcessDefinition process = readProcess(id, processSection.getConfigurationSection(id), machines, log);
+            for (String id : processSection.keySet()) {
+                ProcessDefinition process = readProcess(id, ConfigValues.optionalSection(processSection, id), machines, log);
                 if (process != null) {
                     processes.put(id, process);
                 }
@@ -100,54 +100,54 @@ public final class ProcessCatalog {
         return Collections.unmodifiableSet(acceptedInputs.getOrDefault(machineId, Set.of()));
     }
 
-    private static Machine readMachine(String id, ConfigurationSection section, Logger log) {
+    private static Machine readMachine(String id, Map<String, Object> section, Logger log) {
         if (section == null) {
             warn(log, "machine '" + id + "' is not a section and is skipped.");
             return null;
         }
-        String host = section.getString("host", "").trim();
+        String host = ConfigValues.string(section, "host", "").trim();
         if (host.isEmpty()) {
             warn(log, "machine '" + id + "' has no host block and is skipped.");
             return null;
         }
-        ConfigurationSection slots = section.getConfigurationSection("slots");
+        Map<String, Object> slots = ConfigValues.optionalSection(section, "slots");
         try {
-            return new Machine(id, section.getString("name", id), host,
-                    slots == null ? 0 : slots.getInt("input"),
-                    slots == null ? 0 : slots.getInt("output"),
-                    slots == null ? 0 : slots.getInt("fuel"),
-                    section.getInt("power", 0));
+            return new Machine(id, ConfigValues.string(section, "name", id), host,
+                    ConfigValues.integer(slots, "input", 0),
+                    ConfigValues.integer(slots, "output", 0),
+                    ConfigValues.integer(slots, "fuel", 0),
+                    ConfigValues.integer(section, "power", 0));
         } catch (IllegalArgumentException e) {
             warn(log, e.getMessage() + " It is skipped.");
             return null;
         }
     }
 
-    private static ProcessDefinition readProcess(String id, ConfigurationSection section,
+    private static ProcessDefinition readProcess(String id, Map<String, Object> section,
                                                  Map<String, Machine> machines, Logger log) {
         if (section == null) {
             warn(log, "process '" + id + "' is not a section and is skipped.");
             return null;
         }
-        String machineId = section.getString("machine", "");
+        String machineId = ConfigValues.string(section, "machine", "");
         Machine machine = machines.get(machineId);
         if (machine == null) {
             warn(log, "process '" + id + "' names the unknown machine '" + machineId + "' and is skipped.");
             return null;
         }
-        int ticks = section.getInt("ticks", 0);
+        int ticks = ConfigValues.integer(section, "ticks", 0);
         if (ticks < 1) {
             warn(log, "process '" + id + "' needs ticks of at least 1 and is skipped.");
             return null;
         }
-        boolean fuel = section.getBoolean("fuel", false);
+        boolean fuel = ConfigValues.bool(section, "fuel", false);
         if (fuel && machine.fuelSlots() == 0) {
             warn(log, "process '" + id + "' burns fuel but machine '" + machineId + "' has no fuel slot and it is skipped.");
             return null;
         }
         try {
-            List<Portion> inputs = readInputs(section.getStringList("inputs"));
-            List<Product> outputs = readOutputs(section.getMapList("outputs"));
+            List<Portion> inputs = readInputs(ConfigValues.stringList(section, "inputs", List.of()));
+            List<Product> outputs = readOutputs(ConfigValues.mapList(section, "outputs"));
             if (inputs.isEmpty() || outputs.isEmpty()) {
                 warn(log, "process '" + id + "' needs at least one input and one output and is skipped.");
                 return null;
@@ -180,9 +180,9 @@ public final class ProcessCatalog {
         return inputs;
     }
 
-    private static List<Product> readOutputs(List<Map<?, ?>> entries) {
+    private static List<Product> readOutputs(List<Map<String, Object>> entries) {
         List<Product> outputs = new ArrayList<>();
-        for (Map<?, ?> entry : entries) {
+        for (Map<String, Object> entry : entries) {
             if (!(entry.get("item") instanceof String text)) {
                 throw new IllegalArgumentException("An output has no item.");
             }

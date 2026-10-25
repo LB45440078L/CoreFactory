@@ -1,8 +1,8 @@
 package io.corefactory.core.deposit;
 
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemoryConfiguration;
+import io.corefactory.core.config.ConfigValues;
 
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -47,21 +47,18 @@ public record ScannerSettings(int scannerRadius, int scanCooldownTicks, int outl
      * Reads the scanner keys of the {@code deposits:} section. A missing key takes its default. When the values break a rule, one
      * warning is logged and the defaults are used.
      *
-     * @param config the root configuration, or any section that holds a {@code deposits} section; may be null
+     * @param config the root configuration as plain data, or any section that holds a {@code deposits} section; may be null
      * @param log    receives the warning when the values are refused
      * @return the settings read, or the defaults
      */
-    public static ScannerSettings from(ConfigurationSection config, Logger log) {
-        ConfigurationSection section = config == null ? null : config.getConfigurationSection(DepositSettings.SECTION);
-        if (section == null) {
-            section = new MemoryConfiguration();
-        }
+    public static ScannerSettings from(Map<String, Object> config, Logger log) {
+        Map<String, Object> section = ConfigValues.section(config, DepositSettings.SECTION);
         ScannerSettings defaults = defaults();
         try {
             return new ScannerSettings(
-                    section.getInt("scanner-radius", defaults.scannerRadius()),
-                    section.getInt("scan-cooldown-ticks", defaults.scanCooldownTicks()),
-                    section.getInt("outline-seconds", defaults.outlineSeconds()));
+                    ConfigValues.integer(section, "scanner-radius", defaults.scannerRadius()),
+                    ConfigValues.integer(section, "scan-cooldown-ticks", defaults.scanCooldownTicks()),
+                    ConfigValues.integer(section, "outline-seconds", defaults.outlineSeconds()));
         } catch (IllegalArgumentException e) {
             log.warning("config.yml: the scanner keys of '" + DepositSettings.SECTION + "' are invalid (" + e.getMessage()
                     + "); the defaults are used.");

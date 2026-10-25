@@ -6,6 +6,8 @@ the next `/cf reload`, and the total changes with the data files.
 
 Open them with `/cf achievements`. The menu shows 45 entries a page, which is nine pages with the shipped data. Unlocked entries glow and show the date they were
 earned; locked entries show progress. Each unlock is announced by the server, to everyone, through the Advancements screen (see below).
+If the datapack is not loaded, the unlock is a chat line instead: `Achievement unlocked:` and the title. Hovering the title shows the
+achievement's description.
 
 ## What counts
 
@@ -42,7 +44,7 @@ The nuclear tiers count as `Detonated: ...` in the Nuclear section, and they fee
 
 ### Per component (182 achievements: 2 for each of the 91 components)
 
-Every component counts, including the lab tools, the drills, the Ore Density Scanner, the solar panel, and petroleum.
+Every component counts, including the lab tools, the drills, the Ore Density Scanner and the solar panel.
 
 | Kind | Title | Needs |
 |---|---|---|
@@ -124,8 +126,8 @@ server reads datapacks at startup. If the tab does not appear after the first st
 format range of the running server, read from its built-in data packs. If the pack was disabled with
 `/datapack disable`, it stays disabled until it is enabled again.
 
-Achievements unlocked before this version still show in `/cf achievements`. They are not re-announced, and their
-vanilla progress starts from the update.
+Achievements unlocked before the datapack was added still show in `/cf achievements`. They are not re-announced, and their
+vanilla progress starts from the first load of the datapack (unverified in game).
 
 ## Storage
 

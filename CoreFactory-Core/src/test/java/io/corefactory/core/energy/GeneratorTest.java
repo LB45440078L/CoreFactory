@@ -48,16 +48,6 @@ class GeneratorTest {
     }
 
     @Test
-    void petroleumBurnsOneItemForAboutAHundredSixtySeconds() {
-        assertThat(ticksOfOutput(GeneratorKind.PETROLEUM, 1, TICK, false) * TICK).isCloseTo(160.125, within(TICK));
-    }
-
-    @Test
-    void dieselBurnsOneItemForAboutNinetySixSeconds() {
-        assertThat(ticksOfOutput(GeneratorKind.DIESEL, 1, TICK, false) * TICK).isCloseTo(96.27, within(TICK));
-    }
-
-    @Test
     void twoCharcoalItemsBurnForSixtySeconds() {
         assertThat(ticksOfOutput(GeneratorKind.CHARCOAL, 2, TICK, false) * TICK).isCloseTo(60.0, within(TICK));
     }
@@ -79,24 +69,97 @@ class GeneratorTest {
 
     @Test
     void aFuelGeneratorWithNoFuelGivesZeroAndKeepsItsState() {
-        Generator generator = fuel(GeneratorKind.DIESEL, 0.0, 0);
+        Generator generator = fuel(GeneratorKind.CHARCOAL, 0.0, 0);
         GeneratorStep step = generator.tick(env(0, false), TICK);
         assertThat(step.outputW()).isZero();
         assertThat(step.state()).isEqualTo(GeneratorState.EMPTY);
     }
 
     @Test
-    void fuelInsertedIntoAnIdleGeneratorStartsBurningInTheSameTick() {
-        GeneratorStep step = fuel(GeneratorKind.PETROLEUM, 0.0, 1).tick(env(0, false), TICK);
-        assertThat(step.outputW()).isEqualTo(80_000.0);
-        assertThat(step.state().remainingSeconds()).isCloseTo(160.125 - TICK, within(1e-9));
+    void aBurningItemCarriesItsRemainingSecondsAcrossTicks() {
+        GeneratorStep step = fuel(GeneratorKind.CHARCOAL, 10.0, 0).tick(env(0, false), 0.5);
+        assertThat(step.outputW()).isEqualTo(25_000.0);
+        assertThat(step.state().remainingSeconds()).isCloseTo(9.5, within(1e-12));
     }
 
     @Test
-    void aBurningItemCarriesItsRemainingSecondsAcrossTicks() {
-        GeneratorStep step = fuel(GeneratorKind.DIESEL, 10.0, 0).tick(env(0, false), 0.5);
-        assertThat(step.outputW()).isEqualTo(150_000.0);
-        assertThat(step.state().remainingSeconds()).isCloseTo(9.5, within(1e-12));
+    void aFluidKindIsNotBurnedAsAnItem() {
+        assertThatThrownBy(() -> fuel(GeneratorKind.PETROLEUM, 0.0, 0).tick(env(0, false), TICK))
+                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> fuel(GeneratorKind.DIESEL, 0.0, 0).tick(env(0, false), TICK))
+                .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void aFluidGeneratorGivesItsRatedOutputWhenItDrawsAllTheLitresItWants() {
+        Generator petroleum = fuel(GeneratorKind.PETROLEUM, 0.0, 0);
+        Generator diesel = fuel(GeneratorKind.DIESEL, 0.0, 0);
+
+        GeneratorStep petroleumStep = petroleum.tickFluid(env(0, false), 1.0, petroleum.litresWanted(1.0));
+        GeneratorStep dieselStep = diesel.tickFluid(env(0, false), 1.0, diesel.litresWanted(1.0));
+
+        assertThat(petroleumStep.outputW()).isCloseTo(80_000.0, within(1e-6));
+        assertThat(dieselStep.outputW()).isCloseTo(150_000.0, within(1e-6));
+    }
+
+    @Test
+    void aFluidGeneratorGivesAShareOfItsOutputForAShareOfTheLitres() {
+        Generator diesel = fuel(GeneratorKind.DIESEL, 0.0, 0);
+
+        GeneratorStep step = diesel.tickFluid(env(0, false), 1.0, diesel.litresWanted(1.0) / 2);
+
+        assertThat(step.outputW()).isCloseTo(75_000.0, within(1e-6));
+    }
+
+    @Test
+    void aFluidGeneratorWithNoLitresGivesZero() {
+        GeneratorStep step = fuel(GeneratorKind.PETROLEUM, 0.0, 0).tickFluid(env(0, false), TICK, 0.0);
+
+        assertThat(step.outputW()).isZero();
+        assertThat(step.state()).isEqualTo(GeneratorState.EMPTY);
+    }
+
+    @Test
+    void aFluidGeneratorDrawingMoreThanItWantsGivesNoMoreThanRatedOutput() {
+        Generator petroleum = fuel(GeneratorKind.PETROLEUM, 0.0, 0);
+
+        GeneratorStep step = petroleum.tickFluid(env(0, false), TICK, 1_000.0);
+
+        assertThat(step.outputW()).isEqualTo(80_000.0);
+    }
+
+    @Test
+    void aFluidGeneratorKeepsNoFuelStateEvenWhenGivenSome() {
+        GeneratorStep step = fuel(GeneratorKind.DIESEL, 0.0, 3).tickFluid(env(0, false), TICK, 1.0);
+
+        assertThat(step.state()).isEqualTo(GeneratorState.EMPTY);
+    }
+
+    @Test
+    void aFluidGeneratorWantsLitresInProportionToTheTick() {
+        Generator petroleum = fuel(GeneratorKind.PETROLEUM, 0.0, 0);
+
+        assertThat(petroleum.litresWanted(2.0)).isCloseTo(2.0 * GeneratorKind.PETROLEUM.litresPerSecond(), within(1e-12));
+        assertThat(fuel(GeneratorKind.CHARCOAL, 0.0, 1).litresWanted(2.0)).isZero();
+    }
+
+    @Test
+    void tickFluidOfAnItemKindGivesItsTickOutputAndIgnoresTheLitres() {
+        Generator charcoal = fuel(GeneratorKind.CHARCOAL, 0.0, 1);
+        Generator wind = new Generator("w", POS, GeneratorKind.WIND, GeneratorState.EMPTY);
+        GeneratorEnvironment open = new GeneratorEnvironment(6_000, 99, 0, new OpenAir(6, 100), false);
+
+        assertThat(charcoal.tickFluid(env(0, false), TICK, 0.0)).isEqualTo(charcoal.tick(env(0, false), TICK));
+        assertThat(wind.tickFluid(open, TICK, 0.0)).isEqualTo(wind.tick(open, TICK));
+    }
+
+    @Test
+    void tickFluidRefusesANegativeOrNonFiniteLitreCount() {
+        Generator petroleum = fuel(GeneratorKind.PETROLEUM, 0.0, 0);
+
+        assertThatThrownBy(() -> petroleum.tickFluid(env(0, false), TICK, -0.1)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> petroleum.tickFluid(env(0, false), TICK, Double.NaN)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> petroleum.tickFluid(env(0, false), 0.0, 1.0)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

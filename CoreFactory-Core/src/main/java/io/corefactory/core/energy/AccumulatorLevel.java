@@ -1,6 +1,6 @@
 package io.corefactory.core.energy;
 
-/** The three accumulator levels: how much energy they hold and how fast they charge and discharge. */
+/** The five accumulator levels: how much energy they hold and how fast they charge and discharge. */
 public enum AccumulatorLevel {
 
     /** Holds 5 kWh; charges and discharges at up to 5 kW. */
@@ -10,7 +10,13 @@ public enum AccumulatorLevel {
     II(EnergyTable.ACCUMULATOR_II_CAPACITY_WH, EnergyTable.ACCUMULATOR_II_POWER_W),
 
     /** Holds 80 kWh; charges and discharges at up to 60 kW. */
-    III(EnergyTable.ACCUMULATOR_III_CAPACITY_WH, EnergyTable.ACCUMULATOR_III_POWER_W);
+    III(EnergyTable.ACCUMULATOR_III_CAPACITY_WH, EnergyTable.ACCUMULATOR_III_POWER_W),
+
+    /** Holds 320 kWh; charges and discharges at up to 200 kW. */
+    IV(EnergyTable.ACCUMULATOR_IV_CAPACITY_WH, EnergyTable.ACCUMULATOR_IV_POWER_W),
+
+    /** Holds 1.28 MWh; charges and discharges at up to 800 kW. */
+    V(EnergyTable.ACCUMULATOR_V_CAPACITY_WH, EnergyTable.ACCUMULATOR_V_POWER_W);
 
     private final double capacityWh;
     private final double powerW;

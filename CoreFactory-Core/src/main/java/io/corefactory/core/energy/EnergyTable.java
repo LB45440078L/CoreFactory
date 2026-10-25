@@ -1,5 +1,7 @@
 package io.corefactory.core.energy;
 
+import io.corefactory.core.oil.Fluid;
+
 /**
  * The single source of truth for the energy numbers: pylon ranges and maximum currents, wires, accumulator levels, the
  * output and fuel of every generator, and the demand of the lab tools and drills. Power is in watts (W), energy in
@@ -43,6 +45,18 @@ public final class EnergyTable {
     /** Maximum current of a level III pylon, in A. */
     public static final double LARGE_MAX_CURRENT_A = 1600.0;
 
+    /** Half-side of a level IV pylon's range square, in blocks. */
+    public static final int HUGE_HALF_SIDE = 25;
+
+    /** Maximum current of a level IV pylon, in A. */
+    public static final double HUGE_MAX_CURRENT_A = 4000.0;
+
+    /** Half-side of a level V pylon's range square, in blocks. */
+    public static final int COLOSSAL_HALF_SIDE = 40;
+
+    /** Maximum current of a level V pylon, in A. */
+    public static final double COLOSSAL_MAX_CURRENT_A = 10000.0;
+
     /** Longest wire, in horizontal blocks. */
     public static final int WIRE_MAX_LENGTH = 24;
 
@@ -63,6 +77,18 @@ public final class EnergyTable {
 
     /** Charge and discharge power of accumulator level III, in W. */
     public static final double ACCUMULATOR_III_POWER_W = 60_000.0;
+
+    /** Capacity of accumulator level IV, in Wh. */
+    public static final double ACCUMULATOR_IV_CAPACITY_WH = 320_000.0;
+
+    /** Charge and discharge power of accumulator level IV, in W. */
+    public static final double ACCUMULATOR_IV_POWER_W = 200_000.0;
+
+    /** Capacity of accumulator level V, in Wh. */
+    public static final double ACCUMULATOR_V_CAPACITY_WH = 1_280_000.0;
+
+    /** Charge and discharge power of accumulator level V, in W. */
+    public static final double ACCUMULATOR_V_POWER_W = 800_000.0;
 
     /** The share of the energy taken in that is stored when an accumulator charges: the round trip efficiency. */
     public static final double ACCUMULATOR_ROUND_TRIP = 0.9;
@@ -130,8 +156,8 @@ public final class EnergyTable {
     /** Rated output of a petroleum generator while burning, in W. */
     public static final double PETROLEUM_RATED_W = 80_000.0;
 
-    /** Lower heating value of one petroleum item, in J: 1 L at 0.85 kg/L and 43 MJ/kg. */
-    public static final double PETROLEUM_FUEL_J = 36.6e6;
+    /** Energy of one litre of petroleum, in J: 0.80 kg/L at 43 MJ/kg. */
+    public static final double PETROLEUM_FUEL_J = Fluid.PETROLEUM.joulesPerLitre();
 
     /** Efficiency of a petroleum generator. */
     public static final double PETROLEUM_EFFICIENCY = 0.35;
@@ -139,8 +165,8 @@ public final class EnergyTable {
     /** Rated output of a diesel generator while burning, in W. */
     public static final double DIESEL_RATED_W = 150_000.0;
 
-    /** Lower heating value of one diesel item, in J: 1 L at 0.84 kg/L and 43 MJ/kg. */
-    public static final double DIESEL_FUEL_J = 36.1e6;
+    /** Energy of one litre of diesel, in J: 0.84 kg/L at 43 MJ/kg. */
+    public static final double DIESEL_FUEL_J = Fluid.DIESEL.joulesPerLitre();
 
     /** Efficiency of a diesel generator. */
     public static final double DIESEL_EFFICIENCY = 0.40;

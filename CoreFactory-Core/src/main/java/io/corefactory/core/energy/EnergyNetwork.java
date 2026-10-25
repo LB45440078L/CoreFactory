@@ -16,8 +16,9 @@ import java.util.TreeSet;
  * <ol>
  *   <li>The grids are the connected components of the wires. A grid's deliverable power is the lesser of its supply and its
  *       capacity.</li>
- *   <li>Each consumer, in id order, draws from each grid that covers it once: the draw is in proportion to each grid's free
- *       deliverable power, and the consumer takes at most its demand in total.</li>
+ *   <li>Each consumer draws from each grid that covers it once: the draw is in proportion to each grid's free deliverable power,
+ *       and the consumer takes at most its demand in total. Critical consumers draw first, the water pumps that feed nuclear
+ *       generators among them; the rest draw in id order, so an earlier consumer can take a short grid's power before a later one.</li>
  *   <li>Each consumer still short takes the shortfall from the accumulators that share a covering grid with it, in id order,
  *       each at most its power limit for the tick and its stored energy.</li>
  *   <li>Each accumulator that did not discharge this tick charges from the grids covering it, in grid id order, from the
@@ -80,7 +81,7 @@ public final class EnergyNetwork {
                 }
             }
         }
-        for (int j = 0; j < consumerCount; j++) {
+        for (int j : drawOrder(consumers)) {
             fromGrids[j] = drawFromGrids(consumers.get(j).demandW(), consumerGrids[j], free, drawn, consumerDraws[j]);
         }
 
@@ -211,6 +212,22 @@ public final class EnergyNetwork {
         }
         grids.sort(Comparator.comparingInt(Grid::id));
         return grids;
+    }
+
+    /** The order the consumers draw in: the critical ones first, then the rest, each group in id order. */
+    private static List<Integer> drawOrder(List<Consumer> consumers) {
+        List<Integer> order = new ArrayList<>(consumers.size());
+        for (int j = 0; j < consumers.size(); j++) {
+            if (consumers.get(j).critical()) {
+                order.add(j);
+            }
+        }
+        for (int j = 0; j < consumers.size(); j++) {
+            if (!consumers.get(j).critical()) {
+                order.add(j);
+            }
+        }
+        return order;
     }
 
     private static double drawFromGrids(double demand, int[] covering, double[] free, double[] drawn, double[] draws) {

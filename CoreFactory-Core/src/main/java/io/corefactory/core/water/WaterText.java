@@ -24,41 +24,54 @@ public final class WaterText {
     }
 
     /**
-     * The flow line of a pump: its level and the water it delivers into its network.
+     * The title of a pump's hologram and menu: its name and its level, such as {@code Water pump Level II}.
      *
-     * @param level     the pump's level, 1 to 5
-     * @param delivered units per second the pump puts into its network
+     * @param level the pump's level, 1 to 5
      */
-    public static String pumpFlow(int level, double delivered) {
-        return "Pump L" + level + "  " + number(delivered) + " /s delivered";
+    public static String title(int level) {
+        return "&fWater pump &7Level " + roman(level);
     }
 
     /**
-     * The source line of a pump: infinite while its connected water is at the minimum or more, else the count against the minimum.
+     * The flow line: the water a pump puts into its network now, against what it can give, such as {@code Flow 4 of 8 /s}.
+     *
+     * @param delivered units per second the pump puts into its network
+     * @param capacity  units per second the pump can give at its level
+     */
+    public static String flow(double delivered, double capacity) {
+        return "&bFlow  &f" + number(delivered) + " &7of " + number(capacity) + " /s";
+    }
+
+    /**
+     * The source line: infinite when the connected water reaches the minimum, else the count against the minimum.
      *
      * @param blocks  the connected water blocks counted, up to the cap
      * @param minimum the water blocks a source needs
      */
     public static String source(int blocks, int minimum) {
         if (blocks >= minimum) {
-            return "Water source: infinite";
+            return "&7Source  &aInfinite";
         }
-        return "Source low: " + blocks + " blocks, needs " + minimum;
+        return "&7Source  &c" + blocks + " &7of " + minimum + " blocks";
     }
 
     /**
-     * The fuel line of a pump at levels 1 and 2: the items held, the fuel's name, and whether it burns.
+     * The fuel line of a pump at levels 1 and 2: at level 1 the items held and whether one burns; at level 2 the diesel it draws from
+     * the oil network and whether it runs.
      *
      * @param level   the pump's level
-     * @param items   the fuel items held
+     * @param items   the fuel items held, the one burning now included; not read at level 2
      * @param running true when the pump burns now
      */
     public static String fuel(int level, int items, boolean running) {
-        if (items <= 0) {
-            return "Fuel: empty, stopped";
+        String state = running ? "  &a· burning" : "  &e· waiting";
+        if (PumpFuel.drawsFluid(level)) {
+            return "&7Fuel  &fdiesel from the oil network" + state;
         }
-        String name = level == 2 ? PumpFuel.DIESEL : "coal or charcoal";
-        return "Fuel: " + items + " " + name + (running ? ", burning" : ", waiting");
+        if (items <= 0) {
+            return "&7Fuel  &cEmpty";
+        }
+        return "&7Fuel  &f" + items + " coal or charcoal" + state;
     }
 
     /**
@@ -69,20 +82,31 @@ public final class WaterText {
      */
     public static String power(double satisfaction, int demandW) {
         if (demandW <= 0) {
-            return "Power: none needed";
+            return "&7Power  &7none needed";
         }
-        long percent = Math.round(Math.max(0.0, Math.min(1.0, satisfaction)) * 100.0);
-        return "Power: " + percent + "% of " + number(demandW / 1000.0) + " kW";
+        double share = Math.max(0.0, Math.min(1.0, satisfaction));
+        String colour = share >= 1.0 ? "&a" : share > 0.0 ? "&e" : "&c";
+        long percent = Math.round(share * 100.0);
+        return "&7Power  " + colour + percent + "% &7of " + number(demandW / 1000.0) + " kW";
+    }
+
+    /** The power line of a pump with no grid covering it. */
+    public static String noGrid() {
+        return "&7Power  &cNo grid";
+    }
+
+    /** The power line of a powered pump with no water source yet: it waits for one. */
+    public static String noSource() {
+        return "&7Power  &7waiting for a source";
     }
 
     /**
-     * The refusal of a pump placed where its source is too small.
+     * The status line of a pump: the state it is in, such as {@code Status  Pumping} or {@code Status  No fuel}.
      *
-     * @param blocks  the connected water blocks counted
-     * @param minimum the water blocks a source needs
+     * @param status the pump's state
      */
-    public static String sourceTooSmall(int blocks, int minimum) {
-        return "A pump needs at least " + minimum + " water blocks connected to it. This one has " + blocks + ".";
+    public static String status(PumpStatus status) {
+        return "&7Status  " + status.label();
     }
 
     /**
@@ -92,6 +116,18 @@ public final class WaterText {
      * @param requested units per second the machine asks for
      */
     public static String consumerLine(double delivered, double requested) {
-        return "Water: " + number(delivered) + " of " + number(requested) + " /s";
+        return "&7Water  &b" + number(delivered) + " &7of &f" + number(requested) + " /s";
+    }
+
+    /** The Roman numeral of a level, I to V. */
+    public static String roman(int level) {
+        return switch (level) {
+            case 1 -> "I";
+            case 2 -> "II";
+            case 3 -> "III";
+            case 4 -> "IV";
+            case 5 -> "V";
+            default -> Integer.toString(level);
+        };
     }
 }

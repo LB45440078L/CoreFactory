@@ -22,10 +22,28 @@ public final class MachineArt {
         public String key() {
             return name().toLowerCase(Locale.ROOT);
         }
+
+        /** The side across the block from this one. */
+        public Face opposite() {
+            return switch (this) {
+                case NORTH -> SOUTH;
+                case SOUTH -> NORTH;
+                case EAST -> WEST;
+                case WEST -> EAST;
+                case UP -> DOWN;
+                case DOWN -> UP;
+            };
+        }
+
+        /** True for north, south, east and west, the sides of the horizontal plane. */
+        public boolean horizontal() {
+            return this == NORTH || this == SOUTH || this == EAST || this == WEST;
+        }
     }
 
     /**
-     * One cuboid of the model. Corners are in model units, from 0 to 16 across one block, with y pointing up.
+     * One cuboid of the model. Corners are in model units, from 0 to 16 across one block, with y pointing up. An artillery
+     * model is the exception: its corners run from -16 to 32 on every axis, and the plugin lifts it one block (see {@link ArtilleryArt}).
      *
      * @param x0 minimum x
      * @param y0 minimum y
@@ -105,9 +123,13 @@ public final class MachineArt {
             new Spec("pylon_1", "#7C8590", "#C87533", pylonBoxes(1), MachineArt::pylonFront),
             new Spec("pylon_2", "#7C8590", "#E0B040", pylonBoxes(2), MachineArt::pylonFront),
             new Spec("pylon_3", "#7C8590", "#9B5CFF", pylonBoxes(3), MachineArt::pylonFront),
-            new Spec("accumulator_1", "#8A929C", "#5BC8F0", accumulatorBoxes(), MachineArt::animatedFace),
-            new Spec("accumulator_2", "#8A929C", "#3F7BFF", accumulatorBoxes(), MachineArt::animatedFace),
-            new Spec("accumulator_3", "#8A929C", "#8A5CFF", accumulatorBoxes(), MachineArt::animatedFace),
+            new Spec("pylon_4", "#7C8590", "#E0443A", pylonBoxes(4), MachineArt::pylonFront),
+            new Spec("pylon_5", "#7C8590", "#F2B233", pylonBoxes(5), MachineArt::pylonFront),
+            new Spec("accumulator_1", "#8A929C", "#5BC8F0", accumulatorBoxes(1), MachineArt::animatedFace),
+            new Spec("accumulator_2", "#8A929C", "#3F7BFF", accumulatorBoxes(2), MachineArt::animatedFace),
+            new Spec("accumulator_3", "#8A929C", "#8A5CFF", accumulatorBoxes(3), MachineArt::animatedFace),
+            new Spec("accumulator_4", "#8A929C", "#2FC7B8", accumulatorBoxes(4), MachineArt::animatedFace),
+            new Spec("accumulator_5", "#8A929C", "#D65CD6", accumulatorBoxes(5), MachineArt::animatedFace),
             drill("petroleum_drill_1", IRON, RUST, 1, true),
             drill("petroleum_drill_2", IRON, RUST, 2, true),
             drill("petroleum_drill_3", IRON, RUST, 3, true),
@@ -123,10 +145,11 @@ public final class MachineArt {
 
     /**
      * Every machine: the modelled machines above, the generators and solar panel, the drills of levels 4 and 5, the
-     * large lab tools, the turrets, the water system and the vertical belts, each in its own class.
+     * large lab tools, the turrets, the water system, the vertical belts and the artillery, each in its own class.
      */
     public static final List<Spec> ALL = Stream.of(BASE, GeneratorArt.ALL, DrillArt.ALL, BigLabArt.ALL, TurretArt.ALL,
-                    TurretLevelArt.ALL, WaterArt.ALL, VerticalBeltArt.ALL)
+                    TurretLevelArt.ALL, WaterVariants.ALL, OilVariants.ALL, VerticalBeltArt.ALL, DuplexArt.ALL,
+                    ArtilleryArt.ALL, RailgunArt.ALL)
             .flatMap(List::stream).toList();
 
     private MachineArt() {
@@ -221,8 +244,21 @@ public final class MachineArt {
             detail.paint(c, base, accent, seed);
             return;
         }
+        if (face == Face.NORTH) {
+            spec.front().paint(c, base, accent, seed);
+        } else {
+            paintShared(c, face, base, accent, seed);
+        }
+    }
+
+    /**
+     * The shared pattern of a side that carries no detail of its own: the stripes of the south face, the connector stripe of
+     * the east face, and so on. A water model that turns a side to another face takes the pattern of the side it came from,
+     * so {@link WaterVariants} paints each side with it. The north face is the front and has none.
+     */
+    static void paintShared(Canvas c, Face face, int base, int accent, long seed) {
         switch (face) {
-            case NORTH -> spec.front().paint(c, base, accent, seed);
+            case NORTH -> throw new IllegalArgumentException("the north face is the front, which has no shared pattern");
             case SOUTH -> {
                 for (int y = 6; y <= 26; y += 4) {
                     c.paint(Area.rect(6, y, 26, y + 1), Color.scale(base, 0.45));
@@ -330,42 +366,81 @@ public final class MachineArt {
     }
 
     /**
-     * A lattice tower: a base, four posts, a cap and a band of cross-bars on each side. The first level is short, the
-     * second taller, and the third tallest, with three cross-arms through the top.
+     * A lattice tower: a base, four posts, a cap and a band of cross-bars on each side. The first level is short, the second
+     * taller, and the third tallest, with three cross-arms through the top. The fourth is taller and wider, with four bands
+     * and four arms. The fifth is the tallest, with a crown on its cap. Levels 4 and 5 reach above one block, up to y 28.
      */
     private static List<Box> pylonBoxes(int level) {
-        double top = level == 1 ? 11 : level == 2 ? 14 : 15;
+        double top = switch (level) {
+            case 1 -> 11;
+            case 2 -> 14;
+            case 3 -> 15;
+            case 4 -> 20;
+            default -> 22;
+        };
+        double inset = level >= 4 ? 1 : 3;
+        double far = 16 - inset;
         List<Box> boxes = new ArrayList<>();
-        boxes.add(new Box(3, 0, 3, 13, 1, 13));
-        boxes.add(new Box(4, top, 4, 12, top + 1, 12));
-        for (double x : new double[]{3, 12}) {
-            for (double z : new double[]{3, 12}) {
+        boxes.add(new Box(inset, 0, inset, far, 1, far));
+        boxes.add(new Box(inset + 1, top, inset + 1, far - 1, top + 1, far - 1));
+        for (double x : new double[]{inset, far - 1}) {
+            for (double z : new double[]{inset, far - 1}) {
                 boxes.add(new Box(x, 1, z, x + 1, top, z + 1));
             }
         }
-        double[] bands = level == 1 ? new double[]{3, 7} : new double[]{3, 7, 11};
+        double[] bands = switch (level) {
+            case 1 -> new double[]{3, 7};
+            case 2, 3 -> new double[]{3, 7, 11};
+            default -> new double[]{3, 7, 11, 15};
+        };
         for (double y : bands) {
-            boxes.add(new Box(3, y, 3, 13, y + 1, 4));
-            boxes.add(new Box(3, y, 12, 13, y + 1, 13));
-            boxes.add(new Box(3, y, 4, 4, y + 1, 12));
-            boxes.add(new Box(12, y, 4, 13, y + 1, 12));
+            boxes.add(new Box(inset, y, inset, far, y + 1, inset + 1));
+            boxes.add(new Box(inset, y, far - 1, far, y + 1, far));
+            boxes.add(new Box(inset, y, inset + 1, inset + 1, y + 1, far - 1));
+            boxes.add(new Box(far - 1, y, inset + 1, far, y + 1, far - 1));
         }
-        if (level == 3) {
-            for (double y : new double[]{6, 10, 14}) {
-                boxes.add(new Box(0, y, 7, 16, y + 1, 9));
-            }
+        double[] arms = switch (level) {
+            case 3 -> new double[]{6, 10, 14};
+            case 4, 5 -> new double[]{6, 10, 14, 18};
+            default -> new double[0];
+        };
+        for (double y : arms) {
+            boxes.add(new Box(0, y, 7, 16, y + 1, 9));
+        }
+        if (level == 5) {
+            boxes.add(new Box(1, top + 1, 1, 15, top + 2, 15));
+            boxes.add(new Box(6, top + 2, 6, 10, top + 6, 10));
         }
         return boxes;
     }
 
-    /** A steel cell, rounded by three overlapping blocks, with a cap and a foot. */
-    private static List<Box> accumulatorBoxes() {
-        return List.of(
-                new Box(3, 0, 3, 13, 1, 13),
-                new Box(4, 1, 2, 12, 15, 14),
-                new Box(2, 1, 4, 14, 15, 12),
-                new Box(3, 1, 3, 13, 15, 13),
-                new Box(4, 15, 4, 12, 16, 12));
+    /**
+     * A steel cell, rounded by three overlapping blocks, with a cap and a foot. The fourth and fifth are wider cells, with
+     * coils of wire round their sides: three coils for the fourth, four for the fifth.
+     */
+    private static List<Box> accumulatorBoxes(int level) {
+        List<Box> boxes = new ArrayList<>();
+        if (level < 4) {
+            boxes.add(new Box(3, 0, 3, 13, 1, 13));
+            boxes.add(new Box(4, 1, 2, 12, 15, 14));
+            boxes.add(new Box(2, 1, 4, 14, 15, 12));
+            boxes.add(new Box(3, 1, 3, 13, 15, 13));
+            boxes.add(new Box(4, 15, 4, 12, 16, 12));
+            return boxes;
+        }
+        boxes.add(new Box(1, 0, 1, 15, 1, 15));
+        boxes.add(new Box(3, 1, 1, 13, 15, 15));
+        boxes.add(new Box(1, 1, 3, 15, 15, 13));
+        boxes.add(new Box(2, 1, 2, 14, 15, 14));
+        boxes.add(new Box(3, 15, 3, 13, 16, 13));
+        double[] coils = level == 4 ? new double[]{3, 7, 11} : new double[]{2, 5, 8, 11};
+        for (double y : coils) {
+            boxes.add(new Box(0, y, 0, 16, y + 1, 1));
+            boxes.add(new Box(0, y, 15, 16, y + 1, 16));
+            boxes.add(new Box(0, y, 1, 1, y + 1, 15));
+            boxes.add(new Box(15, y, 1, 16, y + 1, 15));
+        }
+        return boxes;
     }
 
     /** The north face of a pylon: an accent lattice of diagonals, insulator discs, and a band at the foot. */

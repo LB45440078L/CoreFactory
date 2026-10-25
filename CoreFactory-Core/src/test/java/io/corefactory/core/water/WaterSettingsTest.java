@@ -1,9 +1,9 @@
 package io.corefactory.core.water;
 
-import org.bukkit.configuration.file.YamlConfiguration;
+import io.corefactory.core.config.TestConfig;
 import org.junit.jupiter.api.Test;
 
-import java.io.StringReader;
+import java.util.Map;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,16 +25,16 @@ class WaterSettingsTest {
     @Test
     void noSectionReadsAsTheDefaults() {
         assertThat(WaterSettings.from(null)).isEqualTo(WaterSettings.defaults());
-        assertThat(WaterSettings.from(new YamlConfiguration())).isEqualTo(WaterSettings.defaults());
+        assertThat(WaterSettings.from(Map.of())).isEqualTo(WaterSettings.defaults());
     }
 
     @Test
     void aGivenKeyOverridesItsDefaultAndTheRestStay() {
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(new StringReader("""
+        Map<String, Object> config = TestConfig.yaml("""
                 water:
                   source-min-blocks: 50
                   solve-ticks: 2
-                """));
+                """);
 
         WaterSettings settings = WaterSettings.from(config);
 
@@ -46,11 +46,11 @@ class WaterSettingsTest {
 
     @Test
     void aListOfTheWrongLengthTakesTheDefaults() {
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(new StringReader("""
+        Map<String, Object> config = TestConfig.yaml("""
                 water:
                   pump-flow: [1, 2, 3]
                   pump-power-w: [0, -5, 0, 0, 0]
-                """));
+                """);
 
         WaterSettings settings = WaterSettings.from(config);
 

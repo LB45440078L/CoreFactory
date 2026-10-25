@@ -1,13 +1,16 @@
 package io.corefactory.core.config;
 
-import org.bukkit.ChatColor;
-import org.bukkit.configuration.ConfigurationSection;
+import io.corefactory.core.text.Text;
+import net.kyori.adventure.text.Component;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Player-facing text from the {@code messages:} section of {@code config.yml}. Colour codes use ampersands.
+ * Player-facing text from the {@code messages:} section of {@code config.yml}. A value may use ampersand codes or MiniMessage (see
+ * {@link Text}). Each value is read once, when the messages are loaded, and a call fills its {@code {placeholders}} and returns a
+ * component: a placeholder given a {@link Component} is inserted as that component, and any other value is escaped, so a player's name
+ * shows as typed.
  */
 public final class Messages {
 
@@ -49,33 +52,39 @@ public final class Messages {
             Map.entry("lock-gone", "&cThe TNT is no longer there.")
     );
 
+    /** Each value as MiniMessage, converted from its ampersand codes when it is loaded. */
     private final Map<String, String> values = new HashMap<>();
     private final String prefix;
 
-    public Messages(ConfigurationSection section) {
+    /**
+     * @param section the {@code messages:} section of config.yml as plain data; null or empty gives every default
+     */
+    public Messages(Map<String, Object> section) {
         for (Map.Entry<String, String> entry : DEFAULTS.entrySet()) {
-            String configured = section == null ? null : section.getString(entry.getKey());
-            values.put(entry.getKey(), color(configured != null ? configured : entry.getValue()));
+            String configured = ConfigValues.string(section, entry.getKey(), null);
+            values.put(entry.getKey(), Text.toMiniMessage(configured != null ? configured : entry.getValue()));
         }
         this.prefix = values.get("prefix");
     }
 
     /** The message with {@code {placeholders}} replaced, prefixed. */
-    public String get(String key, Object... replacements) {
-        return prefix + raw(key, replacements);
+    public Component get(String key, Object... replacements) {
+        return Text.parse(prefix + template(key, replacements));
     }
 
     /** The message with {@code {placeholders}} replaced, without the prefix. */
-    public String raw(String key, Object... replacements) {
-        String text = values.getOrDefault(key, key);
-        for (int i = 0; i + 1 < replacements.length; i += 2) {
-            text = text.replace("{" + replacements[i] + "}", String.valueOf(replacements[i + 1]));
-        }
-        return text;
+    public Component raw(String key, Object... replacements) {
+        return Text.parse(template(key, replacements));
     }
 
-    /** Converts ampersand colour codes. Public so item names and lore share the same rules. */
-    public static String color(String text) {
-        return ChatColor.translateAlternateColorCodes('&', text);
+    /** The MiniMessage of a message with its placeholders filled. The values are escaped here, so they are shown as given. */
+    private String template(String key, Object... replacements) {
+        String text = values.getOrDefault(key, key);
+        for (int i = 0; i + 1 < replacements.length; i += 2) {
+            Object value = replacements[i + 1];
+            String filled = value instanceof Component component ? Text.serialize(component) : Text.escape(String.valueOf(value));
+            text = text.replace("{" + replacements[i] + "}", filled);
+        }
+        return text;
     }
 }

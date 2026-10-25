@@ -3,7 +3,7 @@ package io.corefactory.api;
 import org.bukkit.World;
 
 /**
- * Applies block writes in bulk. The Spigot module implements it on top of WorldEdit or FastAsyncWorldEdit,
+ * Applies block writes in bulk. The Paper module implements it on top of WorldEdit or FastAsyncWorldEdit,
  * which is what keeps large blasts fast.
  */
 public interface BlockEditor {

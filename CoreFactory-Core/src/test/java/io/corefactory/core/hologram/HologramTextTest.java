@@ -193,7 +193,7 @@ class HologramTextTest {
     void anExhaustedDepositSaysSo() {
         assertThat(visible(HologramText.drillLines(DrillKind.ORE, DrillTable.level(2), DrillRules.orePower(true),
                 DrillStatus.EXHAUSTED, 0, "", 0, 576, 0).get(2)))
-                .isEqualTo("Deposit exhausted: no items left in range");
+                .isEqualTo("Deposit exhausted");
     }
 
     @Test

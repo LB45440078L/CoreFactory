@@ -1,9 +1,9 @@
 package io.corefactory.core.water;
 
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemoryConfiguration;
+import io.corefactory.core.config.ConfigValues;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The water settings of the {@code water} section of config.yml: the source minimum of a pump, the source check and solve rates,
@@ -74,26 +74,23 @@ public record WaterSettings(int sourceMinBlocks, int sourceCheckTicks, int solve
      * Reads the water section. A missing key takes its default. A list that is not five values long, or holds a value out of
      * range, takes the defaults, and a value below its minimum is raised to it.
      *
-     * @param config the root of the configuration, or null for the defaults
+     * @param config the root of the configuration as plain data, or null for the defaults
      */
-    public static WaterSettings from(ConfigurationSection config) {
-        ConfigurationSection water = config == null ? null : config.getConfigurationSection(SECTION);
-        if (water == null) {
-            water = new MemoryConfiguration();
-        }
+    public static WaterSettings from(Map<String, Object> config) {
+        Map<String, Object> water = ConfigValues.section(config, SECTION);
         WaterSettings fallback = defaults();
-        List<Double> flow = water.getDoubleList("pump-flow");
-        List<Integer> power = water.getIntegerList("pump-power-w");
+        List<Double> flow = ConfigValues.numberList(water, "pump-flow", List.of());
+        List<Integer> power = ConfigValues.integerList(water, "pump-power-w", List.of());
         boolean flowOk = flow.size() == PumpLevels.MAX_LEVEL
                 && flow.stream().allMatch(value -> value >= 0 && Double.isFinite(value));
         boolean powerOk = power.size() == PumpLevels.MAX_LEVEL && power.stream().allMatch(value -> value >= 0);
         return new WaterSettings(
-                Math.max(1, water.getInt("source-min-blocks", DEFAULT_SOURCE_MIN_BLOCKS)),
-                Math.max(1, water.getInt("source-check-ticks", DEFAULT_SOURCE_CHECK_TICKS)),
-                Math.max(1, water.getInt("solve-ticks", DEFAULT_SOLVE_TICKS)),
+                Math.max(1, ConfigValues.integer(water, "source-min-blocks", DEFAULT_SOURCE_MIN_BLOCKS)),
+                Math.max(1, ConfigValues.integer(water, "source-check-ticks", DEFAULT_SOURCE_CHECK_TICKS)),
+                Math.max(1, ConfigValues.integer(water, "solve-ticks", DEFAULT_SOLVE_TICKS)),
                 flowOk ? flow : fallback.pumpFlow(),
                 powerOk ? power : fallback.pumpPowerW(),
-                Math.max(1, water.getInt("unit-per-process-run", DEFAULT_UNIT_PER_PROCESS_RUN)));
+                Math.max(1, ConfigValues.integer(water, "unit-per-process-run", DEFAULT_UNIT_PER_PROCESS_RUN)));
     }
 
     /** The flow of each pump level as an array, index 0 is level 1: the form the solver takes. */

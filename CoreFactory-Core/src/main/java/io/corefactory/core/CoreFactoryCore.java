@@ -9,6 +9,7 @@ import io.corefactory.api.CoreFactoryApi;
 import io.corefactory.api.PlacedTnt;
 import io.corefactory.api.ProtectionService;
 import io.corefactory.api.TntDefinition;
+import io.corefactory.core.config.ConfigValues;
 import io.corefactory.core.config.CoreSettings;
 import io.corefactory.core.config.DefinitionParser;
 import io.corefactory.core.config.DefinitionParser.Definitions;
@@ -29,6 +30,7 @@ import io.corefactory.core.item.ComponentDefinition;
 import io.corefactory.core.item.ItemFactory;
 import io.corefactory.core.mechanics.Mechanics;
 import io.corefactory.core.mechanics.Toolkit;
+import io.corefactory.core.placement.PlacedTntFile;
 import io.corefactory.core.placement.PlacedTntStore;
 import io.corefactory.core.process.ProcessCatalog;
 import io.corefactory.core.radiation.Radiation;
@@ -39,8 +41,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.block.BlockIgniteEvent.IgniteCause;
 import org.bukkit.entity.Player;
@@ -48,7 +48,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -64,7 +63,7 @@ import java.util.logging.Logger;
 
 /**
  * The implementation of {@link CoreFactoryApi}. Owns every registry and service, loads configuration, and drives
- * the per-tick work. The Spigot module creates one instance, wires listeners and commands to it, and calls
+ * the per-tick work. The Paper module creates one instance, wires listeners and commands to it, and calls
  * {@link #tick()} once per server tick.
  */
 public final class CoreFactoryCore implements CoreFactoryApi {
@@ -93,17 +92,17 @@ public final class CoreFactoryCore implements CoreFactoryApi {
     private Set<String> itemComponentIds = Set.of();
     private CoreSettings settings;
     private Messages messages;
-    private File dataFile;
+    private PlacedTntFile placedFile;
     private boolean placedLoaded;
-    private ConfigurationSection cachedTnts;
-    private ConfigurationSection cachedItems;
+    private Map<String, Object> cachedTnts;
+    private Map<String, Object> cachedItems;
     private long tick;
 
     public CoreFactoryCore(Plugin plugin, BlockEditor blockEditor, ClientEffects clientEffects) {
         this.plugin = plugin;
         this.log = plugin.getLogger();
         this.clientEffects = clientEffects;
-        this.settings = CoreSettings.from(new MemoryConfiguration());
+        this.settings = CoreSettings.from(Map.of());
         this.messages = new Messages(null);
         this.recipes = new RecipeRegistrar(plugin, items);
         this.protection = new ProtectionImpl(settings);
@@ -123,21 +122,30 @@ public final class CoreFactoryCore implements CoreFactoryApi {
      * Loads or reloads configuration. Safe to call again on {@code /cf reload}: recipes are rebuilt and
      * already-placed TNT keeps working.
      *
+     * @param config      the root of config.yml as plain data
+     * @param tntFile     the whole of tnts.yml as plain data
+     * @param itemFile    the components of items.yml and materials.yml as plain data
      * @return the number of TNT types and components that loaded
      */
-    public int reload(ConfigurationSection config, ConfigurationSection tntSection, ConfigurationSection itemSection,
-                      File dataFolder) {
+    public int reload(Map<String, Object> config, Map<String, Object> tntFile, Map<String, Object> itemFile) {
         this.settings = CoreSettings.from(config);
-        this.messages = new Messages(config.getConfigurationSection("messages"));
-        this.dataFile = new File(dataFolder, settings.dataFileName());
+        this.messages = new Messages(ConfigValues.optionalSection(config, "messages"));
         protection.reconfigure(settings);
         effects.reconfigure(settings);
         blast.reconfigure(settings);
         jobs.reconfigure(settings);
         displays.reconfigure(settings.displayScale());
-        this.cachedTnts = tntSection;
-        this.cachedItems = itemSection;
+        this.cachedTnts = tntFile;
+        this.cachedItems = itemFile;
         return applyDefinitions();
+    }
+
+    /**
+     * Sets where the placed TNT registry is read and written. Call before {@link #loadPlaced}; the registry is saved to it on schedule
+     * and by {@link #savePlaced}.
+     */
+    public void setPlacedFile(PlacedTntFile file) {
+        this.placedFile = file;
     }
 
     /** Parses the cached sections against the current mechanics, then rebuilds the recipes. */
@@ -176,7 +184,7 @@ public final class CoreFactoryCore implements CoreFactoryApi {
 
     /** Loads the placed TNT registry from disk and rebuilds anchor fields. Call once after {@link #reload}. */
     public void loadPlaced() {
-        store.load(dataFile, log);
+        store.load(placedFile == null ? Map.of() : placedFile.read(), log);
         placedLoaded = true;
         protection.clearAnchors();
         for (PlacedTnt placed : store.all()) {
@@ -198,8 +206,8 @@ public final class CoreFactoryCore implements CoreFactoryApi {
 
     /** Saves the placed TNT registry. */
     public void savePlaced() {
-        if (dataFile != null && placedLoaded) {
-            store.save(dataFile, log);
+        if (placedFile != null && placedLoaded) {
+            placedFile.write(store.snapshot());
         }
     }
 
@@ -269,7 +277,7 @@ public final class CoreFactoryCore implements CoreFactoryApi {
     }
 
     // ---------------------------------------------------------------------------------------------
-    // Placement, removal and state, used by the Spigot listeners and commands.
+    // Placement, removal and state, used by the Paper listeners and commands.
     // ---------------------------------------------------------------------------------------------
 
     /** Registers a placed custom TNT block and, when enabled, shows its custom model. */

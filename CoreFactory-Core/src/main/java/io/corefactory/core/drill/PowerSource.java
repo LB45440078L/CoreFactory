@@ -15,7 +15,7 @@ public enum PowerSource {
     /** Charcoal in the fuel slot of a petroleum drill. */
     CHARCOAL("charcoal"),
 
-    /** Petroleum in the fuel slot of an ore drill. */
+    /** Petroleum drawn from the oil network by an ore drill. */
     PETROLEUM("petroleum"),
 
     /** The energy network: the satisfaction a pylon's line gives the drill. */

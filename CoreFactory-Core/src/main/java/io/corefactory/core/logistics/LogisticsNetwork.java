@@ -32,6 +32,7 @@ public final class LogisticsNetwork {
     private final Map<Pos, Lane> lanes = new HashMap<>();
     private final Map<String, PickerState> pickerStates = new HashMap<>();
     private final Map<String, SplitterState> splitterStates = new HashMap<>();
+    private final Map<String, DuplexState> duplexStates = new HashMap<>();
     private long serialCount;
 
     private LogisticsNetwork(Topology topology) {
@@ -45,6 +46,9 @@ public final class LogisticsNetwork {
         }
         for (Splitter splitter : topology.splitters()) {
             splitterStates.put(splitterId(splitter.id()), new SplitterState());
+        }
+        for (Duplex duplex : topology.duplexes()) {
+            duplexStates.put(duplexId(duplex.id()), new DuplexState());
         }
     }
 
@@ -66,6 +70,11 @@ public final class LogisticsNetwork {
     /** The node id of the splitter with this id. */
     public static String splitterId(String id) {
         return "splitter:" + id;
+    }
+
+    /** The node id of the belt duplex with this id. */
+    public static String duplexId(String id) {
+        return "duplex:" + id;
     }
 
     /** Every belt, picker and splitter as a power consumer, in id order. */
@@ -126,33 +135,44 @@ public final class LogisticsNetwork {
         return laneAt(belt).insertAt(item, position);
     }
 
-    /** The item a splitter holds between its input and its output, or empty when it holds none. */
-    public Optional<Item> heldBy(String splitterId) {
-        return Optional.ofNullable(splitterState(splitterId).held);
+    /**
+     * The item a splitter or a belt duplex holds between its input and its outputs, or empty when it holds none. The id is the
+     * device's id, the same for either kind.
+     *
+     * @throws IllegalArgumentException when no splitter or duplex has this id
+     */
+    public Optional<Item> heldBy(String deviceId) {
+        return Optional.ofNullable(heldState(deviceId).held());
     }
 
     /**
-     * Puts an item into a splitter that holds none, as when a held item is restored.
+     * Puts an item into a splitter or a belt duplex that holds none, as when a held item is restored.
      *
-     * @return false, and nothing changes, when the splitter already holds an item
+     * @return false, and nothing changes, when the device already holds an item
+     * @throws IllegalArgumentException when no splitter or duplex has this id
      */
-    public boolean holdAt(String splitterId, Item item) {
+    public boolean holdAt(String deviceId, Item item) {
         Objects.requireNonNull(item, "item");
-        SplitterState state = splitterState(splitterId);
-        if (state.held != null) {
+        HeldState state = heldState(deviceId);
+        if (state.held() != null) {
             return false;
         }
-        state.held = item;
+        state.hold(item);
         return true;
     }
 
-    /** The items held by belts and splitters. Pickers hold nothing between ticks. */
+    /** The items held by belts, splitters and duplexes. Pickers hold nothing between ticks. */
     public int itemCount() {
         int count = 0;
         for (Lane lane : lanes.values()) {
             count += lane.size();
         }
         for (SplitterState state : splitterStates.values()) {
+            if (state.held != null) {
+                count++;
+            }
+        }
+        for (DuplexState state : duplexStates.values()) {
             if (state.held != null) {
                 count++;
             }
@@ -195,6 +215,7 @@ public final class LogisticsNetwork {
                 case BELT -> stepBelt(node, dt, satisfied, ports, blocked);
                 case PICKER -> stepPicker(node, dt, satisfied, ports, blocked);
                 case SPLITTER -> stepSplitter(node, dt, satisfied, ports, blocked);
+                case DUPLEX -> stepDuplex(node, dt, satisfied, ports, blocked);
             };
             moved.put(node.id(), count);
         }
@@ -293,6 +314,53 @@ public final class LogisticsNetwork {
         return 1;
     }
 
+    /**
+     * A belt duplex: it takes one item from its input belt when it holds none, and gives it to its two outputs in turn. The output
+     * whose turn it is goes first; when it refuses, the other output is tried. After an item is given to one output, the turn passes
+     * to the other, so with both outputs open the items alternate. When neither takes the item, the duplex holds it and is blocked.
+     * It takes the next item after its wait, which is 1 / rate seconds for each item, so the total rate is the duplex's rate.
+     */
+    private int stepDuplex(Topology.Node node, double dt, double satisfied, Map<Pos, Port> ports, Set<String> blocked) {
+        DuplexState state = duplexStates.get(node.id());
+        if (satisfied <= 0) {
+            if (state.held != null) {
+                blocked.add(node.id());
+            }
+            return 0;
+        }
+        Duplex duplex = topology.duplexAt(node.pos());
+        double run = dt * satisfied;
+        if (state.held == null) {
+            if (state.wait > EPS) {
+                state.wait -= run;
+                if (state.wait > EPS) {
+                    return 0;
+                }
+            }
+            Source source = duplexSource(duplex);
+            Item item = source == null ? null : source.peek();
+            if (item == null) {
+                return 0;
+            }
+            source.take();
+            state.held = item;
+        }
+        List<Pos> outputs = duplex.outputCells();
+        for (int turn = 0; turn < outputs.size(); turn++) {
+            int side = (state.next + turn) % outputs.size();
+            Target target = targetAt(outputs.get(side), ports);
+            if (target != null && target.accepts(state.held)) {
+                target.put(state.held);
+                state.held = null;
+                state.next = 1 - side;
+                state.wait = 1.0 / LogisticsTable.duplexItemsPerSecond(duplex.level()) + Math.min(0.0, state.wait);
+                return 1;
+            }
+        }
+        blocked.add(node.id());
+        return 0;
+    }
+
     private boolean offer(Pos cell, Item item, Map<Pos, Port> ports) {
         Target target = targetAt(cell, ports);
         if (target == null || !target.accepts(item)) {
@@ -331,11 +399,23 @@ public final class LogisticsNetwork {
         return belt != null && belt.flow() == splitter.inDir() ? new LaneEnd(lanes.get(back)) : null;
     }
 
+    /** The belt that feeds a duplex: the one at a back cell that flows into the duplex. The topology allows at most one. */
+    private Source duplexSource(Duplex duplex) {
+        for (Pos back : duplex.backCells()) {
+            BeltUnit belt = topology.belt(back);
+            if (belt != null && belt.flow() == duplex.flow()) {
+                return new LaneEnd(lanes.get(back));
+            }
+        }
+        return null;
+    }
+
     private double demandOf(Topology.Node node) {
         return switch (node.kind()) {
             case BELT -> LogisticsTable.beltPowerW(topology.belt(node.pos()).level());
             case PICKER -> LogisticsTable.pickerPowerW(topology.picker(node.pos()).level());
             case SPLITTER -> LogisticsTable.splitterPowerW(topology.splitter(node.pos()).level());
+            case DUPLEX -> LogisticsTable.duplexPowerW(topology.duplexAt(node.pos()).level());
         };
     }
 
@@ -355,12 +435,17 @@ public final class LogisticsNetwork {
         return lane;
     }
 
-    private SplitterState splitterState(String id) {
-        SplitterState state = splitterStates.get(splitterId(id));
-        if (state == null) {
-            throw new IllegalArgumentException("no splitter with id " + id);
+    /** The held-item state of a splitter or a duplex with this device id. */
+    private HeldState heldState(String id) {
+        SplitterState splitter = splitterStates.get(splitterId(id));
+        if (splitter != null) {
+            return splitter;
         }
-        return state;
+        DuplexState duplex = duplexStates.get(duplexId(id));
+        if (duplex != null) {
+            return duplex;
+        }
+        throw new IllegalArgumentException("no splitter or duplex with id " + id);
     }
 
     private long nextSerial() {
@@ -452,10 +537,46 @@ public final class LogisticsNetwork {
         private boolean primed;
     }
 
-    private static final class SplitterState {
+    /** A device that holds one item between its input and its outputs: a splitter or a belt duplex. */
+    private interface HeldState {
+
+        Item held();
+
+        void hold(Item item);
+    }
+
+    private static final class SplitterState implements HeldState {
 
         private Item held;
         private double wait;
+
+        @Override
+        public Item held() {
+            return held;
+        }
+
+        @Override
+        public void hold(Item item) {
+            held = item;
+        }
+    }
+
+    private static final class DuplexState implements HeldState {
+
+        private Item held;
+        private double wait;
+        /** The output whose turn it is to go first: 0 for the anchor cell's output, 1 for the second cell's. */
+        private int next;
+
+        @Override
+        public Item held() {
+            return held;
+        }
+
+        @Override
+        public void hold(Item item) {
+            held = item;
+        }
     }
 
     /** Builds a network. Each method checks the new node against the nodes already added and refuses a bad one. */
@@ -464,6 +585,7 @@ public final class LogisticsNetwork {
         private final List<BeltUnit> belts = new ArrayList<>();
         private final List<Picker> pickers = new ArrayList<>();
         private final List<Splitter> splitters = new ArrayList<>();
+        private final List<Duplex> duplexes = new ArrayList<>();
 
         private Builder() {
         }
@@ -478,7 +600,7 @@ public final class LogisticsNetwork {
             BeltUnit unit = new BeltUnit(pos, flow, level);
             List<BeltUnit> next = new ArrayList<>(belts);
             next.add(unit);
-            require(new Topology(next, pickers, splitters).validate(), "belt at " + pos);
+            require(new Topology(next, pickers, splitters, duplexes).validate(), "belt at " + pos);
             belts.add(unit);
             return this;
         }
@@ -493,7 +615,7 @@ public final class LogisticsNetwork {
             Picker picker = new Picker(id, pos, inDir, outDir, level);
             List<Picker> next = new ArrayList<>(pickers);
             next.add(picker);
-            require(new Topology(belts, next, splitters).validate(), "picker " + id + " at " + pos);
+            require(new Topology(belts, next, splitters, duplexes).validate(), "picker " + id + " at " + pos);
             pickers.add(picker);
             return this;
         }
@@ -509,14 +631,32 @@ public final class LogisticsNetwork {
             Splitter splitter = new Splitter(id, pos, inDir, leftSet, rightSet, level);
             List<Splitter> next = new ArrayList<>(splitters);
             next.add(splitter);
-            require(new Topology(belts, pickers, next).validate(), "splitter " + id + " at " + pos);
+            require(new Topology(belts, pickers, next, duplexes).validate(), "splitter " + id + " at " + pos);
             splitters.add(splitter);
+            return this;
+        }
+
+        /**
+         * Adds a belt duplex. Both of its cells, the anchor and {@code anchor + right(flow)}, must be free.
+         *
+         * @throws IllegalArgumentException when the id is taken, a cell is occupied or the duplex is refused (a second input,
+         *                                  or a feed from a side of either cell)
+         */
+        public Builder duplex(String id, Pos anchor, Dir flow, LogisticsLevel level) {
+            Duplex duplex = new Duplex(id, anchor, flow, level);
+            for (Pos cell : duplex.cells()) {
+                requireFree(cell);
+            }
+            List<Duplex> next = new ArrayList<>(duplexes);
+            next.add(duplex);
+            require(new Topology(belts, pickers, splitters, next).validate(), "duplex " + id + " at " + anchor);
+            duplexes.add(duplex);
             return this;
         }
 
         /** The network with everything added so far. */
         public LogisticsNetwork build() {
-            return new LogisticsNetwork(new Topology(belts, pickers, splitters));
+            return new LogisticsNetwork(new Topology(belts, pickers, splitters, duplexes));
         }
 
         private void requireFree(Pos pos) {
@@ -533,6 +673,11 @@ public final class LogisticsNetwork {
             }
             for (Splitter splitter : splitters) {
                 if (splitter.pos().equals(pos)) {
+                    throw new IllegalArgumentException("cell is occupied: " + pos);
+                }
+            }
+            for (Duplex duplex : duplexes) {
+                if (duplex.cells().contains(pos)) {
                     throw new IllegalArgumentException("cell is occupied: " + pos);
                 }
             }

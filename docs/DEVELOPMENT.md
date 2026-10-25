@@ -4,34 +4,33 @@
 
 - JDK 25 (`maven.compiler.release` is 25). The plugin's bytecode needs a Java 25 server.
 - Maven 3.9 or newer.
-- Network access to the Maven repositories declared in the parent POM: SpigotMC snapshots, EngineHub, and
-  CodeMC, and Maven Central, which provides HikariCP. WorldGuard is compiled against its API (EngineHub); GriefPrevention is not a compile dependency, it is reached
-  by reflection at runtime.
+- Network access to the Maven repositories declared in the parent POM: PaperMC (the Paper API), EngineHub (WorldEdit and
+  WorldGuard, compiled against their APIs), and Maven Central, which provides HikariCP and the other libraries. The POM
+  also declares the CodeMC repository, which no dependency uses now. GriefPrevention is not a
+  compile dependency; it is reached by reflection at runtime.
 
 ## Building
 
 ```bash
-mvn clean package                     # default target: Spigot-API 26.1
-mvn clean package -Papi-26.2          # Spigot-API 26.2
-mvn clean package -Papi-26.3          # Spigot-API 26.3
-mvn clean package -Papi-1.21.11       # Spigot-API 1.21.11
+mvn clean package                     # default profile api-26.3: Paper API 26.3
 mvn test                              # unit tests only
 ```
 
-Each profile changes one property, `spigot.api.version`. Everything else is shared, so one source tree builds
-against all four. Build each profile before a release. `-Papi-x` is the only switch a target needs.
+The default profile is `api-26.3`, which is active by default in the root POM and sets `paper.api.version` (26.3) and
+`pack.format` (97). The other profiles in the root POM, `api-26.1`, `api-26.2` and `api-1.21.11`, still exist and build
+the same sources, but they are not supported. Build the default profile before a release.
 
 Build outputs:
 
 | Artifact | Path |
 |---|---|
-| Plugin jar (shaded, with Api and Core) | `CoreFactory-Spigot/target/CoreFactory-Spigot-1.0.0.jar` |
+| Plugin jar (shaded, with Api and Core) | `CoreFactory-Paper/target/CoreFactory-Paper-1.0.0.jar` |
 | Resource pack zip | `CoreFactory-ResourcePack/target/CoreFactory-ResourcePack.zip` |
 
 Builds of one module on its own need the others in the reactor, because they are not published yet:
 
 ```bash
-mvn -pl CoreFactory-Api,CoreFactory-Core,CoreFactory-Spigot -am package
+mvn -pl CoreFactory-Api,CoreFactory-Core,CoreFactory-Paper -am package
 ```
 
 The ResourcePack module runs its generator in the `package` phase, through `exec-maven-plugin`. Skip it with
@@ -55,7 +54,9 @@ CoreFactory/
 │   ├── deposit/                    Deposit, DepositPlanner, DepositSettings, DepositStore, MemoryDepositStore, DrillAccumulator, DrillYield, TakeBatch, OreBlocks
 │   ├── geology/                    GeologyService, GeologyRegistry, OreDefinition, DepositVolumes, Placement
 │   ├── research/                   ResearchService, ResearchTree, ResearchStore, Progression
-│   ├── hologram/                   HologramRules, HologramText
+│   ├── hologram/                   HologramRules, HologramText, HologramLayout, Tone
+│   ├── oil/                        Fluid, FluidRules, FluidTank, FluidPhysics, OilNetwork, OilJoinPlan, OilPart, OilSettings, OilModels, Refinery
+│   ├── text/                       Palette (the colours), Text (the Adventure and MiniMessage helpers)
 │   ├── radiation/                  RadiationModel, Fallout, RadiationSuit, GeigerCounter
 │   ├── energy/                     EnergyTable, Units, EnergyNetwork, EnergySnapshot, EnergyResult, GridGraph, GridRegistry,
 │   │                               GridPalette, Grid, GridResult, OutlineTracer, ChartHistory, ChartMode, ChartRenderer,
@@ -66,11 +67,14 @@ CoreFactory/
 │   └── mechanics/                  Mechanics catalogue and every built-in mechanic
 ├── CoreFactory-Storage/            JDBC research store (src/main/java/io/corefactory/storage)
 │   │                               Database (HikariCP pool), DriverLoader, JdbcResearchStore, JdbcDepositStore, SchemaMigrations, StorageSettings
-├── CoreFactory-Spigot/             plugin (src/main/java/io/corefactory/spigot)
-│   ├── hook/                       WorldEditBlockEditor, PacketClientEffects, WorldGuard and GriefPrevention guards
+├── CoreFactory-Paper/              plugin (src/main/java/io/corefactory/paper)
+│   ├── hook/                       WorldEditBlockEditor, BukkitClientEffects, ContainerProtection, WorldGuardGuard, GriefPreventionGuard
 │   ├── listener/                   placement, ignition, protection, interaction
 │   ├── machine/                    MachineStore, MachineTicker, DrillTicker, DrillMining, DrillRates, HopperListener, HopperRules, MachineMenu, MachineLayouts, Barrel, BarrelMigration, SolarPanelListener, BarrelConcealment, ConcealmentRules, InteractionRoute, MachineInteractions, LabPort, DrillPort
-│   ├── hologram/                   HologramService, HologramPackets, Hologram, HologramJson
+│   ├── hologram/                   HologramService, Hologram (one TextDisplay each)
+│   ├── oil/                        OilService, OilDevice, OilEntities, OilListener, OilPlacement, OilStore, MixedNetworks
+│   ├── screen/                     DeviceScreen, ScreenGeometry, ScreenText
+│   ├── TickScheduler.java, TickPlan.java, CorePermissions.java   the tick scheduler and the permission nodes (top level of the package)
 │   ├── energy/                     EnergyService, DeviceRegistry, EnergyDevice, GeneratorDevice, AccumulatorDevice, GeneratorMenu,
 │   │                               GeneratorText, GeneratorStatus, GeneratorLook, GeneratorSites, WireSelection, EnergyEffects,
 │   │                               EnergyText, EnergyGeometry, WorkPace, EnergyFile, EnergyStore, StoredEnergy, DeviceListener,
@@ -86,21 +90,21 @@ CoreFactory/
 │   ├── config/                     DefaultsMerger (the startup data merge)
 │   ├── pack/                       BundledPack, PackInstaller
 │   ├── achievement/                achievement catalogue, science feats, progress store, tracker, datapack
-│   ├── command/                    /cf
+│   ├── command/                    /cf: CfCommand (the Brigadier tree), CoreFactoryCommand (the handlers), Style, Completion
 │   ├── guide/                      the tutorial book
 │   ├── gui/                        catalogue, recipe view, achievements menu
-│   └── src/main/resources/         plugin.yml, config.yml, tnts.yml, items.yml, materials.yml, processes.yml, ores.yml, research.yml
+│   └── src/main/resources/         paper-plugin.yml, config.yml, tnts.yml, items.yml, materials.yml, processes.yml, ores.yml, research.yml
 ├── CoreFactory-ResourcePack/       texture generator (src/main/java/io/corefactory/resourcepack)
 └── docs/
 ```
 
 The energy and logistics tests are in `CoreFactory-Core/src/test/java/io/corefactory/core/energy` and
-`.../core/logistics`, and in `CoreFactory-Spigot/src/test/java/io/corefactory/spigot/energy` and `.../spigot/logistics`.
+`.../core/logistics`, and in `CoreFactory-Paper/src/test/java/io/corefactory/paper/energy` and `.../spigot/logistics`.
 
 ## Tests
 
-There are 195 test classes (the files named `*Test.java` in all modules): 4 in Api, 98 in Core, 3 in ResourcePack, 85 in Spigot and 5 in Storage. The ones that need a live server are not unit
-tests: they need Bukkit's registry, so they are covered by the runtime checks in [COMPATIBILITY.md](COMPATIBILITY.md).
+The test classes are the files named `*Test.java` in each module's `src/test/java`. The ones that need a live server are not
+unit tests: they need Bukkit's registry, so they are covered by the runtime checks in [COMPATIBILITY.md](COMPATIBILITY.md).
 
 | Module | Test classes | What they cover |
 |---|---|---|
@@ -108,14 +112,14 @@ tests: they need Bukkit's registry, so they are covered by the runtime checks in
 | Core | `deposit/`: `DepositPlannerTest`, `DepositSettingsTest`, `DepositSettingsFromConfigTest`, `DepositTest`, `DrillAccumulatorTest`, `DrillYieldTest`, `OreBlocksTest`, `TakeBatchTest`; `drill/`: `DrillBoxTest`, `DrillDepositsTest`, `DrillRulesTest`, `DrillStateTest`, `DrillStorageTest`, `DrillTableTest`; `engine/`: `ShapesTest`, `TntManagerCodecTest`, `VisualCatalogTest`; `geology/`: `GeologyRegistryTest`, `GeologyServiceTest`, `OreDefinitionTest`; `hologram/`: `HologramRulesTest`, `HologramTextTest`; `mechanics/`: `MushroomHeightTest`, `NuclearCutTest`; `process/`: `ProcessCatalogTest`, `ProcessEngineTest`; `radiation/`: `FalloutZoneTest`, `RadiationModelTest`; `research/`: `ResearchServiceTest`, `ResearchTreeTest` | The deposit planner, the deposit settings and their config reading, a deposit, the drill's accumulator, yield and take batch, the ore block choice, drill levels and rules, the drill's deposit search, storage of drill items, the visual catalogue, the geology registry and ore definitions, hologram text and rules, the mushroom height and the nuclear cut, process and recipe rules, radiation, and research. |
 | Core, energy and logistics | `energy/`: `ChartHistoryTest`, `ChartRendererTest`, `EnergyNetworkTest`, `EnergyTableTest`, `GeneratorFuelTest`, `GeneratorTest`, `GridGraphTest`, `GridPaletteTest`, `GridRegistryTest`, `OutlineTracerTest`, `PylonTest`, `SkyTest`, `UnitsTest`, `WireRulesTest`; `logistics/`: `BeltFlowTest`, `BeltTopologyTest`, `ConservationTest`, `DirTest`, `LogisticsTableTest`, `NetworkBuilderTest`, `PickerTest`, `PlacementTest`, `PowerTest`, `RestoreTest`, `SplitterTest` | The power network: grids and their ids and colours, the outlines, the chart history and rendering, the solver, pylons, wires, the sky, the units and generator fuel. The logistics layout, belts, pickers, splitters, placement, power and item conservation. |
 | ResourcePack | `ArtTest`, `ResourcePackBuilderTest` | Texture size, uniqueness and determinism, every id has art, and a full pack round trip with the pack format. |
-| Spigot | `ContentTest`, `ResourcePackKeysTest`, `AchievementDatapackTest`, `ScienceFeatsTest`, `CoreFactoryCommandTest`, `DefaultsMergerTest`, `CatalogModelTest`, `PageSplitterTest`, `ScienceGuideTest`, `HologramJsonTest`, `BarrelMigrationTest`, `DrillCatalogTest`, `DrillMenuTest`, `DrillRatesTest`, `HopperRulesTest`, `LabEffectsTest`, `MachineLayoutsTest`, `MachineSlotsTest`, `PackInstallerTest`, `DepositConfigTest` | Content checks on the data files, the achievement datapack and feats, the command, the startup data merge, the catalogue, the book, the hologram JSON, the barrel migration, the lab tool and drill menus and rules, the drill rates, the deposit config, and the pack installer. |
-| Spigot, energy and logistics | `energy/`: `ChartRulesTest`, `ChartSamplesTest`, `ChartTextTest`, `EnergyFileGridTest`, `EnergyFileTest`, `EnergyGeometryTest`, `EnergySnapshotsTest`, `EnergyTextTest`, `GeneratorDeviceTest`, `GeneratorFileTest`, `GeneratorIdsTest`, `GeneratorLookTest`, `GeneratorSnapshotsTest`, `GeneratorStatusTest`, `GeneratorTextTest`, `GridNamesTest`, `PlacementRulesTest`, `WireSelectionTest`, `WorkPaceTest`; `logistics/`: `BeltPathTest`, `DisplayBudgetTest`, `FuelPortTest`, `LogisticsFileTest`, `LogisticsIdsTest`, `LogisticsTextTest`, `OrientationTest`, `PlacementAimTest`, `SatisfactionMapTest`, `SidePlacementTest`, `SplitterFilterTest` | The energy file, the grid names and charts, the generator rules, text, look and status, the wire tool, the placement rules and the work pace. The logistics file and ids, its text, the display budget, the fuel port, satisfaction, the splitter filter, the side placement and the placement aim. |
+| Paper | `ContentTest`, `ResourcePackKeysTest`, `AchievementDatapackTest`, `ScienceFeatsTest`, `CoreFactoryCommandTest`, `DefaultsMergerTest`, `CatalogModelTest`, `PageSplitterTest`, `ScienceGuideTest`, `BarrelMigrationTest`, `DrillCatalogTest`, `DrillMenuTest`, `DrillRatesTest`, `HopperRulesTest`, `LabEffectsTest`, `MachineLayoutsTest`, `MachineSlotsTest`, `PackInstallerTest`, `DepositConfigTest` | Content checks on the data files, the achievement datapack and feats, the command, the startup data merge, the catalogue, the book, the barrel migration, the lab tool and drill menus and rules, the drill rates, the deposit config, and the pack installer. |
+| Paper, energy and logistics | `energy/`: `ChartRulesTest`, `ChartSamplesTest`, `ChartTextTest`, `EnergyFileGridTest`, `EnergyFileTest`, `EnergyGeometryTest`, `EnergySnapshotsTest`, `EnergyTextTest`, `GeneratorDeviceTest`, `GeneratorFileTest`, `GeneratorIdsTest`, `GeneratorLookTest`, `GeneratorSnapshotsTest`, `GeneratorStatusTest`, `GeneratorTextTest`, `GridNamesTest`, `PlacementRulesTest`, `WireSelectionTest`, `WorkPaceTest`; `logistics/`: `BeltPathTest`, `DisplayBudgetTest`, `FuelPortTest`, `LogisticsFileTest`, `LogisticsIdsTest`, `LogisticsTextTest`, `OrientationTest`, `PlacementAimTest`, `SatisfactionMapTest`, `SidePlacementTest`, `SplitterFilterTest` | The energy file, the grid names and charts, the generator rules, text, look and status, the wire tool, the placement rules and the work pace. The logistics file and ids, its text, the display budget, the fuel port, satisfaction, the splitter filter, the side placement and the placement aim. |
 | Storage | `DatabaseTest`, `DriverLoaderTest`, `JdbcResearchStoreTest`, `JdbcDepositStoreTest`, `MemoryDepositStoreTest` | The pool and the schema, the driver loader's checks, the research store, and the deposit store, JDBC and in memory. Both deposit store tests run the same checks from `DepositStoreContract`, which is a shared base and not a test class itself. The tests run on SQLite, whose driver is in test scope. |
 
 ## Packaging
 
-- The plugin jar is built by `CoreFactory-Spigot`, which shades `CoreFactory-Api`, `CoreFactory-Core`,
-  `CoreFactory-Storage` and HikariCP. Spigot-API, WorldEdit, PacketEvents and WorldGuard are provided by the server and
+- The plugin jar is built by `CoreFactory-Paper`, which shades `CoreFactory-Api`, `CoreFactory-Core`,
+  `CoreFactory-Storage` and HikariCP. The Paper API, WorldEdit and WorldGuard are provided by the server and
   never shaded.
 - HikariCP is relocated to `io.corefactory.libs.hikari`, because other plugins often bundle their own copy.
 - The SQLite and PostgreSQL JDBC drivers are not shaded. The storage module downloads the one it needs at first use. See
@@ -128,10 +132,10 @@ tests: they need Bukkit's registry, so they are covered by the runtime checks in
 
 The repository does not include a server. For a local check:
 
-1. Download a Paper build for your target (`https://fill.papermc.io/v3/projects/paper/versions/<version>/builds/latest`).
-2. Put `CoreFactory-Spigot-1.0.0.jar`, `packetevents` and `WorldEdit` in its `plugins/` folder.
-3. Start it with `java -jar paper.jar --nogui`, accept the EULA, and check the console for
-   `CoreFactory enabled: 42 TNT types` and `Registered N crafting recipes.`
+1. Download a Paper or Purpur 26.3 build (for Paper: `https://fill.papermc.io/v3/projects/paper/versions/<version>/builds/latest`).
+2. Put `CoreFactory-Paper-1.0.0.jar` and `WorldEdit` (or `FastAsyncWorldEdit`) in its `plugins/` folder.
+3. Start it with `java -jar paper.jar --nogui`, accept the EULA, and check the console for the line
+   `CoreFactory enabled: <n> TNT types, <m> placed.`
 4. Put test servers in an ignored folder (`server/`, `run/` and `test-server/` are in `.gitignore`).
 
 Keep the server's process ID and stop only that process. Do not kill Java processes by name.

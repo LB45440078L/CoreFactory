@@ -1,7 +1,7 @@
 package io.corefactory.core.energy;
 
 /**
- * The three pylon sizes. Each has a square range of a given half-side and a maximum current. Its capacity is the most
+ * The five pylon sizes. Each has a square range of a given half-side and a maximum current. Its capacity is the most
  * power a grid can carry through it at the nominal voltage.
  */
 public enum PylonType {
@@ -13,7 +13,13 @@ public enum PylonType {
     MEDIUM(EnergyTable.MEDIUM_HALF_SIDE, EnergyTable.MEDIUM_MAX_CURRENT_A),
 
     /** Half-side 15 blocks, 1600 A, 368 kW. */
-    LARGE(EnergyTable.LARGE_HALF_SIDE, EnergyTable.LARGE_MAX_CURRENT_A);
+    LARGE(EnergyTable.LARGE_HALF_SIDE, EnergyTable.LARGE_MAX_CURRENT_A),
+
+    /** Half-side 25 blocks, 4000 A, 920 kW. */
+    HUGE(EnergyTable.HUGE_HALF_SIDE, EnergyTable.HUGE_MAX_CURRENT_A),
+
+    /** Half-side 40 blocks, 10000 A, 2.3 MW. */
+    COLOSSAL(EnergyTable.COLOSSAL_HALF_SIDE, EnergyTable.COLOSSAL_MAX_CURRENT_A);
 
     private final int halfSide;
     private final double maxCurrentA;

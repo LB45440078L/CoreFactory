@@ -4,7 +4,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 /**
- * Effects that exist only on one player's client. Implemented with PacketEvents in the Spigot module.
+ * Effects that exist only on one player's client. Implemented with the Bukkit player API in the Paper module.
  */
 public interface ClientEffects {
 
@@ -17,7 +17,9 @@ public interface ClientEffects {
     /** Hands the player's clock back to the server. */
     void resetClientTime(Player player);
 
-    /** Shows rain and thunder to one player, whatever the world is doing. */
+    /**
+     * Shows rain to one player, whatever the world is doing. The Bukkit API has no per-player thunder, so the thundering flag is not shown.
+     */
     void setClientWeather(Player player, boolean raining, boolean thundering);
 
     /** Shows the given blocks to one player only. The server's world is not modified. */

@@ -7,10 +7,10 @@ newer version of it. The plugin also adds new entries to the data files when the
 
 | File | Holds |
 |---|---|
-| `config.yml` | Global settings, performance budgets, effects, holograms, the power network and logistics, storage, deposits, drill rates, protection, display, messages |
+| `config.yml` | Global settings, performance budgets, effects, holograms, the power network and logistics, the turrets, the rail guns, the artillery and the Command Center, storage, deposits, drill rates, protection, display, messages |
 | `tnts.yml` | Every TNT type: name, lore, radius, fuse, mechanic and its settings, recipe |
 | `items.yml` | Crafting components: name, lore, material, recipe |
-| `materials.yml` | Science materials, research packs, lab tools, the scanner, the solar panel, petroleum and the drills, as components |
+| `materials.yml` | Science materials, research packs, lab tools, the scanner, the solar panel and the drills, as components |
 | `processes.yml` | Lab tool kinds (`machines:`), their processes (`processes:`), and the drill kinds and levels (`drills:`) |
 | `ores.yml` | Special ores: the vanilla host block of each ore, the drop of a placed ore block, and the height range |
 | `research.yml` | The research line: nodes, their costs in research packs, and the machines, components and TNT each one unlocks |
@@ -22,7 +22,7 @@ Some changes need a restart, not a reload:
 
 - `processes.yml`, `ores.yml` and `research.yml` are read once, at start.
 - The `drills:` section of `processes.yml` is read once, at start.
-- `effects.*`, `holograms.*`, `concealment.*`, `energy.*`, `charts.*`, `logistics.*`, `deposits.*`, `drill-rates` and `storage.*` are read once, at start.
+- `effects.*`, `holograms.*`, `concealment.*`, `energy.*`, `charts.*`, `logistics.*`, `machine-upgrades.*`, `vertical-belt.*`, `water.*`, `oil.*`, `deposits.*`, `drill-rates`, `storage.*`, `railgun.*`, `artillery.*` and `command-center.*` are read once, at start.
 - Moving the placed-TNT registry to a different file takes a restart.
 
 Errors in these files are reported on the console and the affected entry is skipped; the others still load.
@@ -64,19 +64,24 @@ research bursts and ore breaks. They are drawn with item displays. The effect na
 
 ### `holograms`
 
-Progress holograms over running lab tools and drills. The text is sent as packets, so nothing is written to the world.
+Holograms show a device's state above it: lab tools, drills, generators, pylons, accumulators, turrets, pumps and logistics
+devices. Each grid chart is a hologram too. Each hologram is one text display entity, drawn by the game to the players in range.
+The plugin sends no packets for holograms, and nothing is written to the world.
 
 - A lab tool's hologram has three lines: the process, a bar of 20 segments, and the percentage with the seconds left (or `idle`).
 - A drill's hologram has five lines: its level and kind, its power, its rate (or its status), its deposit, and its storage and fuel.
 - Both also end with a `Grid` line for the power network: the grid's voltage, the power the device asks for and the share it
   gets, such as `Grid 230.0 V  4.0 kW  100 %`. It is always shown. See [MECHANICS.md](MECHANICS.md#looks-menus-and-the-grid-line).
 
-Each line is its own invisible armour stand. A hologram is removed when its lab tool goes idle, when its drill has no power or its outputs are full, and when its chunk unloads.
+The text is drawn at half size, above the device's top, and it grows upward from its bottom line. The background is faint green while
+a device works and faint red while it is stuck (no power, no fuel, no room, no target), and there is none otherwise. Pylons,
+accumulators, belts and grid charts have no background. A lab tool's hologram is removed when the tool goes idle, and a drill's when
+it has no power or no room for its output. Both are removed when their chunk unloads.
 
 | Key | Default | Meaning |
 |---|---|---|
 | `enabled` | `true` | `false` shows no holograms. Read at start. |
-| `view-distance` | `32` | Blocks from a player within which that player sees a hologram. Read at start. |
+| `view-distance` | `32` | Blocks from a player within which that player sees a hologram. Values above 64 act as 64. Read at start. |
 
 ### `concealment`
 
@@ -129,6 +134,52 @@ The belts, pickers and splitters. Their rules are in [MECHANICS.md](MECHANICS.md
 
 As with `concealment`, a `config.yml` without these keys takes the defaults in the tables above.
 
+### `machine-upgrades`
+
+The work pace of the lab machine levels, set by the upgrade modules `machine_upgrade_2` and `machine_upgrade_3`.
+
+| Key | Default | Meaning |
+|---|---|---|
+| `speed` | `[1.0, 1.5, 2.0]` | Work pace factor of lab machine levels I, II and III. A level II machine runs its process 1.5 times as fast at full power, and level III twice as fast; the power it draws is unchanged. Each factor must be finite, above zero, and never lower for a higher level. A list that is not valid reverts to the defaults, with one warning. Read at start. |
+
+### `vertical-belt`
+
+The vertical transport belts, which carry items up or down a tower of blocks.
+
+| Key | Default | Meaning |
+|---|---|---|
+| `speed` | `[1.875, 3.75, 7.5]` | Carry speed of vertical belt levels I, II and III, in blocks per second. Each speed must be finite and above zero. Read at start. |
+| `capacity` | `[4, 8, 12]` | Items one block of tower holds at levels I, II and III. Each is a whole number of at least 1. Read at start. |
+| `max-item-displays` | `600` | Most item displays on towers at once. Past the cap items still move, but are not shown, and one warning is logged. Read at start. |
+
+A list that is not valid for its key reverts to the defaults, with one warning. The regular belts' speeds are set in the
+code, so changing `speed` here does not change them.
+
+### `water`
+
+The water network: pumps, pipes and splitters. A pump stands on air or water and feeds the pipes joined to it. Its source is the
+water its network reaches, not the water under it. The rules are in [ARCHITECTURE.md](ARCHITECTURE.md#water-network).
+
+| Key | Default | Meaning |
+|---|---|---|
+| `source-min-blocks` | `100` | Water blocks a pump's source needs. The count is the water a pump's network reaches: a 6-connected flood fill of water from each block of the network (a pipe, a splitter or the pump) that stands in water or touches it. The pump uses the largest count, capped at this value plus one. A pump is not refused at placement for its source; a pump whose count is below this value stops. Read at start. |
+| `source-check-ticks` | `200` | Ticks between checks of a pump's source. `200` is ten seconds. Read at start. |
+| `solve-ticks` | `5` | Ticks between solves of the water network. Lower follows changes sooner and costs more. Read at start. |
+| `pump-flow` | `[2, 4, 8, 12, 16]` | Units of water per second for pump levels I to V. Five values, each finite and 0 or more. A list that is not five valid values reverts to the defaults, without a warning. Read at start. |
+| `pump-power-w` | `[0, 0, 60000, 120000, 240000]` | Power in watts (W) drawn by pump levels I to V. Levels I and II burn fuel and draw none: level I burns coal or charcoal, and level II burns diesel from the oil network. Five values, each 0 or more. A list that is not five valid values reverts to the defaults, without a warning. Read at start. |
+| `unit-per-process-run` | `1` | Units of water one run of a process takes from its network, in place of the water bucket. The units are spread over the length of the run. At least 1. Read at start. |
+
+### `oil`
+
+The oil network: oil tubes carry petroleum, from petroleum drills, and diesel, from the crude oil refinery, as litres of fluid
+to the generators, ore drills and level II pumps that burn them. A network never holds both fluids. The rules are in
+[MECHANICS.md](MECHANICS.md#oil-and-fluids). Read at start.
+
+| Key | Default | Meaning |
+|---|---|---|
+| `tube-capacity-litres` | `100` | Litres of fluid one oil tube holds. Finite and above 0. A value that is not valid reverts to the default. |
+| `pipe-flow-litres-per-second` | `4` | Litres per second each oil network moves from its sources to its sinks at most. The flow is counted per server tick (0.05 s). A fraction a tick does not move is carried to the next tick. Finite and 0 or more. A value that is not valid reverts to the default. |
+
 ### `locks`
 
 The PIN lock on nuclear TNT. The rules are in [MECHANICS.md](MECHANICS.md#pin-lock).
@@ -164,7 +215,7 @@ restart. Setting `enabled` to `false` stops every turret: none searches, aims or
 | `rounds.incendiary` | bypass `0`, fire `80`, spread `1` | The incendiary round. |
 | `rounds.depleted-uranium` | bypass `0.35`, fire `0`, spread `0.5` | The depleted-uranium round. |
 
-**Existing servers keep their saved values.** The defaults of `arc-degrees` and `pitch-limit-degrees` are `360` and `90`, the whole sphere. A `config.yml` that already sets `arc-degrees: 180` keeps it, and a turret then ignores every mob outside that sector. Change `arc-degrees` to `360` and `pitch-limit-degrees` to `90`, then restart. See [COMPATIBILITY.md](COMPATIBILITY.md#changes-for-existing-worlds).
+**Existing servers keep their saved values.** The defaults of `arc-degrees` and `pitch-limit-degrees` are `360` and `90`, the whole sphere. A `config.yml` that already sets `arc-degrees: 180` keeps it, and a turret then ignores every mob outside that sector. Change `arc-degrees` to `360` and `pitch-limit-degrees` to `90`, then restart. See [CHANGELOG.md](../CHANGELOG.md).
 
 A round's damage is not a key. Every round deals the damage of its turret's level. A `damage` key under `rounds` is read by the code but never used, so it has no effect.
 
@@ -211,6 +262,157 @@ targeting, rotation, arc, tilt, search and menu come from the `turrets` section 
 A laser holds no rounds, so an `ammo-capacity` key under its levels is ignored. Levels 3 to 5 are two blocks high, as for the machine gun. At level 5 the beam and its impact are blue.
 
 The root keys `range`, `damage`, `firing-interval-ticks` and `power-demand-w` of this section are no longer read: the `levels` blocks set them. An old file that still has them loads without an error.
+
+### `railgun`
+
+The rail guns. They are electric, like the laser turret: they hold no rounds and fire one heavy shot at the mobs a machine gun turret fires at, with the same targeting and arc as the `turrets` section. The shot is a helix that flies to its target, and the rail gun is built for armoured mobs and bosses. Read at startup, so a change needs a restart.
+
+| Key | Default | Meaning |
+|---|---|---|
+| `enabled` | `true` | Turn off to stop every rail gun: none searches, aims or fires. |
+| `hit-distance-blocks` | `0.5` | The distance from the frontier to the target at which the shot arrives and deals its damage, in blocks. |
+| `armour-bypass` | `0.75` | The share of the target's armour the shot ignores, from 0 to 1. `1` ignores all of it. |
+| `helix-speed-level-1` | `2` | The speed of the flame frontier at level I, in blocks per second. |
+| `helix-speed-level-3` | `9` | The speed of the flame frontier at level III, in blocks per second. Level II is halfway between the two. |
+| `spiral-delay-seconds` | `0.5` | Seconds after the frontier leaves the barrel before the blue spiral begins. |
+| `strand-radius-blocks` | `0.3` | The radius of the red strands around the path, in blocks. |
+| `strands` | `4` | The number of red strands, spaced evenly around the path, from 1 to 8. |
+| `strand-twist-turns-per-block` | `0.5` | The turns the red strands make around the path for each block it travels. |
+| `spiral-radius-blocks` | `0.75` | The radius of the blue spiral, in blocks. It is larger than the strands' radius. |
+| `spiral-turns-per-block` | `1` | The turns the blue spiral makes around the path for each block it travels. |
+| `sample-spacing-blocks` | `0.25` | The distance along the path between two drawn points of a strand or the spiral, in blocks, from 0.05 to 2. A path too long for the budget is drawn with the spacing doubled until it fits. |
+| `spin-turns-per-second` | `1` | The turns the helix turns about the path each second, toward the target, from 0 to 10. |
+| `particle-budget` | `96` | The most points one shot draws in one tick, its frontier, strands and spiral together, from 0 to 256. |
+| `max-particles-per-tick` | `192` | The most points all the rail guns' shots in flight draw in one tick together, from 0 to 2000. The shots share it equally. |
+| `max-light` | `15` | The light level of a rail gun when it is ready to fire, from 0 to 15. It rises from 0 over the charge. |
+
+**`levels`.** The rail gun has three levels, 1 to 3, and a `levels` block for each. The keys are `damage`, `power-demand-w`, `range`, `charge-seconds` and `reload-seconds`. The defaults are:
+
+| Key | Default at levels 1, 2, 3 | Meaning |
+|---|---|---|
+| `damage` | `400`, `1200`, `3500` | Damage of one shot to the mob it hits, in HP (2 HP is one heart), before the armour the shot does not ignore. |
+| `power-demand-w` | `2000000`, `4000000`, `8000000` | Power the level draws, in watts, while it charges and while it fires. It draws none while it reloads. |
+| `range` | `60`, `80`, `110` | Blocks from the barrel within which the rail gun sees a target, and how far the shot travels. |
+| `charge-seconds` | `6`, `5`, `4` | Seconds from a target acquired to a shot ready. |
+| `reload-seconds` | `10`, `9`, `8` | Seconds from a shot to the next charge starting. |
+
+The time between two shots of a level is its charge plus its reload. A rail gun has no level 4: a `levels` block for 4 is not read. Level 3 is two blocks high, as the upgrade rule sets for every turret. A rail gun keeps the turrets' shared rotation speed, and it has no ammunition, so no `ammo-capacity` key applies.
+
+### `artillery`
+
+The artillery pieces: their levels, charges, shells, ballistics, magazines, safety margins and the cloud of a phosphorus shell. The rules are in [MECHANICS.md](MECHANICS.md#artillery), and the player's view is in [the player guide](PLAYER_GUIDE.md#artillery). Read at startup, so a change needs a restart. The yields of the nuclear shells are not keys: the Little Boy and the Davy Crockett take their yields from `nuke_little_boy` and `nuke_davy_crockett` in `tnts.yml`, which is read at the same time.
+
+A missing key, or a value that is not finite or is out of range, gives its default. A list of levels with the wrong number of values gives the defaults of that list.
+
+**Levels.** Each list has seven values, for levels I to VII. The range, reload and scatter of the other levels are worked out from the two end values, by the formulas in [MECHANICS.md](MECHANICS.md#artillery).
+
+| Key | Default | Meaning |
+|---|---|---|
+| `levels.height-blocks` | `[1.5, 1.5, 2.5, 2.5, 2.5, 3.0, 3.75]` | The model height of levels I to VII, in blocks. |
+| `levels.power-w` | `[100000, 150000, 230000, 350000, 540000, 830000, 1270000]` | The power of levels I to VII at full power, in W. |
+| `levels.range-level-1-blocks` | `1500` | The range of a level I piece with a tier I charge, in blocks. |
+| `levels.range-level-7-blocks` | `9000` | The range of a level VII piece with a tier I charge, in blocks. |
+| `levels.reload-level-1-ticks` | `400` | The reload of a level I piece with a tier I charge, in ticks. `400` is 20 seconds. |
+| `levels.reload-level-7-ticks` | `1200` | The reload of a level VII piece with a tier I charge, in ticks. `1200` is 60 seconds. |
+| `levels.scatter-level-1-blocks` | `60` | The standard deviation of the landing points of a level I piece, in blocks at 1000 blocks of range. |
+| `levels.scatter-level-7-blocks` | `8` | The same, for a level VII piece. |
+
+**Ballistics.** `ballistics.drag-per-second` is `0.002`: the linear air drag, the share of the speed a shell loses each second.
+
+**Magazine.** `magazine-capacity` is `16`: the most shells, and the most charges, a piece's magazine takes. A load adds one shell and one charge, so a full magazine holds 16 of each. Each shot uses one shell and one charge. A piece's magazine is loaded and unloaded in its dialog at the Command Center; see [the player guide](PLAYER_GUIDE.md#loading-and-unloading). Lowering the value below what a magazine holds keeps what it holds: the magazine takes no more until it is below the new capacity.
+
+**Charges.** Each tier has three multipliers: `range`, `reload` (a higher value reloads more slowly) and `scatter` (a higher value spreads the shells more). The defaults:
+
+| Key | Range | Reload | Scatter |
+|---|---|---|---|
+| `charges.tier-1` | `1.0` | `1.0` | `1.0` |
+| `charges.tier-2` | `1.25` | `1.25` | `1.2` |
+| `charges.tier-3` | `1.6` | `1.5` | `1.5` |
+
+**Shells.** The yields are in tons of TNT, and the burst heights in blocks above the ground. A shell that bursts at one height has the same minimum and maximum.
+
+| Key | Default | Meaning |
+|---|---|---|
+| `shells.tnt-block-tons` | `1.0` | The tons of TNT in one block of TNT, for the high explosive. |
+| `shells.explosive.yield-tons` | `1.0` | The yield of the explosive shell. |
+| `shells.high-explosive.tnt-blocks` | `10` | The TNT blocks of filler. The yield is the blocks times `tnt-block-tons`. |
+| `shells.white-phosphorus.burst-min-blocks` | `25` | The lowest burst height. |
+| `shells.white-phosphorus.burst-max-blocks` | `35` | The highest burst height. |
+| `shells.white-phosphorus.cloud-radius-blocks` | `8` | The radius of the cloud on the ground, in blocks. |
+| `shells.white-phosphorus.damage-per-tick` | `0.05` | The damage a creature takes each tick at full strength, in HP. |
+| `shells.white-phosphorus.duration-seconds` | `60` | How long the cloud lasts, in seconds. |
+| `shells.white-phosphorus.half-life-seconds` | `20` | The time the damage takes to halve, in seconds. |
+| `shells.white-phosphorus.light-particles` | `600` | The light particles one burst spawns. A visual only. |
+| `shells.napalm.length-blocks` | `30` | The length of the burn along the shot, in blocks. |
+| `shells.napalm.width-blocks` | `12` | The width of the burn across the shot, in blocks. |
+| `shells.cluster.yield-tons` | `3` | The tons of TNT in one submunition. |
+| `shells.cluster.burst-min-blocks` | `30` | The lowest burst height. |
+| `shells.cluster.burst-max-blocks` | `50` | The highest burst height. |
+| `shells.cluster.submunitions` | `40` | The submunitions one shell releases. |
+| `shells.cluster.spread-radius-blocks` | `30` | The radius of the disc the submunitions land in, in blocks. |
+| `shells.cluster.min-spacing-blocks` | `4` | The least distance between two submunitions, in blocks. |
+| `shells.enriched-uranium.burst-min-blocks` | `8` | The lowest burst height. The yield is not a key: it is `nuke_little_boy` in `tnts.yml`. |
+| `shells.enriched-uranium.burst-max-blocks` | `8` | The highest burst height. |
+| `shells.hydrogen-thermonuclear.yield-tons` | `1000000` | The yield, in tons. |
+| `shells.hydrogen-thermonuclear.burst-min-blocks` | `20` | The lowest burst height. |
+| `shells.hydrogen-thermonuclear.burst-max-blocks` | `30` | The highest burst height. |
+| `shells.cluster-enriched-uranium.bomb-share-of-davy-crockett` | `0.75` | The share of the Davy Crockett's yield in one bomb. From above 0 to 1. The Davy Crockett is `nuke_davy_crockett` in `tnts.yml`. |
+| `shells.cluster-enriched-uranium.burst-min-blocks` | `8` | The lowest burst height of a bomb. |
+| `shells.cluster-enriched-uranium.burst-max-blocks` | `8` | The highest burst height of a bomb. |
+| `shells.cluster-enriched-uranium.bombs` | `5` | The bombs one shell releases. |
+| `shells.cluster-enriched-uranium.spread-radius-blocks` | `50` | The radius of the disc the bombs land in, in blocks. |
+| `shells.cluster-enriched-uranium.min-spacing-blocks` | `40` | The least distance between two bombs, in blocks. |
+| `shells.cluster-enriched-uranium.min-elevation-degrees` | `25` | The least elevation of the shot, so the bombs fall from above. |
+| `shells.condensed-antimatter.yield-tons` | `500000000` | The yield, in tons: half a gigaton. |
+| `shells.condensed-antimatter.burst-min-blocks` | `50` | The lowest burst height. |
+| `shells.condensed-antimatter.burst-max-blocks` | `50` | The highest burst height. |
+
+**Safety.** The margins of the firing rules, in blocks, degrees and hours. See [Safety rules in the player guide](PLAYER_GUIDE.md#safety-rules).
+
+| Key | Default | Meaning |
+|---|---|---|
+| `safety.minimum-distance-conventional-blocks` | `50` | The least distance from a piece to its target for a conventional shell. |
+| `safety.minimum-distance-nuclear-blocks` | `200` | The same, for a nuclear shell. |
+| `safety.minimum-distance-antimatter-blocks` | `2000` | The same, for the antimatter shell. |
+| `safety.blast-margin-blocks` | `20` | The gap kept between a blast's reach and the piece or the player who fires. |
+| `safety.scatter-sigmas` | `3` | How many standard deviations of scatter the blast checks allow for. |
+| `safety.blast-radius-constant` | `1.15` | The blast radius per cube root of the yield in tons: radius = constant x cube root of tons. |
+| `safety.blast-radius-floor-blocks` | `15` | The least blast radius, in blocks. |
+| `safety.fallout-multiple` | `3` | The fallout zone of a nuclear shell as a multiple of its reach. No player may be inside it. |
+| `safety.min-elevation-degrees` | `5` | The lowest elevation of any shot. |
+| `safety.max-elevation-degrees` | `85` | The highest elevation of any shot. |
+| `safety.antimatter-cooldown-hours` | `12` | The hours a player waits between two antimatter shots. |
+
+**Presentation.** The sounds, particles and motion of a shot. The sounds themselves are vanilla ones, named in the code; these keys set how loud, how often and how much. A shot's flight is not changed by them.
+
+| Key | Default | Meaning |
+|---|---|---|
+| `presentation.launch-volume` | `4.0` | The volume of the launch report. A volume of 4 is heard about 64 blocks away. |
+| `presentation.launch-pitch` | `0.5` | The pitch of the launch report, from 0.5 to 2.0. Low sounds heavy. |
+| `presentation.recoil-blocks` | `0.5` | How far the barrel kicks back at a shot, in blocks. It returns to rest in about half a second. |
+| `presentation.whistle-volume` | `0.5` | The volume of the whistle of a shell in the air. A volume of 0.5 is heard about 8 blocks away. |
+| `presentation.whistle-interval-ticks` | `40` | The ticks between two whistles of one shell. `40` is two seconds. |
+| `presentation.trail-puffs-per-tick` | `3` | The smoke puffs a shell leaves each tick, at most. |
+| `presentation.impact-volume` | `3.0` | The volume of the thud of a shell that lands without a blast, such as a napalm shell. |
+| `presentation.debris-particles` | `60` | The debris particles where a blast lands on the ground. A blast in the air throws none. |
+| `presentation.hazard-volume` | `0.6` | The volume of the hiss of a phosphorus cloud and the crackle of a napalm fire. |
+| `presentation.hazard-interval-ticks` | `80` | The ticks between two hisses or crackles of one cloud or fire. `80` is four seconds. |
+| `presentation.reload-volume` | `0.7` | The volume of the sound when a piece is ready to fire again. |
+
+### `command-center`
+
+The Artillery Command Center: the Set Target mode, the map and the screen. Read at startup, so a change needs a restart. The rules are in [MECHANICS.md](MECHANICS.md#artillery), and the player's view is in [the player guide](PLAYER_GUIDE.md#the-command-center).
+
+| Key | Default | Meaning |
+|---|---|---|
+| `listen-timeout-seconds` | `20` | The seconds the Set Target mode stays open with no click, after which it ends and stores nothing. |
+| `map-radius-blocks` | `64` | The blocks from the centre of the map to its edge. At zoom 1 the map shows twice this across, one block to a pixel. |
+| `zoom-levels` | `[1, 2, 4]` | The zoom levels of the map, in blocks per pixel, from the closest to the widest. The list must be strictly increasing and above 0. Otherwise the default is used. |
+| `screen-refresh-ticks` | `10` | The ticks between two refreshes of the screen. `10` is half a second. |
+| `map-wall-size` | `5` | The side of the wall of item frames that shows the map, in frames: `3` or `5`. The wall stands above the Command Center, in front of its screen, one frame to a block, and shows the map while the Set Target mode is open. Any other value gives `5`. |
+| `terrain-reads-in-flight` | `8` | The most chunks the Set Target map reads from the server at once, without generating them. |
+| `terrain-generations-in-flight` | `4` | The most unexplored chunks the Set Target map generates at once. Generation is slow, so this is kept low. |
+| `terrain-cache-chunks` | `4096` | The chunks whose terrain the map keeps in memory, the least recently used dropped first. About 256 bytes each. |
 
 ### `integrations`
 
@@ -269,14 +471,28 @@ The last three keys are the scanner's, and they are read on their own: when they
 
 ### drill-rates
 
-The items a drill yields per second at full power, one rate for each level from 1 to 5. A drill yields its level's rate times its power efficiency (see [MECHANICS.md](MECHANICS.md#drills)). The same rates apply to ore drills and petroleum drills. Read at startup, so a change needs a restart.
+One rate for each drill level from 1 to 5. A drill's output is its level's rate times its power efficiency (see [MECHANICS.md](MECHANICS.md#drills)). Read at startup, so a change needs a restart.
 
 | Key | Default | Meaning |
 |---|---|---|
-| `drill-rates` | `[1.0, 1.5, 2.5, 4.0, 6.0]` | Five numbers, items per second at full power for levels 1 to 5, level 1 first. The defaults are 60, 90, 150, 240 and 360 items per minute. |
+| `drill-rates` | `[1.0, 1.5, 2.5, 4.0, 6.0]` | Five numbers for levels 1 to 5, level 1 first, at full power. For an ore drill, items per second. For a petroleum drill, litres of petroleum per second pumped into the oil network. The defaults are 60, 90, 150, 240 and 360 per minute. |
 
 - **The rules.** The list has exactly five numbers. Each is finite and at least 0, and a higher level may not yield less than the level below it.
 - **A bad list.** A list of the wrong length, or a value that breaks a rule, logs one warning, and the defaults above are used for the whole list.
+
+### `chunks`
+
+`keep-loaded` (default `true`) keeps loaded the chunks that hold working devices: drills, lab machines, generators, pumps, the refinery,
+turrets, pylons, belts and oil and water pipes. Without it, a chunk unloads when no player is near, and its devices stop. `max-forced`
+(default `256`) caps how many chunks the devices keep loaded with tickets; a value of `0` keeps none. Both are read at startup. The
+tickets are not saved, so they are added again when the server starts.
+
+The plugin holds all its chunk tickets in one place. The artillery holds the chunks of its shots and blasts there too, so a chunk that
+both a device and a shot need stays loaded until both have let go. `max-forced` counts only the device chunks.
+
+The artillery pieces and Command Centers are not device chunks: they hold their own chunks under an owner of their own, outside the
+cap and the order of `max-forced`. While a Command Center has a target, the chunk of the aim and the eight chunks around it are held
+too, until the target is cleared, replaced or the center is removed. `keep-loaded` turns these holds off as well.
 
 ### `persistence`
 
@@ -400,8 +616,8 @@ The same shape as `items.yml`, for the science chain. It holds the raw and crush
 the products of roasting, separation and conversion, the research packs, the lab tools (`crusher`, `roaster`,
 `separator`, `purifier`, `converter`, `enrichment_cascade`, `transmuter`, `spectrometer`, `research_console`,
 `particle_accelerator`, `antimatter_condenser`), the Ore Density Scanner (`ore_density_scanner`), the solar panel
-(`solar_panel`), petroleum (`petroleum`), and the drills (`petroleum_drill_1` to `petroleum_drill_5`, `ore_drill_1` to
-`ore_drill_5`).
+(`solar_panel`), and the drills (`petroleum_drill_1` to `petroleum_drill_5`, `ore_drill_1` to `ore_drill_5`). Petroleum and
+diesel are not items: they are fluids in the oil network, so no entry here names them.
 
 A lab tool or a drill is a component whose `material` is the block it stands on. `BARREL` is the host of the lab tools and of every drill. The solar panel's `material` is `DAYLIGHT_DETECTOR`. The Ore Density Scanner (`ore_density_scanner`) is a held item that finds deposits. Its scanner keys are in the `deposits` section.
 
@@ -431,7 +647,8 @@ One entry per special ore, keyed by its id:
 | `replace` | Blocks a patch block may replace. |
 | `min-y`, `max-y` | Vertical range in which a deposit's patch blocks become host blocks. |
 
-The keys `veins-per-chunk` and `vein-size` are no longer read, so they do nothing. Deposits are not placed from this file: the world lays them, with the settings under [deposits](#deposits) (see [MECHANICS.md](MECHANICS.md#deposits)). A crude petroleum deposit (`crude_petroleum_deposit`) is one of the entries. A placed one drops `petroleum` when mined, and a petroleum drill takes petroleum from the deposits of that ore.
+The keys `veins-per-chunk` and `vein-size` are no longer read, so they do nothing. Deposits are not placed from this file: the world lays them, with the settings under [deposits](#deposits) (see [MECHANICS.md](MECHANICS.md#deposits)). A crude petroleum deposit (`crude_petroleum_deposit`) is one of the entries. It has no `drop`: a petroleum drill pumps its
+petroleum into the oil network as litres of fluid, and no item is given.
 
 ## research.yml
 
@@ -454,7 +671,7 @@ meant to be edited by hand.
 
 `energy.yml` has a `version` (2 now), the `next-grid-id` (the id the next new grid gets), and five lists:
 
-- `pylons`: each pylon's id, world, block, level (1 to 3) and grid id (`grid`).
+- `pylons`: each pylon's id, world, block, level (1 to 5) and grid id (`grid`).
 - `accumulators`: the same, with the energy held in Wh (`stored-wh`) and whether it was discharging.
 - `generators`: each generator's id, world, block and kind, its fuel count (`fuel`), the seconds left on the item that
   burns (`remaining-seconds`), and the energy it has made since it was placed in Wh (`total-wh`).
@@ -483,6 +700,38 @@ devices start empty and the console says so.
 
 Items on belts keep their place across a restart. If an item cannot be put back when the file is read (its belt is gone,
 or its place overlaps another item), it is not kept, and the console logs how many were lost.
+
+## water.yml and vertical.yml
+
+These two files hold the water pumps, pipes and splitters, and the vertical belts with the items on their towers. As with
+the files above, the plugin writes them and they are not meant to be edited by hand.
+
+`water.yml` has a `version` (1) and numbered `devices` entries. Each entry has its `type` (the component id: `water_pump`,
+`water_pipe`, `water_splitter_t` or `water_splitter_x`), its `id`, `owner`, `world`, the block (`x`, `y`, `z`), and `face`
+(lowercase, for the splitters and the pumps). A pump also has its `level`, its fuel (`fuel`, the items it holds) and
+`burn-ticks` (the ticks left on the item that burns). Pump sources are not saved: they are measured again. An entry with a
+splitter that has no face is skipped, and a pump with no face gets north. A splitter's face may be up or down: a vertical splitter
+stands on the top or the bottom of a block.
+
+`vertical.yml` has a `version` (1), `belts` and `items`. Each belt has its `id`, its `owner` (if one is set), `world`, the
+block, its `level` and its `direction`, which is `UP` or `DOWN`. Each item on a tower has its `world`, its position (`x`,
+`y`, `z`), and its `kind` and `id`.
+
+Both files are written to a `.tmp` file first, which then replaces the real file. `water.yml` is saved when a part is placed,
+removed, upgraded or fuelled, on shutdown, and every 300 ticks. `vertical.yml` is saved at once when a belt is added, removed
+or changes direction, and with each logistics save (every `logistics.save-interval-ticks`, and on shutdown), which is when
+the items on the towers are written. An item found at load on a tower that covers its height goes back on that tower;
+otherwise it is dropped at its block.
+
+## oil.yml
+
+`oil.yml` holds the oil tubes: each one's type, block, owner and, when it holds any, its fluid (`petroleum` or `diesel`) and
+its litres. The file has a `version` (currently 2) and the tubes as numbered `devices` entries. A version 1 file reads as empty
+tubes. An entry that cannot be read is skipped with a warning.
+
+When the file loads, a network that holds both fluids is settled before the first tick: the fluid more of its tubes hold is kept,
+the other is emptied, and a warning names the network. On a tie petroleum is kept. The networks are not saved: they are rebuilt
+from the tubes on each start.
 
 ## Startup data merge
 
@@ -524,14 +773,10 @@ process ids are tied to the code, so the plugin does not merge its entries. Its 
 written for:
 
 ```
-# data-version: 5
+# data-version: 10
 ```
 
-Version 5 added the four turret upgrade kits (`turret_upgrade_2` to `turret_upgrade_5`), with their processes: kits II and III in the component assembly, and kits IV and V in the heavy weapons assembly. Version 4 added the laser turret parts: the optical lens, the laser emitter and the laser turret, with their processes. Version 3
-added the eight chemistry and ammunition machines, their recipes, and the saltpeter, sulfur and zinc processes. A server that still
-has an older file gets the new one on the next start, and the old one is kept as `processes.yml.bak`. The version does not touch
-`research.yml`: a server that already has that file keeps its node unlocks, so the laser parts and the upgrade kits are not gated there until the file
-is updated (see [COMPATIBILITY.md](COMPATIBILITY.md)).
+The shipped version is 10. The changes of each version are listed in [CHANGELOG.md](../CHANGELOG.md).
 
 On start the plugin compares that line with the version the jar ships. The file is handled as follows:
 
@@ -551,7 +796,7 @@ plugins/CoreFactory/
 ├── config.yml                 settings (this page)
 ├── tnts.yml                   TNT types
 ├── items.yml                  crafting components
-├── materials.yml              science materials, lab tools, drills, scanner, solar panel, petroleum
+├── materials.yml              science materials, lab tools, drills, scanner, solar panel
 ├── processes.yml              lab tool kinds, processes, drill kinds and levels
 ├── ores.yml                   special ores
 ├── research.yml               the research line
@@ -560,6 +805,9 @@ plugins/CoreFactory/
 ├── machines.yml              lab tools and drills: where they stand, their progress and process
 ├── energy.yml                pylons, accumulators, generators and wires (see above)
 ├── logistics.yml             belts, pickers, splitters and the items on belts (see above)
+├── water.yml                 water pumps, pipes and splitters, with their fuel and levels (see above)
+├── oil.yml                   oil tubes, with the fluid in each (see above)
+├── vertical.yml              vertical belts and the items on their towers (see above)
 ├── turrets.yml                placed turrets, their levels, rounds, facing and targeting
 ├── friends.yml                each owner's friend list, for the turrets
 ├── achievements.yml           each player's achievement progress
@@ -570,5 +818,5 @@ plugins/CoreFactory/
 
 The items inside a lab tool or a drill are kept in the barrel under it. `machines.yml` keeps each machine's position, type,
 progress and process. Back up the world together with `machines.yml` and `placed-tnt.yml`, because the items are in the
-world's blocks. Back up `energy.yml`, `logistics.yml` and `turrets.yml` as well: the fuel in a generator and the items on a belt are
-kept in those files, not in the world.
+world's blocks. Back up `energy.yml`, `logistics.yml`, `water.yml`, `oil.yml`, `vertical.yml` and `turrets.yml` as well: the fuel in a generator
+or a pump, the fluid in the oil tubes, and the items on a belt or on a vertical tower, are kept in those files, not in the world.

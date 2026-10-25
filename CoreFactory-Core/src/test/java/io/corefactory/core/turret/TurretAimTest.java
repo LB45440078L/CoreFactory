@@ -1,6 +1,7 @@
 package io.corefactory.core.turret;
 
-import org.bukkit.configuration.MemoryConfiguration;
+import io.corefactory.core.config.TestConfig;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -66,9 +67,9 @@ class TurretAimTest {
 
     @Test
     void aTargetAboveTheTiltLimitIsOutOfReach() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("turrets.pitch-limit-degrees", 30);
-        config.set("turrets.arc-degrees", 180);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "turrets.pitch-limit-degrees", 30);
+        TestConfig.set(config, "turrets.arc-degrees", 180);
         TurretSettings settings = TurretSettings.from(config);
 
         assertThat(TurretAim.inReach(0.0, 25.0, 0.0, settings)).isTrue();

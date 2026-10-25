@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.corefactory</groupId>
+    <artifactId>CoreFactory</artifactId>
+    <version>1.0.0</version>
+  </parent>
+
+  <artifactId>CoreFactory-Paper</artifactId>
+  <name>CoreFactory :: Paper Plugin</name>
+  <description>
+    The plugin jar. Wires the core to the server: WorldEdit/FAWE block editing, per-player client effects,
+    listeners, commands and GUIs. The only module that touches WorldEdit types.
+  </description>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.corefactory</groupId>
+      <artifactId>CoreFactory-Api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.corefactory</groupId>
+      <artifactId>CoreFactory-Core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.corefactory</groupId>
+      <artifactId>CoreFactory-Storage</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.papermc.paper</groupId>
+      <artifactId>paper-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.sk89q.worldedit</groupId>
+      <artifactId>worldedit-bukkit</artifactId>
+    </dependency>
+    <!-- Not compiled against: it is here so Maven builds the resource pack first, and the zip is in place when this
+         module's resources are copied into the jar. -->
+    <dependency>
+      <groupId>io.corefactory</groupId>
+      <artifactId>CoreFactory-ResourcePack</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sk89q.worldguard</groupId>
+      <artifactId>worldguard-bukkit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>paper-plugin.yml</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+        <excludes>
+          <exclude>paper-plugin.yml</exclude>
+        </excludes>
+      </resource>
+      <!-- The resource pack, built by the ResourcePack module. Inside the jar it is resource-pack/..., and the plugin
+           copies it to plugins/CoreFactory/pack/pack.zip on load. -->
+      <resource>
+        <directory>../CoreFactory-ResourcePack/target</directory>
+        <filtering>false</filtering>
+        <includes>
+          <include>CoreFactory-ResourcePack.zip</include>
+        </includes>
+        <targetPath>resource-pack</targetPath>
+      </resource>
+    </resources>
+    <plugins>
+      <!-- The server loads only the plugin jar, so the Api and Core classes are merged into it.
+           WorldEdit, WorldGuard and the Paper API are provided by the server and never shaded. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>${shade.plugin.version}</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <artifactSet>
+                <includes>
+                  <include>io.corefactory:CoreFactory-Api</include>
+                  <include>io.corefactory:CoreFactory-Core</include>
+                  <include>io.corefactory:CoreFactory-Storage</include>
+                  <include>com.zaxxer:HikariCP</include>
+                </includes>
+              </artifactSet>
+              <!-- HikariCP is relocated: other plugins often bundle their own copy. The JDBC drivers keep their names,
+                   because the drivers find each other by name at runtime. -->
+              <relocations>
+                <relocation>
+                  <pattern>com.zaxxer.hikari</pattern>
+                  <shadedPattern>io.corefactory.libs.hikari</shadedPattern>
+                </relocation>
+              </relocations>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                    <exclude>module-info.class</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

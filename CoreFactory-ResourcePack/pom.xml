@@ -62,7 +62,7 @@
               <mainClass>io.corefactory.resourcepack.ResourcePackBuilder</mainClass>
               <arguments>
                 <argument>${project.basedir}/art</argument>
-                <!-- A fixed name, so the Spigot module can bundle it without knowing the version. -->
+                <!-- A fixed name, so the Paper module can bundle it without knowing the version. -->
                 <argument>${project.build.directory}/CoreFactory-ResourcePack.zip</argument>
                 <argument>${pack.format}</argument>
                 <argument>${pack.description}</argument>

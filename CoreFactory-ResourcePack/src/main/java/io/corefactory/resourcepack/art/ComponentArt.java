@@ -105,17 +105,19 @@ public final class ComponentArt {
             // Survey and oil: the density scanner, the solar panel and the crude petroleum.
             new Spec("ore_density_scanner", "#B08A3A", "#3CFF7A", ComponentArt::densityScanner),
             new Spec("solar_panel", "#C4CBD4", "#2A6FD8", ComponentArt::solarPanel),
-            new Spec("petroleum", "#2A2014", "#FFC83A", ComponentArt::petroleum),
             // Power: the wire, the pylons and accumulators, the wind turbine, the diesel and the nuclear fuel.
             new Spec("energy_wire", "#C07040", "#FFB070", ComponentArt::energyWire),
             new Spec("pylon_1", "#7C8590", "#C87533", ComponentArt.pylon(1)),
             new Spec("pylon_2", "#7C8590", "#E0B040", ComponentArt.pylon(2)),
             new Spec("pylon_3", "#7C8590", "#9B5CFF", ComponentArt.pylon(3)),
+            new Spec("pylon_4", "#7C8590", "#E0443A", ComponentArt.pylon(4)),
+            new Spec("pylon_5", "#7C8590", "#F2B233", ComponentArt.pylon(5)),
             new Spec("accumulator_1", "#8A929C", "#5BC8F0", ComponentArt.accumulator(1)),
             new Spec("accumulator_2", "#8A929C", "#3F7BFF", ComponentArt.accumulator(2)),
             new Spec("accumulator_3", "#8A929C", "#8A5CFF", ComponentArt.accumulator(3)),
+            new Spec("accumulator_4", "#8A929C", "#2FC7B8", ComponentArt.accumulator(4)),
+            new Spec("accumulator_5", "#8A929C", "#D65CD6", ComponentArt.accumulator(5)),
             new Spec("wind_generator", "#E4E8EE", "#3A8FD8", ComponentArt::wind),
-            new Spec("diesel", "#8A5410", "#FFB040", ComponentArt::dieselCanister),
             new Spec("nuclear_fuel_rod", "#8E949C", "#B8FF5A", ComponentArt::fuelRod),
             // Placeable machines: the inventory sprite. The 3D model is in MachineArt.
             new Spec("crusher", "#5A6470", "#FFB000", ComponentArt.machine(Icon.CONE)),
@@ -175,6 +177,10 @@ public final class ComponentArt {
             new Spec("round_armor_piercing", "#A8843E", "#3A3F48", ComponentArt::round),
             new Spec("round_incendiary", "#C9A24A", "#FF7A20", ComponentArt::round),
             new Spec("round_depleted_uranium", "#6E7F62", "#3E5A44", ComponentArt::round),
+            // Artillery stock and containment: the casings and the propellant packed for a shell, and the antimatter trap.
+            new Spec("shell_casing_stock", "#C9A24A", "#7A5A1E", ComponentArt::shellCasingStock),
+            new Spec("shell_powder_stock", "#6E7480", "#2A2C32", ComponentArt::shellPowderStock),
+            new Spec("antimatter_containment", "#1A1430", "#B56BFF", ComponentArt::antimatterContainment),
             // Turret parts and the turret.
             new Spec("precision_barrel", "#8F98A3", "#D0D6DE", ComponentArt::barrel),
             new Spec("steel_frame", "#6D7782", "#C5CCD6", ComponentArt::frame),
@@ -190,10 +196,12 @@ public final class ComponentArt {
 
     /**
      * Every component: the listed components, then the process machines' inventory sprites from
-     * {@link ProcessMachineArt#SPRITES}, then the turrets' sprites from {@link TurretArt#SPRITES}.
+     * {@link ProcessMachineArt#SPRITES}, then the turrets' sprites from {@link TurretArt#SPRITES}, then the artillery's
+     * sprites from {@link ArtilleryArt#SPRITES} and the shells and charges from {@link ShellArt#SPRITES}.
      */
     public static final List<Spec> ALL = Stream.of(LISTED, ProcessMachineArt.SPRITES, TurretArt.SPRITES,
-                    TurretLevelArt.SPRITES, LevelArt.SPRITES, WaterArt.SPRITES, VerticalBeltArt.SPRITES)
+                    TurretLevelArt.SPRITES, LevelArt.SPRITES, WaterArt.SPRITES, OilVariants.SPRITES, VerticalBeltArt.SPRITES,
+                    DuplexArt.SPRITES, ArtilleryArt.SPRITES, RailgunArt.SPRITES, ShellArt.SPRITES)
             .flatMap(List::stream).toList();
 
     private ComponentArt() {
@@ -453,14 +461,6 @@ public final class ComponentArt {
     }
 
     /** An erlenmeyer flask of dark oil with a gold cap and a bluish sheen. */
-    private static void petroleum(Canvas c, int base, int accent, long seed) {
-        Area flask = Area.rect(13, 6, 19, 13).or(Area.polygon(13, 13, 19, 13, 27, 27, 5, 27));
-        Sprite.body(c, flask, base, seed);
-        c.paint(Area.rect(12, 3, 20, 6), accent);
-        c.paint(Area.line(10, 24, 14, 16, 1.2), Color.withAlpha(Color.WHITE, 0.55));
-        c.paint(Area.line(17, 23, 21, 20, 0.8), Color.withAlpha(Color.hex("#7FD8FF"), 0.5));
-    }
-
     /** A spool of copper wire between two steel flanges, with the loose end drawn out to a terminal. */
     private static void energyWire(Canvas c, int base, int accent, long seed) {
         int steel = Color.hex("#9AA0A8");
@@ -770,39 +770,67 @@ public final class ComponentArt {
 
     /**
      * A lattice tower seen from the front: two steel legs, cross-bars, and an accent cap. Higher levels are taller, and
-     * the third has three accent cross-arms. The 3D model is in {@link MachineArt}.
+     * the third has three accent cross-arms. The fourth is wider, with four arms; the fifth has four arms and a crown.
+     * The 3D model is in {@link MachineArt}.
      */
     static Painter pylon(int level) {
         return (c, base, accent, seed) -> {
-            double top = level == 1 ? 9 : level == 2 ? 5 : 3;
+            double top = switch (level) {
+                case 1 -> 9;
+                case 2 -> 5;
+                case 3 -> 3;
+                case 4 -> 2;
+                default -> 6;
+            };
+            double half = level >= 4 ? 11 : 8;
             c.paint(Area.rect(5, 27, 27, 29), Color.scale(base, 0.6));
-            c.paint(Area.line(16, top, 8, 28, 1.5).or(Area.line(16, top, 24, 28, 1.5)), base);
+            c.paint(Area.line(16, top, 16 - half, 28, 1.5).or(Area.line(16, top, 16 + half, 28, 1.5)), base);
             for (double y = top + 5; y < 26; y += 5) {
-                double reach = 8 * (y - top) / (28 - top);
+                double reach = half * (y - top) / (28 - top);
                 c.paint(Area.line(16 - reach, y, 16 + reach, y, 1.1), Color.scale(base, 0.75));
             }
-            if (level == 3) {
-                for (double y : new double[]{7, 12, 17}) {
-                    double reach = 8 * (y - top) / (28 - top) + 1.5;
+            if (level >= 3) {
+                int arms = level == 3 ? 3 : 4;
+                for (int k = 0; k < arms; k++) {
+                    double y = top + 4 + 5 * k;
+                    double reach = half * (y - top) / (28 - top) + 1.5;
                     c.paint(Area.line(16 - reach, y, 16 + reach, y, 1.3), accent);
                     c.paint(Area.disc(16 - reach, y, 1.3), accent);
                     c.paint(Area.disc(16 + reach, y, 1.3), accent);
                 }
             }
+            if (level == 5) {
+                c.paint(Area.line(11, top - 2, 21, top - 2, 1.2), accent);
+                c.paint(Area.disc(11, top - 2, 1.6), accent);
+                c.paint(Area.disc(16, top - 4, 1.8), accent);
+                c.paint(Area.disc(21, top - 2, 1.6), accent);
+            }
             c.paint(Area.disc(16, top, 2.2), accent);
         };
     }
 
-    /** A steel cell with a cap and a level meter: three bars on the front, the first {@code level} of them lit. */
+    /**
+     * A steel cell with a cap and a level meter: three bars on the front, the first {@code level} of them lit. The fourth
+     * and fifth are wider cells, with five bars and coils round the sides.
+     */
     static Painter accumulator(int level) {
         return (c, base, accent, seed) -> {
-            Area body = Area.rect(8, 7, 24, 26).or(Area.ellipse(16, 7, 8, 3)).or(Area.ellipse(16, 26, 8, 3));
+            boolean large = level >= 4;
+            double edge = large ? 6 : 8;
+            Area body = Area.rect(edge, 7, 32 - edge, 26).or(Area.ellipse(16, 7, 16 - edge, 3))
+                    .or(Area.ellipse(16, 26, 16 - edge, 3));
             Sprite.body(c, body, base, seed);
-            c.paint(Area.ellipse(16, 7, 8, 3), accent);
+            c.paint(Area.ellipse(16, 7, 16 - edge, 3), accent);
+            if (large) {
+                for (double y : new double[]{11, 16, 21}) {
+                    c.paint(Area.rect(edge, y, 32 - edge, y + 1), Color.scale(base, 0.7));
+                }
+            }
             c.paint(Area.rect(10, 9, 22, 25), Color.hex("#0E1A14"));
-            for (int k = 0; k < 3; k++) {
-                double y = 21 - 5 * k;
-                c.paint(Area.rect(12, y, 20, y + 3), k < level ? Color.hex("#FFD040") : Color.scale(base, 0.4));
+            int bars = large ? 5 : 3;
+            for (int k = 0; k < bars; k++) {
+                double y = large ? 23 - 3 * k : 21 - 5 * k;
+                c.paint(Area.rect(12, y, 20, y + (large ? 1 : 3)), k < level ? Color.hex("#FFD040") : Color.scale(base, 0.4));
             }
         };
     }
@@ -823,14 +851,6 @@ public final class ComponentArt {
     }
 
     /** A dark amber canister with a handle, a spout and a drop on the label. */
-    private static void dieselCanister(Canvas c, int base, int accent, long seed) {
-        c.paint(Area.arc(16, 9, 4, 6.5, Math.PI, 2 * Math.PI), Color.scale(base, 0.7));
-        c.paint(Area.rect(21, 4, 25, 9), Color.scale(base, 0.6));
-        Sprite.body(c, Area.roundRect(7, 9, 25, 27, 2.5), base, seed);
-        c.paint(Area.rect(7, 14, 25, 21), accent);
-        Icon.DROP.draw(c, 16, 17.5, 3.4, Color.scale(base, 0.35), Color.WHITE);
-    }
-
     /** A glowing core in a grey sleeve, with spacer bands and a halo of light. */
     private static void fuelRod(Canvas c, int base, int accent, long seed) {
         c.paint(Area.ellipse(16, 16, 8, 15), Color.withAlpha(accent, 0.25));
@@ -1028,6 +1048,37 @@ public final class ComponentArt {
         c.paint(Area.rect(8, 12, 24, 14), Color.scale(base, 0.7));
         c.paint(Area.rect(7, 26, 25, 29), Color.scale(base, 0.5));
         Sprite.body(c, Area.polygon(10, 13, 12, 7, 16, 3, 20, 7, 22, 13), accent, seed + 1);
+    }
+
+    /** Three brass casings stacked one above another, with grooves between them and a steel strap binding them. */
+    private static void shellCasingStock(Canvas c, int base, int accent, long seed) {
+        Area casings = Area.roundRect(4, 5, 28, 11, 3).or(Area.roundRect(4, 12, 28, 18, 3))
+                .or(Area.roundRect(4, 19, 28, 25, 3));
+        Sprite.body(c, casings, base, seed);
+        c.paint(Area.rect(5, 11, 27, 12), Color.scale(base, 0.45));
+        c.paint(Area.rect(5, 18, 27, 19), Color.scale(base, 0.45));
+        for (double y : new double[]{8, 15, 22}) {
+            c.paint(Area.ellipse(6, y, 1.2, 2.6), accent);
+        }
+        c.paint(Area.rect(13, 4, 16, 26), Color.hex("#7A7F88"));
+    }
+
+    /** Three grey cloth bags of propellant, two above and one below, tied with a dark cord, and grains in the bags. */
+    private static void shellPowderStock(Canvas c, int base, int accent, long seed) {
+        Area bags = Area.ellipse(10, 12, 6, 5).or(Area.ellipse(22, 12, 6, 5)).or(Area.ellipse(16, 21, 9, 6));
+        Sprite.body(c, bags, base, seed);
+        c.paint(Area.line(7, 9, 25, 9, 1.2).and(bags), accent);
+        c.paint(Area.ellipse(16, 9, 1.6, 1.4), accent);
+        scatter(c, 6, 11, 18, 21, 24, 0.8, Color.scale(base, 0.45), seed);
+    }
+
+    /** A dark crystal in a steel ring, with a violet core that glows through it and a glint on its face. */
+    private static void antimatterContainment(Canvas c, int base, int accent, long seed) {
+        c.paint(Area.ring(16, 16, 12.5, 2), Color.hex("#7A8090"));
+        c.paint(Area.disc(16, 16, 9), Color.withAlpha(accent, 0.25));
+        Sprite.body(c, Area.polygon(16, 7, 23, 16, 16, 25, 9, 16), base, seed);
+        c.paint(Area.disc(16, 16, 3.2), Color.withAlpha(accent, 0.9));
+        c.paint(Area.disc(14.5, 13.5, 1), Color.withAlpha(Color.WHITE, 0.7));
     }
 
     /** A precision barrel: a long steel tube with a collar at the breech and a dark bore at the muzzle. */

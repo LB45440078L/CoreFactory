@@ -59,13 +59,31 @@ class PumpFuelTest {
     }
 
     @Test
-    void levelOneTakesCoalOrCharcoalAndLevelTwoTakesDiesel() {
+    void theItemBurningNowCountsAsFuelHeld() {
+        assertThat(Burn.empty().held()).isZero();
+        assertThat(new Burn(0, PumpFuel.ITEM_TICKS - 1).held()).isEqualTo(1);
+        assertThat(new Burn(2, 5).held()).isEqualTo(3);
+    }
+
+    @Test
+    void levelOneTakesCoalOrCharcoalAndNoItemIsTakenAtLevelTwo() {
         assertThat(PumpFuel.accepts(1, ItemRef.material("COAL"))).isTrue();
         assertThat(PumpFuel.accepts(1, ItemRef.material("CHARCOAL"))).isTrue();
         assertThat(PumpFuel.accepts(1, ItemRef.item("charcoal"))).isTrue();
         assertThat(PumpFuel.accepts(1, ItemRef.item("diesel"))).isFalse();
-        assertThat(PumpFuel.accepts(2, ItemRef.item("diesel"))).isTrue();
+        assertThat(PumpFuel.accepts(2, ItemRef.item("diesel"))).isFalse();
         assertThat(PumpFuel.accepts(2, ItemRef.material("COAL"))).isFalse();
+    }
+
+    @Test
+    void levelTwoDrawsDieselFromTheNetworkAndTheOthersDoNot() {
+        assertThat(PumpFuel.drawsFluid(1)).isFalse();
+        assertThat(PumpFuel.drawsFluid(2)).isTrue();
+        assertThat(PumpFuel.drawsFluid(3)).isFalse();
+        assertThat(PumpFuel.litresWanted(2)).isEqualTo(PumpFuel.DIESEL_LITRES_PER_TICK);
+        assertThat(PumpFuel.litresWanted(1)).isZero();
+        assertThat(PumpFuel.FLUID).isEqualTo(io.corefactory.core.oil.Fluid.DIESEL);
+        assertThat(PumpFuel.DIESEL_LITRES_PER_TICK * PumpFuel.ITEM_TICKS).isCloseTo(1.0, org.assertj.core.api.Assertions.within(1e-12));
     }
 
     @Test

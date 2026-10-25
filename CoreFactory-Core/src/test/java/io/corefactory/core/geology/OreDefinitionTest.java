@@ -1,9 +1,10 @@
 package io.corefactory.core.geology;
 
-import org.bukkit.configuration.file.YamlConfiguration;
+import io.corefactory.core.config.ConfigValues;
+import io.corefactory.core.config.TestConfig;
 import org.junit.jupiter.api.Test;
 
-import java.io.StringReader;
+import java.util.Map;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -52,9 +53,9 @@ class OreDefinitionTest {
 
     @Test
     void parseKeepsFileOrderAndSkipsBadEntries() {
-        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new StringReader(GOOD));
+        Map<String, Object> yaml = TestConfig.yaml(GOOD);
 
-        List<OreDefinition> ores = OreDefinition.parse(yaml.getConfigurationSection("ores"), LOG);
+        List<OreDefinition> ores = OreDefinition.parse(ConfigValues.optionalSection(yaml, "ores"), LOG);
 
         assertThat(ores).extracting(OreDefinition::id).containsExactly("good_ore", "other_good");
         OreDefinition good = ores.get(0);
@@ -72,6 +73,33 @@ class OreDefinitionTest {
     @Test
     void parseOfAMissingSectionLoadsNothing() {
         assertThat(OreDefinition.parse(null, LOG)).isEmpty();
+    }
+
+    @Test
+    void aFluidOreWithAVolumeNeedsNoDropAndYieldsNoItem() {
+        String fluid = """
+                ores:
+                  crude:
+                    host: WHITE_GLAZED_TERRACOTTA
+                    replace: [STONE]
+                    min-y: -64
+                    max-y: 0
+                    volume: 400
+                """;
+        Map<String, Object> yaml = TestConfig.yaml(fluid);
+
+        List<OreDefinition> ores = OreDefinition.parse(ConfigValues.optionalSection(yaml, "ores"), LOG);
+
+        assertThat(ores).hasSize(1);
+        assertThat(ores.get(0).fluid()).isTrue();
+        assertThat(ores.get(0).drop()).isNull();
+        assertThat(ores.get(0).volume()).isEqualTo(400);
+    }
+
+    @Test
+    void aCountOreWithNoDropIsRefused() {
+        assertThatThrownBy(() -> new OreDefinition("ore_y", "", "STONE", null, 1, 1, Set.of("STONE"), 0, 10))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("has no drop");
     }
 
     @Test

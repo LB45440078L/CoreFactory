@@ -1,0 +1,1713 @@
+# =====================================================================================================
+#  CoreFactory materials and machines
+#
+#  The science chain: ores are mined (ores.yml), crushed, roasted, separated, purified, converted and enriched
+#  (processes.yml). Each entry here is a component: a crafted or processed item with its own id.
+#  The schema is the same as items.yml components. Machines are components too: their "material" is the
+#  vanilla block they occupy in the world (their 3D model is drawn over it, like placed TNT).
+#
+#  Items that only come out of a process have no recipe. Items that are crafted are gated by research
+#  (research.yml), which the crafting, placing and igniting code checks.
+#
+#  Ingredients: material:<NAME>, item:<id> (a component in this file or items.yml), tnt:<id>.
+# =====================================================================================================
+
+components:
+
+  # ----------------------------------------------------------------- Raw ore (dropped by mining)
+
+  raw_uraninite:
+    name: "&8Raw Uraninite"
+    lore:
+      - "&7Black pitchy mineral, heavy and faintly warm."
+      - "&8Roast and separate it to get yellowcake."
+    material: BLACK_DYE
+
+  raw_pitchblende:
+    name: "&6Raw Pitchblende"
+    lore:
+      - "&7Brown-black ore that is almost all uranium oxide."
+    material: CLAY_BALL
+
+  raw_monazite:
+    name: "&eRaw Monazite"
+    lore:
+      - "&7Amber phosphate sand, rich in rare earths and thorium."
+    material: YELLOW_DYE
+
+  raw_thorite:
+    name: "&8Raw Thorite"
+    lore:
+      - "&7Dark silicate that holds thorium-232."
+    material: PRISMARINE_SHARD
+
+  raw_galena:
+    name: "&7Raw Galena"
+    lore:
+      - "&7Grey cubes of lead sulfide, often with silver."
+    material: FLINT
+
+  raw_cinnabar:
+    name: "&cRaw Cinnabar"
+    lore:
+      - "&7Red mercury ore. Roasting it releases the metal."
+      - "&8Handle with gloves."
+    material: RED_DYE
+
+  raw_fluorite:
+    name: "&dRaw Fluorite"
+    lore:
+      - "&7Fluorine in a crystal. The source of every fluoride."
+    material: ECHO_SHARD
+
+  raw_saltpeter:
+    name: "&fRaw Saltpeter"
+    lore:
+      - "&7A white crust of crude potassium nitrate, grainy and salty."
+      - "&8Crush it, then purify it in the still."
+    material: WHITE_DYE
+
+  raw_sulfur:
+    name: "&eRaw Sulfur"
+    lore:
+      - "&7Native sulfur in yellow lumps. It smells of struck matches."
+    material: GOLD_NUGGET
+
+  raw_sphalerite:
+    name: "&8Raw Sphalerite"
+    lore:
+      - "&7Dark, waxy zinc sulfide. The source of all zinc here."
+      - "&8Crush it, then roast the dust."
+    material: COCOA_BEANS
+
+  # ----------------------------------------------------------------- Crushed ore (from the crusher)
+
+  crushed_uraninite:
+    name: "&7Crushed Uraninite"
+    lore:
+      - "&7Fine black powder. Ready for the roaster."
+    material: BONE_MEAL
+
+  crushed_pitchblende:
+    name: "&7Crushed Pitchblende"
+    lore:
+      - "&7Gritty brown dust."
+    material: SUGAR
+
+  crushed_monazite:
+    name: "&7Crushed Monazite"
+    lore:
+      - "&7Golden sand. Separate it to get the rare earths."
+    material: WHEAT_SEEDS
+
+  crushed_thorite:
+    name: "&7Crushed Thorite"
+    lore:
+      - "&7Black grit, dense and sharp."
+    material: PUMPKIN_SEEDS
+
+  crushed_galena:
+    name: "&7Crushed Galena"
+    lore:
+      - "&7Grey grit that smells of sulfur."
+    material: NETHER_WART
+
+  crushed_cinnabar:
+    name: "&7Crushed Cinnabar"
+    lore:
+      - "&7Vermilion dust."
+    material: BEETROOT_SEEDS
+
+  crushed_fluorite:
+    name: "&7Crushed Fluorite"
+    lore:
+      - "&7Purple dust for the converter."
+    material: MELON_SEEDS
+
+  crude_saltpeter:
+    name: "&fCrude Saltpeter"
+    lore:
+      - "&7White crystalline powder, full of salt and grit."
+      - "&8Recrystallise it in the still."
+    material: SNOWBALL
+
+  sulfur:
+    name: "&eSulfur"
+    lore:
+      - "&7Bright yellow powder. Gunpowder cannot be made without it."
+    material: YELLOW_CONCRETE_POWDER
+
+  zinc_ore_dust:
+    name: "&7Zinc Ore Dust"
+    lore:
+      - "&7Grey-brown sulfide dust. Roast it to free the metal."
+    material: GRAY_DYE
+
+  # ----------------------------------------------------------------- Products of roasting and separation
+
+  uranium_calcine:
+    name: "&7Uranium Calcine"
+    lore:
+      - "&7Roasted uranium oxide, a dull green-black cake."
+    material: BRICK
+
+  slag:
+    name: "&8Slag"
+    lore:
+      - "&7Waste from roasting. Mostly iron and silica."
+    material: ROOTED_DIRT
+
+  refined_lead:
+    name: "&7Refined Lead"
+    lore:
+      - "&7Soft metal from galena. Stops radiation well."
+    material: IRON_NUGGET
+
+  mercury_flask:
+    name: "&cMercury Flask"
+    lore:
+      - "&7Liquid metal, heavy and silver. Handle with care."
+    material: GLASS_BOTTLE
+
+  yellowcake:
+    name: "&eYellowcake (U3O8)"
+    lore:
+      - "&7Uranium oxide concentrate. The raw fuel of the cycle."
+      - "&8Chemists call it U3O8."
+    material: NAUTILUS_SHELL
+
+  tailings:
+    name: "&8Uranium Tailings"
+    lore:
+      - "&7Leftover rock from the separator. Low activity, bulky."
+    material: KELP
+
+  rare_earth_concentrate:
+    name: "&eRare Earth Concentrate"
+    lore:
+      - "&7Lanthanides from monazite, for magnets and transmutation."
+    material: GLOW_BERRIES
+
+  phosphate_tailings:
+    name: "&8Phosphate Tailings"
+    lore:
+      - "&7Phosphate residue. Useful only as fertiliser."
+    material: BONE
+
+  thorium_concentrate:
+    name: "&aThorium Concentrate"
+    lore:
+      - "&7Thorium-232, the fertile isotope. It does not split by itself."
+      - "&8It breeds uranium-233 when it absorbs neutrons."
+    material: QUARTZ
+
+  silicate_tailings:
+    name: "&8Silicate Tailings"
+    lore:
+      - "&7Glassy residue from thorite."
+    material: SPORE_BLOSSOM
+
+  uf6_cylinder:
+    name: "&bUF6 Cylinder"
+    lore:
+      - "&7Uranium hexafluoride gas, pressed in steel."
+      - "&8The feed of every enrichment cascade."
+    material: HEAVY_CORE
+
+  depleted_uranium:
+    name: "&8Depleted Uranium"
+    lore:
+      - "&7Uranium with less U-235 than natural. Dense and cheap."
+    material: RECOVERY_COMPASS
+
+  deuterium_cell:
+    name: "&3Deuterium Cell"
+    lore:
+      - "&7Heavy water split from ordinary water, sealed in a cell."
+      - "&8One hydrogen atom in the fuel has a neutron too."
+    material: POWDER_SNOW_BUCKET
+
+  purified_iron:
+    name: "&7Purified Iron"
+    lore:
+      - "&7Zone-refined iron, almost free of carbon and sulfur."
+    material: RAW_GOLD
+
+  high_purity_graphite:
+    name: "&8High-Purity Graphite"
+    lore:
+      - "&7Carbon with boron removed. A neutron moderator."
+    material: COAL_BLOCK
+
+  u233_oxide:
+    name: "&aUranium-233 Oxide"
+    lore:
+      - "&7Bred from thorium in a flux. Fissile, and rarer than U-235."
+    material: NAME_TAG
+
+  plutonium_oxide:
+    name: "&dPlutonium Oxide"
+    lore:
+      - "&7Bred from U-238 in a flux. Warm, pale and deadly."
+    material: LIGHT_GRAY_DYE
+
+  fission_waste:
+    name: "&2Fission Waste"
+    lore:
+      - "&7Spent products of the flux. Keep it sealed."
+    material: GREEN_DYE
+
+  neutron_flux_cell:
+    name: "&bNeutron Flux Cell"
+    lore:
+      - "&7A sealed core that gives off free neutrons."
+      - "&8Each cell feeds a transmutation run."
+    material: ENDER_EYE
+    recipe:
+      type: shaped
+      pattern: ["GNG", "NPN", "GNG"]
+      ingredients:
+        G: item:high_purity_graphite
+        N: item:neutron_initiator
+        P: item:purified_iron
+
+  superconducting_magnet:
+    name: "&9Superconducting Magnet"
+    lore:
+      - "&7Coils that carry current with no loss, cooled to near zero."
+      - "&8Every accelerator and condenser needs one."
+    material: TOTEM_OF_UNDYING
+    recipe:
+      type: shaped
+      pattern: ["PDP", "DCD", "PDP"]
+      ingredients:
+        P: item:purified_iron
+        D: item:deuterium_cell
+        C: material:GOLD_BLOCK
+
+  antiproton_capsule:
+    name: "&dAntiproton Capsule"
+    lore:
+      - "&7Antiprotons held in a magnetic trap. A few micrograms."
+      - "&8Do not let it touch matter."
+    material: GHAST_TEAR
+
+  antimatter_condensate:
+    name: "&5Antimatter Condensate"
+    lore:
+      - "&7The smallest amount of antimatter ever held on this server."
+      - "&8It annihilates in the first tick of contact."
+    material: DRAGON_BREATH
+
+  neutronium_slug:
+    name: "&fNeutronium Slug"
+    lore:
+      - "&7Neutron-rich matter pressed into a slug."
+      - "&8Heavier than the rest of your inventory together."
+    material: HEART_OF_THE_SEA
+
+  tesseract_lattice:
+    name: "&dTesseract Lattice"
+    lore:
+      - "&7A lattice whose edges fold into a fourth direction."
+      - "&8Its geometry is the hardest thing you will ever build."
+    material: DISC_FRAGMENT_5
+    recipe:
+      type: shaped
+      pattern: ["SAS", "ACA", "SAS"]
+      ingredients:
+        S: item:superconducting_magnet
+        A: item:antiproton_capsule
+        C: item:high_purity_graphite
+
+  # ----------------------------------------------------------------- Salts, alloys and powder (processed)
+
+  potassium_nitrate:
+    name: "&fPotassium Nitrate"
+    lore:
+      - "&7Recrystallised saltpeter. Still not pure enough for powder."
+    material: SUGAR_CANE
+
+  high_purity_potassium_nitrate:
+    name: "&fHigh-Purity Potassium Nitrate"
+    lore:
+      - "&7The oxidiser of the powder mill, at full strength."
+    material: PACKED_ICE
+
+  zinc_ingot:
+    name: "&7Zinc Ingot"
+    lore:
+      - "&7Bluish metal from the roasting kiln. Alloys with copper into brass."
+    material: IRON_CHAIN
+
+  brass_ingot:
+    name: "&6Brass Ingot"
+    lore:
+      - "&7Copper and zinc, alloyed in the induction furnace."
+      - "&8Goes into shells, ammunition feeds and heavy turrets."
+    material: RAW_COPPER
+
+  high_grade_gunpowder:
+    name: "&8High-Grade Gunpowder"
+    lore:
+      - "&7Fine black powder from the powder mill. Burns clean."
+    material: BLACK_CONCRETE_POWDER
+
+  # ----------------------------------------------------------------- Ammunition (processed)
+
+  empty_shell:
+    name: "&6Empty Ammunition Shell"
+    lore:
+      - "&7A brass case with its primer seated. Still empty."
+      - "&8Load it in the ammunition assembly."
+    material: ARROW
+
+  bullet_regular:
+    name: "&7Regular Bullet"
+    lore:
+      - "&7A plain lead core, swaged to shape."
+    material: IRON_NUGGET
+
+  bullet_armor_piercing:
+    name: "&7Armor-Piercing Bullet"
+    lore:
+      - "&7A hardened iron core inside a lead jacket."
+      - "&8Gets through part of the armour of its target."
+    material: TIPPED_ARROW
+
+  bullet_incendiary:
+    name: "&6Incendiary Bullet"
+    lore:
+      - "&7A lead jacket around a blaze powder charge."
+      - "&8Sets its target alight."
+    material: FIRE_CORAL
+
+  bullet_depleted_uranium:
+    name: "&8Depleted Uranium Bullet"
+    lore:
+      - "&7A dense depleted uranium core. Heavy in the hand."
+      - "&8Hits harder than a lead bullet of the same size."
+    material: BLACKSTONE
+
+  round_regular:
+    name: "&7Regular Round"
+    lore:
+      - "&7A loaded round for a machine gun turret."
+    material: FIREWORK_STAR
+
+  round_armor_piercing:
+    name: "&7Armor-Piercing Round"
+    lore:
+      - "&7A loaded round with a hardened core."
+      - "&8Feeds a machine gun turret."
+    material: NETHER_BRICK
+
+  round_incendiary:
+    name: "&6Incendiary Round"
+    lore:
+      - "&7A loaded round that sets its target alight."
+      - "&8Feeds a machine gun turret."
+    material: FIRE_CHARGE
+
+  round_depleted_uranium:
+    name: "&8Depleted Uranium Round"
+    lore:
+      - "&7A loaded round with a depleted uranium core."
+      - "&8Feeds a machine gun turret."
+    material: GLOW_INK_SAC
+
+  # ----------------------------------------------------------------- Research packs (from the spectrometer)
+
+  research_pack_basic:
+    name: "&fResearch Pack: Basic"
+    lore:
+      - "&7A card with a sample reading. Feeds the console."
+    material: WRITABLE_BOOK
+
+  research_pack_chemical:
+    name: "&aResearch Pack: Chemical"
+    lore:
+      - "&7A vial of reaction data."
+    material: EXPERIENCE_BOTTLE
+
+  research_pack_nuclear:
+    name: "&eResearch Pack: Nuclear"
+    lore:
+      - "&7A cartridge of decay curves."
+    material: GOLDEN_APPLE
+
+  research_pack_plasma:
+    name: "&bResearch Pack: Plasma"
+    lore:
+      - "&7A sealed glass of fusion traces."
+    material: SOUL_LANTERN
+
+  research_pack_exotic:
+    name: "&5Research Pack: Exotic"
+    lore:
+      - "&7Annihilation spectra. Very few exist."
+    material: PHANTOM_MEMBRANE
+
+  # ----------------------------------------------------------------- Machines (placeable)
+
+  crusher:
+    name: "&7Crusher"
+    lore:
+      - "&7Breaks raw ore into crushed grit."
+      - "&8Place it, then right-click to load it."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["IRI", "RDR", "IRI"]
+      ingredients:
+        I: material:IRON_INGOT
+        R: material:REDSTONE
+        D: material:DISPENSER
+
+  roaster:
+    name: "&6Roasting Kiln"
+    lore:
+      - "&7Roasts crushed ore at high heat. Needs fuel."
+      - "&8Coal or charcoal in the fuel slot."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["BRB", "BFB", "BBB"]
+      ingredients:
+        B: material:BRICK
+        R: material:REDSTONE_BLOCK
+        F: material:FURNACE
+
+  separator:
+    name: "&bCentrifugal Separator"
+    lore:
+      - "&7Spins product from waste by density."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["GIG", "CTC", "GIG"]
+      ingredients:
+        G: material:GLASS
+        I: material:IRON_INGOT
+        C: material:COPPER_INGOT
+        T: material:CAULDRON
+
+  purifier:
+    name: "&3Purification Still"
+    lore:
+      - "&7Zone refining, electrolysis and distillation."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["RIR", "IBI", "RIR"]
+      ingredients:
+        R: material:REDSTONE
+        I: material:IRON_INGOT
+        B: material:BREWING_STAND
+
+  converter:
+    name: "&bFluorination Converter"
+    lore:
+      - "&7Reacts yellowcake with fluorite into UF6 gas."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["PHP", "GBG", "PHP"]
+      ingredients:
+        P: item:purified_iron
+        H: material:HOPPER
+        G: material:GLASS
+        B: material:BLAST_FURNACE
+
+  enrichment_cascade:
+    name: "&aEnrichment Cascade"
+    lore:
+      - "&7A bank of gas centrifuges. Feeds on UF6."
+      - "&8Enriches U-235 a little at a time."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["MPM", "PRP", "MPM"]
+      ingredients:
+        M: item:superconducting_magnet
+        P: item:purified_iron
+        R: material:REDSTONE_BLOCK
+
+  transmuter:
+    name: "&dNeutron Transmuter"
+    lore:
+      - "&7A flux chamber that breeds fissile isotopes."
+      - "&8Thorium to U-233, U-238 to plutonium."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["NFN", "FCF", "NFN"]
+      ingredients:
+        N: item:neutron_initiator
+        F: item:neutron_flux_cell
+        C: material:LODESTONE
+
+  spectrometer:
+    name: "&aSpectrometer"
+    lore:
+      - "&7Reads a sample and prints a research pack."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["GRG", "RLR", "GRG"]
+      ingredients:
+        G: material:GLASS
+        R: material:REDSTONE
+        L: material:LAPIS_LAZULI
+
+  research_console:
+    name: "&bResearch Console"
+    lore:
+      - "&7Spend packs to finish research nodes."
+      - "&8Progress is saved for you on every server."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["BLB", "LRL", "BLB"]
+      ingredients:
+        B: material:BOOK
+        L: material:LAPIS_LAZULI
+        R: material:REDSTONE_BLOCK
+
+  particle_accelerator:
+    name: "&9Particle Accelerator"
+    lore:
+      - "&7A ring of magnets that makes antiprotons."
+      - "&8Needs a superconducting magnet inside."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["MMM", "MCM", "MMM"]
+      ingredients:
+        M: item:superconducting_magnet
+        C: material:END_CRYSTAL
+
+  antimatter_condenser:
+    name: "&5Antimatter Condenser"
+    lore:
+      - "&7Traps antiprotons in a field until they condense."
+      - "&8Two minutes of quiet, and a pinch of the impossible."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["SAS", "ACA", "SAS"]
+      ingredients:
+        S: item:superconducting_magnet
+        A: item:antiproton_capsule
+        C: item:neutron_flux_cell
+
+  # ----------------------------------------------------------------- Ammunition and turret machines (placeable)
+
+  induction_furnace:
+    name: "&6Induction Furnace"
+    lore:
+      - "&7Melts copper and zinc together by induction, with no flame."
+      - "&8Draws 12 kW while it runs."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["IRI", "CFC", "IRI"]
+      ingredients:
+        I: material:IRON_INGOT
+        R: material:REDSTONE_BLOCK
+        C: material:COPPER_INGOT
+        F: material:FURNACE
+
+  powder_mill:
+    name: "&8Powder Mill"
+    lore:
+      - "&7Grinds charcoal, sulfur and purified saltpeter into powder."
+      - "&8Draws 20 kW while it runs."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["IGI", "RHR", "IGI"]
+      ingredients:
+        I: material:IRON_INGOT
+        G: material:GRINDSTONE
+        R: material:REDSTONE
+        H: material:HOPPER
+
+  cartridge_press:
+    name: "&7Cartridge Press"
+    lore:
+      - "&7Stamps brass sheet into empty ammunition shells."
+      - "&8Draws 80 kW while it runs. Needs a pylon II or better."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["IPI", "BRB", "IPI"]
+      ingredients:
+        I: material:IRON_BLOCK
+        P: material:PISTON
+        B: item:brass_ingot
+        R: material:REDSTONE_BLOCK
+
+  bullet_swaging_machine:
+    name: "&7Bullet Swaging Machine"
+    lore:
+      - "&7Swages lead, iron and uranium into bullet cores."
+      - "&8Draws 15 kW while it runs."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["IHI", "PDP", "IRI"]
+      ingredients:
+        I: material:IRON_INGOT
+        H: material:HOPPER
+        P: material:PISTON
+        D: material:DISPENSER
+        R: material:REDSTONE
+
+  ammunition_assembly:
+    name: "&7Ammunition Assembly"
+    lore:
+      - "&7Seats a bullet and its powder in a shell, one round at a time."
+      - "&8Draws 12 kW while it runs."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["BHB", "IDI", "BRB"]
+      ingredients:
+        B: item:brass_ingot
+        H: material:HOPPER
+        I: material:IRON_INGOT
+        D: material:DISPENSER
+        R: material:REDSTONE
+
+  metal_lathe:
+    name: "&7Precision Machining Station"
+    lore:
+      - "&7A lathe that bores and turns precision barrels from iron."
+      - "&8Draws 25 kW while it runs. Its steel comes from the purifier."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["IRI", "PSP", "IRI"]
+      ingredients:
+        I: material:IRON_INGOT
+        R: material:REDSTONE
+        P: item:purified_iron
+        S: material:STONECUTTER
+
+  component_assembly:
+    name: "&7Mechanical Component Assembly Machine"
+    lore:
+      - "&7Builds steel frames, turret mechanisms, ammunition feeds and targeting units."
+      - "&8Draws 40 kW while it runs."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["IGI", "GCG", "IRI"]
+      ingredients:
+        I: material:IRON_INGOT
+        G: item:iron_gear
+        C: material:CRAFTING_TABLE
+        R: material:REDSTONE_BLOCK
+
+  heavy_weapons_assembly:
+    name: "&4Heavy Weapons Assembly"
+    lore:
+      - "&7Joins a turret from its frame, barrel, targeting unit, mechanism and feed."
+      - "&8Draws 250 kW while it runs. The last machine in the chain."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["MBM", "TCT", "MBM"]
+      ingredients:
+        M: item:superconducting_magnet
+        B: item:brass_ingot
+        T: item:targeting_unit
+        C: item:turret_mechanism
+
+  # ----------------------------------------------------------------- Turret parts (processed)
+
+  precision_barrel:
+    name: "&7Precision Barrel"
+    lore:
+      - "&7A rifled barrel, bored true on the machining station."
+      - "&8Made from iron and zone-refined iron."
+    material: IRON_BARS
+
+  steel_frame:
+    name: "&7Steel Frame"
+    lore:
+      - "&7The structural frame of a turret, riveted and braced."
+    material: IRON_TRAPDOOR
+
+  targeting_unit:
+    name: "&bTargeting Unit"
+    lore:
+      - "&7Sensor and control board that finds hostile mobs."
+      - "&8Built from circuit boards and a pulse capacitor."
+    material: SPYGLASS
+
+  turret_mechanism:
+    name: "&7Turret Mechanism"
+    lore:
+      - "&7A rotating mount with a limited arc of fire."
+    material: OBSERVER
+
+  ammunition_feed:
+    name: "&7Ammunition Feed"
+    lore:
+      - "&7A belt that carries loaded rounds to the breech."
+    material: TRIPWIRE_HOOK
+
+  machine_gun_turret:
+    name: "&4Machine Gun Turret"
+    lore:
+      - "&7Shoots hostile mobs only. Place it, then right-click it with rounds in hand to load it."
+      - "&8Needs power, and a steady supply of rounds."
+    material: CROSSBOW
+
+  # ----------------------------------------------------------------- Laser turret parts (processed)
+
+  optical_lens:
+    name: "&bOptical Lens"
+    lore:
+      - "&7Ground crystal that focuses light into a narrow beam."
+      - "&8Made on the precision machining station from amethyst and graphite. Two to a pass."
+    material: TINTED_GLASS
+
+  laser_emitter:
+    name: "&dLaser Emitter"
+    lore:
+      - "&7Pumps a coherent beam through a stack of lenses."
+      - "&8Made on the component assembly machine. A laser turret takes two."
+    material: END_ROD
+
+  laser_turret:
+    name: "&cLaser Turret"
+    lore:
+      - "&7Fires a beam at hostile mobs in range. Nothing to load."
+      - "&8Needs power, and no ammunition. It reaches farther and hits harder than a machine gun."
+    material: BEACON
+
+  # ----------------------------------------------------------------- Turret upgrade kits (processed)
+
+  # A kit steps a turret of either kind up one level: right-click a turret you own with it. Made by process only.
+  turret_upgrade_2:
+    name: "&7Upgrade Kit II"
+    lore:
+      - "&7Upgrades a level 1 turret to level 2."
+      - "&7Right-click a turret you own to fit it."
+      - "&8Made on the component assembly machine, never by hand."
+    material: IRON_BLOCK
+
+  turret_upgrade_3:
+    name: "&aUpgrade Kit III"
+    lore:
+      - "&7Upgrades a level 2 turret to level 3. The turret grows to two blocks high."
+      - "&7Right-click a turret you own to fit it."
+      - "&8Made on the component assembly machine, never by hand."
+    material: COPPER_BLOCK
+
+  turret_upgrade_4:
+    name: "&9Upgrade Kit IV"
+    lore:
+      - "&7Upgrades a level 3 turret to level 4."
+      - "&7Right-click a turret you own to fit it."
+      - "&8Made on the heavy weapons assembly, never by hand."
+    material: GOLD_BLOCK
+
+  turret_upgrade_5:
+    name: "&6Upgrade Kit V"
+    lore:
+      - "&7Upgrades a level 4 turret to level 5, the last level. A laser turret turns blue."
+      - "&7Right-click a turret you own to fit it."
+      - "&8Made on the heavy weapons assembly, never by hand."
+    material: DIAMOND_BLOCK
+
+  # ----------------------------------------------------------------- Railgun turret parts (processed)
+
+  # The railgun is the end-game turret. Its two parts are made by process, and it is made on the heavy weapons assembly. Levels II
+  # and III are reached with the turret upgrade kits II and III.
+  rail_barrel:
+    name: "&7Rail Barrel"
+    lore:
+      - "&7A precision barrel lined with graphite, bored for a rail."
+      - "&8Made on the precision machining station, never by hand."
+    material: SPECTRAL_ARROW
+
+  rail_coil:
+    name: "&9Rail Coil"
+    lore:
+      - "&7Superconducting windings that push a slug along the rail."
+      - "&8Made on the heavy weapons assembly, never by hand."
+    material: ECHO_SHARD
+
+  railgun_turret:
+    name: "&cRailgun Turret"
+    lore:
+      - "&7Fires one slug at a time, for massive damage to armoured targets and heavy bosses. It charges for a long time between shots."
+      - "&8Needs power, and no ammunition. Upgrade it with kits II and III to reach level III."
+      - "&8Made on the heavy weapons assembly, which draws 250 kW while it runs."
+    material: LIGHTNING_ROD
+
+  # ----------------------------------------------------------------- Lab machine upgrade modules (processed)
+
+  # A module takes a lab machine (crusher, roaster, assembler and the rest) up one level: right-click a machine you own with it.
+  # Each level is faster and wears its own model. Made by process only.
+  machine_upgrade_2:
+    name: "&bUpgrade Module II"
+    lore:
+      - "&7Takes a level 1 lab machine to level II: it works 1.5 times as fast."
+      - "&7Right-click a lab machine you own to fit it. Its items and progress stay."
+      - "&8Made on the component assembly machine, never by hand."
+    material: REDSTONE_LAMP
+
+  machine_upgrade_3:
+    name: "&bUpgrade Module III"
+    lore:
+      - "&7Takes a level II lab machine to level III, the last level: it works twice as fast."
+      - "&7Right-click a lab machine you own to fit it. Its items and progress stay."
+      - "&8Made on the heavy weapons assembly, never by hand."
+    material: SEA_LANTERN
+
+  # ----------------------------------------------------------------- Extraction and survey
+
+  ore_density_scanner:
+    name: "&aOre Density Scanner"
+    lore:
+      - "&7Hold it and right-click for a map of the chunk you stand in."
+      - "&8Shows where each special ore is planned, and how dense it is."
+    material: SPYGLASS
+    recipe:
+      type: shaped
+      pattern: ["GIG", "ILI", "GRG"]
+      ingredients:
+        G: material:GLASS
+        I: material:IRON_INGOT
+        L: material:AMETHYST_SHARD
+        R: material:REDSTONE
+
+  solar_panel:
+    name: "&9Solar Panel"
+    lore:
+      - "&7Makes power from daylight: none at night, up to 320 W (0.32 kW) at noon."
+      - "&8Place it in the open and link it to a pylon with a wire."
+    material: DAYLIGHT_DETECTOR
+    recipe:
+      type: shaped
+      pattern: ["PPP", "RIR", "IRI"]
+      ingredients:
+        P: material:BLUE_STAINED_GLASS_PANE
+        R: material:REDSTONE
+        I: material:IRON_INGOT
+
+  # Petroleum and diesel are not items: they are litres of fluid in the oil network (see config.yml, oil).
+
+  # ----------------------------------------------------------------- Drills (placeable machines)
+
+  petroleum_drill_1:
+    name: "&8Petroleum Drill I"
+    lore:
+      - "&7Pumps petroleum slowly from deposits in a 10 x 10 area."
+      - "&8Power: a solar panel or a redstone block next to it, or charcoal."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["IPI", "HBH", "IRI"]
+      ingredients:
+        I: material:IRON_INGOT
+        P: material:PISTON
+        H: material:HOPPER
+        B: material:CHEST
+        R: material:REDSTONE
+
+  petroleum_drill_2:
+    name: "&8Petroleum Drill II"
+    lore:
+      - "&7A wider bore: 14 x 14 area, deeper, a little faster."
+    material: BARREL
+    recipe:
+      type: shapeless
+      ingredients: [item:petroleum_drill_1, material:IRON_BLOCK, material:REDSTONE, material:PISTON]
+
+  petroleum_drill_3:
+    name: "&8Petroleum Drill III"
+    lore:
+      - "&7A 20 x 20 area and a stronger pump head."
+    material: BARREL
+    recipe:
+      type: shapeless
+      ingredients: [item:petroleum_drill_2, material:IRON_BLOCK, material:REDSTONE_BLOCK, material:PISTON, material:HOPPER]
+
+  petroleum_drill_4:
+    name: "&8Petroleum Drill IV"
+    lore:
+      - "&7A 28 x 28 area, drilled deep, with a reinforced head."
+    material: BARREL
+    recipe:
+      type: shapeless
+      ingredients: [item:petroleum_drill_3, material:DIAMOND, material:IRON_BLOCK, material:REDSTONE_BLOCK, material:PISTON, material:HOPPER]
+
+  petroleum_drill_5:
+    name: "&8Petroleum Drill V"
+    lore:
+      - "&7A 40 x 40 area and the deepest bore there is."
+    material: BARREL
+    recipe:
+      type: shapeless
+      ingredients: [item:petroleum_drill_4, material:DIAMOND_BLOCK, material:REDSTONE_BLOCK, material:PISTON]
+
+  ore_drill_1:
+    name: "&7Ore Drill I"
+    lore:
+      - "&7Mines special ores from a 10 x 10 area. Runs on petroleum from the oil network."
+      - "&8Place it on hard stone."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["IPI", "HBH", "IRI"]
+      ingredients:
+        I: material:IRON_INGOT
+        P: item:purified_iron
+        H: material:HOPPER
+        B: material:CHEST
+        R: material:REDSTONE_BLOCK
+
+  ore_drill_2:
+    name: "&7Ore Drill II"
+    lore:
+      - "&7A 14 x 14 area and deeper stone."
+    material: BARREL
+    recipe:
+      type: shapeless
+      ingredients: [item:ore_drill_1, material:IRON_BLOCK, material:REDSTONE, material:PISTON]
+
+  ore_drill_3:
+    name: "&7Ore Drill III"
+    lore:
+      - "&7A 20 x 20 area and a stronger bit."
+    material: BARREL
+    recipe:
+      type: shapeless
+      ingredients: [item:ore_drill_2, material:IRON_BLOCK, material:REDSTONE_BLOCK, material:PISTON, material:HOPPER]
+
+  ore_drill_4:
+    name: "&7Ore Drill IV"
+    lore:
+      - "&7A 28 x 28 area, drilled deep, with a diamond bit."
+    material: BARREL
+    recipe:
+      type: shapeless
+      ingredients: [item:ore_drill_3, material:DIAMOND, material:IRON_BLOCK, material:REDSTONE_BLOCK, material:PISTON, material:HOPPER]
+
+  ore_drill_5:
+    name: "&7Ore Drill V"
+    lore:
+      - "&7A 40 x 40 area: the deepest and fastest special ore drill."
+    material: BARREL
+    recipe:
+      type: shapeless
+      ingredients: [item:ore_drill_4, material:DIAMOND_BLOCK, material:REDSTONE_BLOCK, material:PISTON]
+
+  # ----------------------------------------------------------------- Energy: wire and storage
+
+  energy_wire:
+    name: "&6Energy Wire"
+    lore:
+      - "&7A spool of insulated copper wire."
+      - "&8Right-click a pylon or generator, then a second one, to link them."
+    material: STRING
+    recipe:
+      type: shapeless
+      ingredients: [material:COPPER_INGOT, material:COPPER_INGOT, material:REDSTONE]
+
+  pylon_1:
+    name: "&7Pylon I"
+    lore:
+      - "&7Carries power to every machine inside its 11 x 11 square."
+      - "&8Up to 23 kW (100 A at 230 V)."
+    material: RAW_IRON
+    recipe:
+      type: shaped
+      pattern: ["ICI", "CRC", "ICI"]
+      ingredients:
+        I: material:IRON_INGOT
+        C: material:COPPER_INGOT
+        R: material:REDSTONE
+
+  pylon_2:
+    name: "&6Pylon II"
+    lore:
+      - "&7Reaches every machine inside its 19 x 19 square."
+      - "&8Up to 92 kW (400 A at 230 V)."
+    material: RAW_COPPER
+    recipe:
+      type: shapeless
+      ingredients: [item:pylon_1, item:purified_iron, material:COPPER_INGOT]
+
+  pylon_3:
+    name: "&5Pylon III"
+    lore:
+      - "&7The tallest tower: it reaches every machine inside its 31 x 31 square."
+      - "&8Up to 368 kW (1600 A at 230 V)."
+    material: BREEZE_ROD
+    recipe:
+      type: shapeless
+      ingredients: [item:pylon_2, item:high_purity_graphite, item:superconducting_magnet]
+
+  # Pylons IV and V are made only by process (processes.yml, heavy weapons assembly): no recipe here.
+  pylon_4:
+    name: "&cPylon IV"
+    lore:
+      - "&7Reaches every machine inside its 51 x 51 square."
+      - "&8Up to 920 kW (4000 A at 230 V)."
+    material: EMERALD
+
+  pylon_5:
+    name: "&4Pylon V"
+    lore:
+      - "&7The widest tower: it reaches every machine inside its 81 x 81 square."
+      - "&8Up to 2.3 MW (10000 A at 230 V)."
+    material: DIAMOND
+
+  accumulator_1:
+    name: "&7Accumulator I"
+    lore:
+      - "&7Stores 5 kWh and gives it back when a network runs short."
+      - "&8Stands inside the square of a pylon. Needs no wire."
+    material: HONEYCOMB
+    recipe:
+      type: shaped
+      pattern: ["LIL", "IRI", "LIL"]
+      ingredients:
+        L: material:LEAD
+        I: material:IRON_INGOT
+        R: material:REDSTONE
+
+  accumulator_2:
+    name: "&9Accumulator II"
+    lore:
+      - "&7Stores 20 kWh and discharges four times faster than the first."
+    material: GOLD_NUGGET
+    recipe:
+      type: shapeless
+      ingredients: [item:accumulator_1, material:COPPER_INGOT, material:LAPIS_LAZULI]
+
+  accumulator_3:
+    name: "&5Accumulator III"
+    lore:
+      - "&7Stores 80 kWh. A reserve for the whole district."
+      - "&8Its magnet keeps the cell cold, so it holds its charge."
+    material: NETHERITE_INGOT
+    recipe:
+      type: shapeless
+      ingredients: [item:accumulator_2, item:superconducting_magnet, item:purified_iron]
+
+  # Accumulators IV and V are made only by process (processes.yml, heavy weapons assembly): no recipe here.
+  accumulator_4:
+    name: "&bAccumulator IV"
+    lore:
+      - "&7A reserve for a whole city block."
+      - "&8Stores 320 kWh. Charges and discharges at up to 200 kW."
+    material: LAPIS_LAZULI
+
+  accumulator_5:
+    name: "&dAccumulator V"
+    lore:
+      - "&7The largest reserve a grid can hold."
+      - "&8Stores 1.28 MWh. Charges and discharges at up to 800 kW."
+    material: ENDER_PEARL
+
+  # ----------------------------------------------------------------- Energy: generators
+
+  wind_generator:
+    name: "&fWind Generator"
+    lore:
+      - "&7A small turbine. Makes up to 3 kW, as the wind allows."
+      - "&8Needs six blocks of open air above it, at height 96 or more."
+    material: WIND_CHARGE
+    recipe:
+      type: shaped
+      pattern: ["ISI", "SCS", "ISI"]
+      ingredients:
+        I: material:IRON_INGOT
+        S: material:STICK
+        C: material:COPPER_INGOT
+
+  charcoal_generator:
+    name: "&8Charcoal Generator"
+    lore:
+      - "&7Burns one charcoal every 30 seconds to make 25 kW."
+      - "&8Smoke rises from the chimney while it burns."
+    material: CHARCOAL
+    recipe:
+      type: shaped
+      pattern: ["BIB", "IRI", "BIB"]
+      ingredients:
+        B: material:BRICK
+        I: material:IRON_INGOT
+        R: material:REDSTONE_BLOCK
+
+  petroleum_generator:
+    name: "&8Petroleum Generator"
+    lore:
+      - "&7A pump-jack engine. Draws petroleum from the oil network for 80 kW."
+    material: TURTLE_SCUTE
+    recipe:
+      type: shapeless
+      ingredients: [item:oil_pipe, item:oil_splitter_t, item:purified_iron]
+
+  diesel_generator:
+    name: "&cDiesel Generator"
+    lore:
+      - "&7A heavy engine with a tank on its side. 150 kW, fed diesel from the oil network."
+      - "&8Draws diesel from the oil network while it runs."
+    material: FIRE_CHARGE
+    recipe:
+      type: shapeless
+      ingredients: [item:petroleum_generator, item:purified_iron, item:deuterium_cell]
+
+  nuclear_generator:
+    name: "&aNuclear Generator"
+    lore:
+      - "&7A reactor that makes 2 MW from one fuel rod, about 178 hours."
+      - "&8It must stand in water to run."
+    material: SHULKER_SHELL
+    recipe:
+      type: shapeless
+      ingredients: [item:purified_iron, item:high_purity_graphite, item:neutron_flux_cell, item:plutonium_pit]
+
+  # ----------------------------------------------------------------- Energy: fuels and refining
+
+  nuclear_fuel_rod:
+    name: "&aNuclear Fuel Rod"
+    lore:
+      - "&7Enriched uranium in a grey sleeve. Glows a little."
+      - "&8Burns in a nuclear generator for about 178 hours. Handle with care."
+    material: BLAZE_ROD
+    recipe:
+      type: shaped
+      pattern: [" E ", " N ", " E "]
+      ingredients:
+        E: item:enriched_uranium
+        N: item:neutron_initiator
+
+  crude_oil_refinery:
+    name: "&8Crude Oil Refinery"
+    lore:
+      - "&7Distills petroleum from the oil network into diesel, and pushes the diesel back into it."
+      - "&8Place it, then join it to the oil network with tubes."
+    material: BARREL
+    recipe:
+      type: shapeless
+      ingredients: [material:IRON_BLOCK, material:IRON_BLOCK, material:COPPER_INGOT, material:PISTON, material:FURNACE]
+
+  # ----------------------------------------------------------------- Logistics: belts, pickers, splitters
+
+  belt_1:
+    name: "&7Transport Belt I"
+    lore:
+      - "&7A steel conveyor. It carries one item per step toward its arrows."
+      - "&8Placed on air, it flows back toward you: opposite to the way you look."
+    material: IRON_HORSE_ARMOR
+    recipe:
+      type: shapeless
+      ingredients: [material:IRON_INGOT, material:REDSTONE, material:COPPER_INGOT]
+
+  belt_2:
+    name: "&eTransport Belt II"
+    lore:
+      - "&7Twice the speed of the first belt, with yellow arrows."
+    material: GOLDEN_HORSE_ARMOR
+    recipe:
+      type: shapeless
+      ingredients: [item:belt_1, material:GOLD_INGOT, material:REDSTONE]
+
+  belt_3:
+    name: "&cTransport Belt III"
+    lore:
+      - "&7The fastest belt: four times the first, with red-orange arrows."
+      - "&8Its diamond rollers take the load of a whole line."
+    material: DIAMOND_HORSE_ARMOR
+    recipe:
+      type: shapeless
+      ingredients: [item:belt_2, material:DIAMOND, material:REDSTONE_BLOCK]
+
+  picker_1:
+    name: "&7Picker I"
+    lore:
+      - "&7A claw arm that takes one item from its input and drops it on its output."
+      - "&8Its input is the face with the arrow pointing in."
+    material: BRUSH
+    recipe:
+      type: shapeless
+      ingredients: [material:PISTON, material:HOPPER, material:IRON_INGOT, material:REDSTONE]
+
+  picker_2:
+    name: "&6Picker II"
+    lore:
+      - "&7Moves two items a second. Its gold claw grips the purified iron."
+    material: GOLDEN_HOE
+    recipe:
+      type: shapeless
+      ingredients: [item:picker_1, material:GOLD_INGOT, item:purified_iron]
+
+  picker_3:
+    name: "&5Picker III"
+    lore:
+      - "&7Moves four items a second with a magnetic grip."
+      - "&8Needs a steady supply of power."
+    material: DIAMOND_HOE
+    recipe:
+      type: shapeless
+      ingredients: [item:picker_2, material:DIAMOND_BLOCK, item:superconducting_magnet]
+
+  splitter_1:
+    name: "&7Splitter I"
+    lore:
+      - "&7Sends each item straight on, or to the left or right, by its filter."
+      - "&8Set the filter in its panel. An item on neither list goes straight."
+    material: SADDLE
+    recipe:
+      type: shapeless
+      ingredients: [material:HOPPER, material:IRON_INGOT, material:COPPER_INGOT, material:LAPIS_LAZULI]
+
+  splitter_2:
+    name: "&6Splitter II"
+    lore:
+      - "&7A brass housing with more throughput than the first."
+    material: SHEARS
+    recipe:
+      type: shapeless
+      ingredients: [item:splitter_1, item:purified_iron, material:GOLD_INGOT]
+
+  splitter_3:
+    name: "&5Splitter III"
+    lore:
+      - "&7The widest housing and the fastest throughput of the three."
+      - "&8Its flux cell keeps the filter panel charged."
+    material: SPECTRAL_ARROW
+    recipe:
+      type: shapeless
+      ingredients: [item:splitter_2, item:neutron_flux_cell, material:DIAMOND]
+  # ----------------------------------------------------------------- Water system (processed)
+
+  # The pump is placed on water and fuelled. Its kits step it up one level: right-click a pump you own with a kit.
+  # The pipes and splitters carry its water. All of them are made by process only.
+  water_pump:
+    name: "&bWater Pump"
+    lore:
+      - "&7Pumps water from a source of at least the minimum number of connected water blocks."
+      - "&7Level I burns coal or charcoal, level II burns diesel from the oil network, and level III and up draw electricity."
+      - "&8Made on the component assembly machine, never by hand."
+    material: PRISMARINE_CRYSTALS
+
+  # A kit steps a water pump up one level: right-click a pump you own with it. Made by process only.
+  water_pump_upgrade_2:
+    name: "&bPump Upgrade II"
+    lore:
+      - "&7Upgrades a level I pump to level II: twice the flow, and it burns diesel from the oil network."
+      - "&7Right-click a water pump you own to fit it."
+      - "&8Made on the component assembly machine, never by hand."
+    material: BLUE_ICE
+
+  water_pump_upgrade_3:
+    name: "&3Pump Upgrade III"
+    lore:
+      - "&7Upgrades a level II pump to level III: twice the flow again. It draws electricity."
+      - "&7Right-click a water pump you own to fit it."
+      - "&8Made on the component assembly machine, never by hand."
+    material: PACKED_ICE
+
+  water_pump_upgrade_4:
+    name: "&9Pump Upgrade IV"
+    lore:
+      - "&7Upgrades a level III pump to level IV, with more flow and more power."
+      - "&7Right-click a water pump you own to fit it."
+      - "&8Made on the heavy weapons assembly, never by hand."
+    material: PRISMARINE
+
+  water_pump_upgrade_5:
+    name: "&6Pump Upgrade V"
+    lore:
+      - "&7Upgrades a level IV pump to level V, the last level."
+      - "&7Right-click a water pump you own to fit it."
+      - "&8Made on the heavy weapons assembly, never by hand."
+    material: DIAMOND_BLOCK
+
+  water_pipe:
+    name: "&bWater Pipe"
+    lore:
+      - "&7Connects to pumps, splitters, machines and generators on any of its six faces."
+      - "&7Bends and runs vertically by itself."
+      - "&8Made on the component assembly machine, never by hand."
+    material: COPPER_GRATE
+
+  water_splitter_t:
+    name: "&bWater Splitter T"
+    lore:
+      - "&7One water line in, two out: the faces left and right of the input."
+      - "&8Made on the component assembly machine, never by hand."
+    material: PRISMARINE_SHARD
+
+  water_splitter_x:
+    name: "&bWater Splitter X"
+    lore:
+      - "&7One water line in, three out, for a cross of pipes."
+      - "&8Made on the component assembly machine, never by hand."
+    material: PRISMARINE_BRICKS
+
+  # ----------------------------------------------------------------- Oil system (processed)
+
+  # The oil tubes carry petroleum and diesel, as fluid, from a petroleum drill or a refinery to the machines that take it. Made by process only.
+  oil_pipe:
+    name: "&8Oil tube"
+    lore:
+      - "&7Carries petroleum and diesel between drills, lab machines and the machines that take them. Made on the component assembly machine."
+    material: BLACK_CONCRETE
+
+  oil_splitter_t:
+    name: "&6Oil T splitter"
+    lore:
+      - "&7One oil line in, two out: the faces left and right of the input. Made on the component assembly machine."
+    material: BLACKSTONE
+
+  oil_splitter_x:
+    name: "&6Oil cross splitter"
+    lore:
+      - "&7One oil line in, three out, for a cross of tubes. Made on the component assembly machine."
+    material: POLISHED_BLACKSTONE_BRICKS
+
+  # ----------------------------------------------------------------- Vertical transport belts (processed)
+
+  # A vertical belt is one block of a tower. Its level sets the carry speed and the items it holds per block.
+  vertical_belt_1:
+    name: "&bVertical Transport Belt I"
+    lore:
+      - "&7Carries items up or down a tower at 1.875 blocks a second, four items to a block."
+      - "&7A regular belt feeds it from the side. Its direction is set in its panel, for the whole tower."
+      - "&8Made on the component assembly machine, never by hand."
+    material: LADDER
+
+  vertical_belt_2:
+    name: "&bVertical Transport Belt II"
+    lore:
+      - "&7Carries items up or down a tower at 3.75 blocks a second, eight items to a block."
+      - "&8Made on the component assembly machine, never by hand."
+    material: SCAFFOLDING
+
+  vertical_belt_3:
+    name: "&bVertical Transport Belt III"
+    lore:
+      - "&7Carries items up or down a tower at 7.5 blocks a second, twelve items to a block."
+      - "&8Made on the component assembly machine, never by hand."
+    material: POINTED_DRIPSTONE
+
+  # A belt duplex is two cells wide. It splits the items of one incoming belt into two outputs going the same way.
+  belt_duplex_1:
+    name: "&bBelt Duplex I"
+    lore:
+      - "&7Splits one belt into two, out of both of its cells. Needs a little power."
+      - "&8Made on the component assembly machine, never by hand."
+    material: CARROT_ON_A_STICK
+
+  belt_duplex_2:
+    name: "&6Belt Duplex II"
+    lore:
+      - "&7Splits one belt into two, out of both of its cells. Twice the throughput of the first."
+      - "&8Made on the component assembly machine, never by hand."
+    material: COPPER_INGOT
+
+  belt_duplex_3:
+    name: "&eBelt Duplex III"
+    lore:
+      - "&7Splits one belt into two, out of both of its cells. The fastest of the three."
+      - "&8Made on the component assembly machine, never by hand."
+    material: GOLD_INGOT
+
+  # ----------------------------------------------------------------- Artillery: explosive charges (hand-made)
+
+  # A charge is the propellant of a shell. Each tier takes more parts than the one below, and the higher tiers take the rarer ones.
+  tier1_explosive_charge:
+    name: "&7Tier I Explosive Charge"
+    lore:
+      - "&7A powder charge in a brass case. The propellant of the first shells."
+      - "&8Needs the artillery research."
+    material: TNT_MINECART
+    recipe:
+      type: shapeless
+      ingredients: [item:high_grade_gunpowder, item:high_grade_gunpowder, item:high_grade_gunpowder, item:high_grade_gunpowder,
+                    item:brass_ingot, item:brass_ingot, item:empty_shell]
+
+  tier2_explosive_charge:
+    name: "&eTier II Explosive Charge"
+    lore:
+      - "&7Two tier I charges with zone-refined iron and a nitrate oxidiser. Longer range, slower to load."
+      - "&8Needs the tier I charge and the purification research."
+    material: CHEST_MINECART
+    recipe:
+      type: shapeless
+      ingredients: [item:tier1_explosive_charge, item:tier1_explosive_charge, item:purified_iron,
+                    item:high_purity_potassium_nitrate, item:high_grade_gunpowder, item:high_grade_gunpowder,
+                    item:high_grade_gunpowder]
+
+  tier3_explosive_charge:
+    name: "&cTier III Explosive Charge"
+    lore:
+      - "&7The charge the heaviest shells need. Enriched uranium drives it, and a magnet holds it steady."
+      - "&8Two tier II charges, the rarest parts of the cascade and the reactor. Handle with care."
+    material: FURNACE_MINECART
+    recipe:
+      type: shapeless
+      ingredients: [item:tier2_explosive_charge, item:tier2_explosive_charge, item:superconducting_magnet,
+                    item:enriched_uranium, item:neutron_initiator, item:deuterium_cell, item:high_purity_graphite]
+
+  # ----------------------------------------------------------------- Artillery: shell stock (hand-made)
+
+  # Stock is shell bulk: nine of one part in one craft. A round of the machine gun takes one empty shell and one gunpowder, so
+  # a shell takes 8 to 16 times the casings and powder of a round: explosive 9 times, high explosive 12, white phosphorus 9,
+  # napalm 9, cluster 15, enriched uranium 9, hydrogen 15, cluster enriched uranium 12, condensed antimatter 15. Each recipe
+  # counts the stock as nine parts, and the charge, the nuclear parts and the antimatter chain on top.
+  shell_casing_stock:
+    name: "&7Shell Casing Stock"
+    lore:
+      - "&7Nine empty shells banded together for the cases of shells."
+      - "&8Made by hand, nine shells in one craft."
+    material: COPPER_BULB
+    recipe:
+      type: shapeless
+      ingredients: [item:empty_shell, item:empty_shell, item:empty_shell, item:empty_shell, item:empty_shell,
+                    item:empty_shell, item:empty_shell, item:empty_shell, item:empty_shell]
+
+  shell_powder_stock:
+    name: "&8Propellant Stock"
+    lore:
+      - "&7Nine charges of high-grade gunpowder, packed dry for a shell."
+      - "&8Made by hand, nine powders in one craft."
+    material: GUNPOWDER
+    recipe:
+      type: shapeless
+      ingredients: [item:high_grade_gunpowder, item:high_grade_gunpowder, item:high_grade_gunpowder,
+                    item:high_grade_gunpowder, item:high_grade_gunpowder, item:high_grade_gunpowder,
+                    item:high_grade_gunpowder, item:high_grade_gunpowder, item:high_grade_gunpowder]
+
+  # ----------------------------------------------------------------- Artillery: shells (hand-made)
+
+  # Each shell is fired from an artillery piece with the charge its recipe names. A higher charge tier can be used for any shell.
+  explosive_shell:
+    name: "&6Explosive Shell"
+    lore:
+      - "&7A steel shell with about a ton of TNT. It bursts where it lands."
+      - "&8Needs a Tier I charge."
+    material: MAGMA_CREAM
+    recipe:
+      type: shapeless
+      ingredients: [item:shell_casing_stock, item:shell_powder_stock, item:shell_powder_stock, item:tier1_explosive_charge]
+
+  high_explosive_shell:
+    name: "&6High Explosive Shell"
+    lore:
+      - "&7Ten blocks of TNT for filler: about ten tons. It digs its own crater."
+      - "&8Needs a Tier I charge."
+    material: COAL
+    recipe:
+      type: shapeless
+      ingredients: [item:shell_casing_stock, item:shell_powder_stock, item:shell_powder_stock, item:shell_powder_stock,
+                    item:tier1_explosive_charge]
+
+  white_phosphorus_shell:
+    name: "&fWhite Phosphorus Shell"
+    lore:
+      - "&7Bursts in the air and spreads a toxic smoke cloud where it lands. Deals no blast."
+      - "&8Needs a Tier I charge. Stand out of the cloud."
+    material: GLOWSTONE_DUST
+    recipe:
+      type: shapeless
+      ingredients: [item:shell_casing_stock, item:shell_powder_stock, item:shell_powder_stock,
+                    item:phosphate_tailings, item:tier1_explosive_charge]
+
+  napalm_shell:
+    name: "&6Napalm Shell"
+    lore:
+      - "&7Bursts on impact and sets a strip of ground on fire. No damage to the terrain."
+      - "&8Needs a Tier I charge."
+    material: LAVA_BUCKET
+    recipe:
+      type: shapeless
+      ingredients: [item:shell_casing_stock, item:shell_powder_stock, item:shell_powder_stock, item:napalm_gel,
+                    item:tier1_explosive_charge]
+
+  cluster_shell:
+    name: "&eCluster Shell"
+    lore:
+      - "&7Opens in the air and scatters forty small submunitions over a wide area."
+      - "&8Needs a Tier II charge."
+    material: EGG
+    recipe:
+      type: shapeless
+      ingredients: [item:shell_casing_stock, item:shell_casing_stock, item:shell_powder_stock, item:shell_powder_stock,
+                    item:shell_powder_stock, item:tier2_explosive_charge]
+
+  enriched_uranium_shell:
+    name: "&aEnriched Uranium Shell"
+    lore:
+      - "&7A Little Boy class warhead, burst a few blocks above the ground."
+      - "&8Needs a Tier II charge, two enriched uranium cores and a nuclear casing. Lethal to the firer if fired close."
+    material: FIREWORK_ROCKET
+    recipe:
+      type: shapeless
+      ingredients: [item:shell_casing_stock, item:shell_powder_stock, item:shell_powder_stock, item:enriched_uranium,
+                    item:enriched_uranium, item:neutron_initiator, item:nuclear_casing, item:tier2_explosive_charge]
+
+  hydrogen_thermonuclear_shell:
+    name: "&cHydrogen Thermonuclear Shell"
+    lore:
+      - "&7A megaton-class thermonuclear warhead, burst high above the ground."
+      - "&8Needs a Tier III charge, a tritium booster and a thermonuclear core. Lethal to the firer if fired close."
+    material: END_CRYSTAL
+    recipe:
+      type: shapeless
+      ingredients: [item:shell_casing_stock, item:shell_casing_stock, item:shell_powder_stock, item:shell_powder_stock,
+                    item:shell_powder_stock, item:tritium_booster, item:thermonuclear_core, item:tier3_explosive_charge]
+
+  cluster_enriched_uranium_shell:
+    name: "&cCluster Enriched Uranium Shell"
+    lore:
+      - "&7Five small uranium bombs, scattered over a wide area. Each bomb falls from above."
+      - "&8Needs a Tier III charge, two enriched uranium cores and a neutron initiator. Lethal to the firer if fired close."
+    material: MUSIC_DISC_CAT
+    recipe:
+      type: shapeless
+      ingredients: [item:shell_casing_stock, item:shell_powder_stock, item:shell_powder_stock, item:shell_powder_stock,
+                    item:enriched_uranium, item:enriched_uranium, item:neutron_initiator, item:tier3_explosive_charge]
+
+  # The antimatter shell is a chain: the containment is made first, from the superconducting magnets, the antiproton capsules
+  # and an antimatter condensate, and the shell takes the containment with the rarest parts in the file. The chain's time is the
+  # time of its processes: the magnets, the capsules and the condensate each take their own run.
+  antimatter_containment:
+    name: "&5Antimatter Containment"
+    lore:
+      - "&7A magnetic trap that holds a condensate and nothing else touches it."
+      - "&8Made by hand, the first step of the condensed antimatter shell."
+    material: BEACON
+    recipe:
+      type: shaped
+      pattern: ["SAS", "ACA", "SAS"]
+      ingredients:
+        S: item:superconducting_magnet
+        A: item:antiproton_capsule
+        C: item:antimatter_condensate
+
+  condensed_antimatter_shell:
+    name: "&5Condensed Antimatter Shell"
+    lore:
+      - "&7Half a gigaton of condensed antimatter, burst 50 blocks above the ground."
+      - "&8Fire it from far away: the player must stand about 2810 blocks from the target. Once per player every 12 hours."
+      - "&8Needs a Tier III charge, a containment, a tesseract lattice and a neutronium slug."
+    material: OMINOUS_BOTTLE
+    recipe:
+      type: shapeless
+      ingredients: [item:shell_casing_stock, item:shell_casing_stock, item:shell_powder_stock, item:shell_powder_stock,
+                    item:shell_powder_stock, item:antimatter_containment, item:tesseract_lattice, item:neutronium_slug,
+                    item:tier3_explosive_charge]
+
+  # ----------------------------------------------------------------- Artillery: pieces and command (hand-made)
+
+  # The artillery pieces, one item for each level. A piece is placed on air, as a turret is. Its level sets its range,
+  # its reload and its power: see config.yml, artillery.
+  artillery_1:
+    name: "&7Artillery I"
+    lore:
+      - "&7The smallest piece. Fires a shell up to 1500 blocks with a Tier I charge."
+      - "&8Draws 100 kW while it works."
+    material: FLINT_AND_STEEL
+    recipe:
+      type: shapeless
+      ingredients: [item:steel_frame, item:precision_barrel, item:turret_mechanism, item:brass_ingot, item:iron_plate,
+                    material:IRON_BLOCK]
+
+  artillery_2:
+    name: "&7Artillery II"
+    lore:
+      - "&7A longer barrel. Fires a shell up to 2000 blocks with a Tier I charge."
+      - "&8Draws 150 kW while it works."
+    material: BOW
+    recipe:
+      type: shapeless
+      ingredients: [item:steel_frame, item:precision_barrel, item:turret_mechanism, item:ammunition_feed,
+                    item:brass_ingot, item:brass_ingot, item:purified_iron]
+
+  artillery_3:
+    name: "&7Artillery III"
+    lore:
+      - "&7A 2.5-block piece with a targeting unit. Fires a shell up to 2700 blocks."
+      - "&8Its spot and the two blocks above it must be air."
+      - "&8Draws 230 kW while it works."
+    material: LEAD
+    recipe:
+      type: shapeless
+      ingredients: [item:steel_frame, item:precision_barrel, item:targeting_unit, item:ammunition_feed,
+                    item:purified_iron, item:purified_iron, item:high_purity_graphite, item:brass_ingot]
+
+  artillery_4:
+    name: "&aArtillery IV"
+    lore:
+      - "&7A heavier mount on a magnet. Fires a shell up to 3700 blocks."
+      - "&8Draws 350 kW while it works."
+    material: MINECART
+    recipe:
+      type: shapeless
+      ingredients: [item:steel_frame, item:targeting_unit, item:turret_mechanism, item:precision_barrel,
+                    item:superconducting_magnet, item:purified_iron, item:high_purity_graphite, item:brass_ingot,
+                    item:brass_ingot]
+
+  artillery_5:
+    name: "&9Artillery V"
+    lore:
+      - "&7A long, steady piece. Fires a shell up to 5000 blocks."
+      - "&8Draws 540 kW while it works."
+    material: ELYTRA
+    recipe:
+      type: shapeless
+      ingredients: [item:targeting_unit, item:superconducting_magnet, item:neutron_flux_cell, item:purified_iron,
+                    item:precision_barrel, item:steel_frame, item:high_purity_graphite, item:brass_ingot,
+                    material:DIAMOND_BLOCK]
+
+  artillery_6:
+    name: "&6Artillery VI"
+    lore:
+      - "&7A three-block piece for the nuclear shells. Fires a shell up to 6700 blocks."
+      - "&8Draws 830 kW while it works."
+    material: MACE
+    recipe:
+      type: shapeless
+      ingredients: [item:superconducting_magnet, item:neutron_flux_cell, item:targeting_unit, item:plutonium_pit,
+                    item:purified_iron, item:high_purity_graphite, item:precision_barrel, item:steel_frame,
+                    material:NETHERITE_INGOT]
+
+  artillery_7:
+    name: "&5Artillery VII"
+    lore:
+      - "&7The largest piece, for the heaviest shells. Fires a shell up to 9000 blocks."
+      - "&8Draws 1270 kW while it works. Its lattice folds the aim in a fourth direction."
+    material: NETHERITE_AXE
+    recipe:
+      type: shapeless
+      ingredients: [item:tesseract_lattice, item:superconducting_magnet, item:neutron_flux_cell, item:plutonium_pit,
+                    item:targeting_unit, item:steel_frame, item:precision_barrel, item:purified_iron,
+                    material:NETHERITE_INGOT]
+
+  command_center:
+    name: "&bArtillery Command Center Unit"
+    lore:
+      - "&7The screen of the artillery. Pick a target on the map, check the strike is safe, and send it to the pieces."
+      - "&8Place it within a pylon's reach, then right-click it. It draws no power itself: it commands the pieces on the pylon's grid."
+    material: BARREL
+    recipe:
+      type: shaped
+      pattern: ["CLC", "TDT", "CLC"]
+      ingredients:
+        C: item:circuit_board
+        L: item:optical_lens
+        T: item:targeting_unit
+        D: material:DIAMOND

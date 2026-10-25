@@ -5,9 +5,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * The fuel of the four burning generators: which items each kind takes, how many a generator keeps, and how a kept count is
- * split into stacks when the generator gives its fuel back. Wind and solar take no fuel. Pure: the caller reads the items and
- * their identity and passes the source and id in.
+ * The fuel items of the generators: which items each kind takes, how many a generator keeps, and how a kept count is split into
+ * stacks when the generator gives its fuel back. Only charcoal and nuclear fuel rods are items. Wind, solar, petroleum and diesel take
+ * no item: petroleum and diesel burn fluid from the oil network. Pure: the caller reads the items and their identity and passes the
+ * source and id in.
  */
 public final class GeneratorFuel {
 
@@ -18,7 +19,7 @@ public final class GeneratorFuel {
     public enum Source {
         /** A vanilla item with no plugin identity, such as charcoal. */
         MATERIAL,
-        /** A plugin component, such as petroleum. */
+        /** A plugin component, such as a nuclear fuel rod. */
         COMPONENT
     }
 
@@ -31,29 +32,27 @@ public final class GeneratorFuel {
      * @param kind   the generator's kind
      * @param source where the item comes from
      * @param itemId the vanilla material name, or the component id
-     * @return true for charcoal (a plain CHARCOAL), petroleum, diesel and nuclear fuel rod (their components); false otherwise.
+     * @return true for charcoal (a plain CHARCOAL) and a nuclear fuel rod (its component); false otherwise.
      *         Whether a nuclear generator stands in water is a production rule, not checked here.
      */
     public static boolean accepts(GeneratorKind kind, Source source, String itemId) {
-        return sourceOf(kind).filter(source::equals).isPresent() && itemIdOf(kind).filter(itemId::equals).isPresent();
+        return sourceOf(kind).filter(found -> found.equals(source)).isPresent() && itemIdOf(kind).filter(found -> found.equals(itemId)).isPresent();
     }
 
-    /** The source of the fuel a kind burns, or empty for a kind with no fuel. */
+    /** The source of the item a kind burns, or empty for a kind that burns no item. */
     public static Optional<Source> sourceOf(GeneratorKind kind) {
         return switch (kind) {
-            case WIND, SOLAR -> Optional.empty();
+            case WIND, SOLAR, PETROLEUM, DIESEL -> Optional.empty();
             case CHARCOAL -> Optional.of(Source.MATERIAL);
-            case PETROLEUM, DIESEL, NUCLEAR -> Optional.of(Source.COMPONENT);
+            case NUCLEAR -> Optional.of(Source.COMPONENT);
         };
     }
 
-    /** The id of the fuel item a kind burns, or empty for a kind with no fuel. */
+    /** The id of the item a kind burns, or empty for a kind that burns no item. */
     public static Optional<String> itemIdOf(GeneratorKind kind) {
         return switch (kind) {
-            case WIND, SOLAR -> Optional.empty();
+            case WIND, SOLAR, PETROLEUM, DIESEL -> Optional.empty();
             case CHARCOAL -> Optional.of("CHARCOAL");
-            case PETROLEUM -> Optional.of("petroleum");
-            case DIESEL -> Optional.of("diesel");
             case NUCLEAR -> Optional.of("nuclear_fuel_rod");
         };
     }

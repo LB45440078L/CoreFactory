@@ -30,8 +30,8 @@
       <artifactId>CoreFactory-Core</artifactId>
       <exclusions>
         <exclusion>
-          <groupId>org.spigotmc</groupId>
-          <artifactId>spigot-api</artifactId>
+          <groupId>io.papermc.paper</groupId>
+          <artifactId>paper-api</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

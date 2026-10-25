@@ -2,8 +2,8 @@ package io.corefactory.core.drill;
 
 import io.corefactory.core.item.ComponentDefinition;
 import io.corefactory.core.process.Machine;
+import io.corefactory.core.config.ConfigValues;
 import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -26,18 +26,18 @@ public final class DrillCatalog {
     /**
      * Reads {@code drills:} from processes.yml.
      *
-     * @param root       the root of processes.yml, or null for no drills
+     * @param root       the root of processes.yml as plain data, or null for no drills
      * @param components the components by id, from materials.yml and items.yml
      * @param log        receives one warning per skipped entry
      */
-    public static DrillCatalog parse(ConfigurationSection root, Map<String, ComponentDefinition> components, Logger log) {
+    public static DrillCatalog parse(Map<String, Object> root, Map<String, ComponentDefinition> components, Logger log) {
         Map<String, DrillDefinition> drills = new LinkedHashMap<>();
-        ConfigurationSection section = root == null ? null : root.getConfigurationSection("drills");
+        Map<String, Object> section = ConfigValues.optionalSection(root, "drills");
         if (section == null) {
             return new DrillCatalog(drills);
         }
-        for (String id : section.getKeys(false)) {
-            DrillDefinition drill = read(id, section.getConfigurationSection(id), components, log);
+        for (String id : section.keySet()) {
+            DrillDefinition drill = read(id, ConfigValues.optionalSection(section, id), components, log);
             if (drill != null) {
                 drills.put(id, drill);
             }
@@ -60,18 +60,18 @@ public final class DrillCatalog {
         return drill(id).map(DrillDefinition::machine);
     }
 
-    private static DrillDefinition read(String id, ConfigurationSection entry,
+    private static DrillDefinition read(String id, Map<String, Object> entry,
                                         Map<String, ComponentDefinition> components, Logger log) {
         if (entry == null) {
             warn(log, "drill '" + id + "' is not a section and is skipped.");
             return null;
         }
-        Optional<DrillKind> kind = DrillKind.parse(entry.getString("kind", ""));
+        Optional<DrillKind> kind = DrillKind.parse(ConfigValues.string(entry, "kind", ""));
         if (kind.isEmpty()) {
             warn(log, "drill '" + id + "' has no known kind (petroleum or ore) and is skipped.");
             return null;
         }
-        int level = entry.getInt("level", 0);
+        int level = ConfigValues.integer(entry, "level", 0);
         if (level < 1 || level > DrillTable.MAX_LEVEL) {
             warn(log, "drill '" + id + "' needs a level from 1 to " + DrillTable.MAX_LEVEL + " and is skipped.");
             return null;

@@ -1,8 +1,9 @@
 package io.corefactory.core.deposit;
 
 /**
- * The output rate of a drill at each level, in items per second, from a table the caller supplies. The table is copied
- * and checked once: every rate is finite and at least 0, and a higher level never yields less than a lower one.
+ * The output rate of a drill at each level, from a table the caller supplies. The unit is litres per second for a petroleum
+ * drill, which pumps crude petroleum into the oil network, and items per second for an ore drill. The table is copied and
+ * checked once: every rate is finite and at least 0, and a higher level never yields less than a lower one.
  */
 public final class DrillYield {
 
@@ -35,7 +36,8 @@ public final class DrillYield {
     }
 
     /**
-     * The rate of a level before any satisfaction is applied.
+     * The rate of a level before any satisfaction is applied: litres per second for a petroleum drill, items per second for an ore
+     * drill.
      *
      * @throws IllegalArgumentException when the level is outside 1 to {@link #maxLevel()}
      */

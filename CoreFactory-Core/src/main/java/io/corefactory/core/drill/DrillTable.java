@@ -15,7 +15,7 @@ public final class DrillTable {
     /** The highest drill level. */
     public static final int MAX_LEVEL = 5;
 
-    /** The output slots of every drill, laid out after its fuel slot in the drill's barrel. */
+    /** The output slots of an ore drill, laid out after its fuel slot in the drill's barrel. A petroleum drill has none. */
     public static final int OUTPUT_SLOTS = 9;
 
     private static final List<DrillSpec> LEVELS = List.of(

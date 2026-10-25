@@ -18,15 +18,20 @@ class GeneratorFuelTest {
     }
 
     @Test
-    void petroleumDieselAndNuclearTakeOnlyTheirOwnComponent() {
-        assertThat(GeneratorFuel.accepts(GeneratorKind.PETROLEUM, Source.COMPONENT, "petroleum")).isTrue();
-        assertThat(GeneratorFuel.accepts(GeneratorKind.PETROLEUM, Source.COMPONENT, "diesel")).isFalse();
-        assertThat(GeneratorFuel.accepts(GeneratorKind.PETROLEUM, Source.MATERIAL, "petroleum")).isFalse();
-        assertThat(GeneratorFuel.accepts(GeneratorKind.DIESEL, Source.COMPONENT, "diesel")).isTrue();
-        assertThat(GeneratorFuel.accepts(GeneratorKind.DIESEL, Source.COMPONENT, "petroleum")).isFalse();
+    void nuclearTakesOnlyItsFuelRod() {
         assertThat(GeneratorFuel.accepts(GeneratorKind.NUCLEAR, Source.COMPONENT, "nuclear_fuel_rod")).isTrue();
         assertThat(GeneratorFuel.accepts(GeneratorKind.NUCLEAR, Source.COMPONENT, "diesel")).isFalse();
         assertThat(GeneratorFuel.accepts(GeneratorKind.NUCLEAR, Source.MATERIAL, "BLAZE_ROD")).isFalse();
+    }
+
+    @Test
+    void petroleumAndDieselTakeNoItemBecauseTheyBurnFluid() {
+        for (Source source : Source.values()) {
+            for (String id : List.of("CHARCOAL", "petroleum", "diesel", "nuclear_fuel_rod")) {
+                assertThat(GeneratorFuel.accepts(GeneratorKind.PETROLEUM, source, id)).isFalse();
+                assertThat(GeneratorFuel.accepts(GeneratorKind.DIESEL, source, id)).isFalse();
+            }
+        }
     }
 
     @Test
@@ -40,11 +45,14 @@ class GeneratorFuelTest {
     }
 
     @Test
-    void everyFuelKindHasAFuelItemExactlyWhenItBurns() {
+    void anItemIsTheFuelExactlyOfTheKindsThatBurnAnItem() {
         for (GeneratorKind kind : GeneratorKind.values()) {
-            assertThat(GeneratorFuel.itemIdOf(kind).isPresent()).as(kind.name()).isEqualTo(kind.burnsFuel());
-            assertThat(GeneratorFuel.sourceOf(kind).isPresent()).as(kind.name()).isEqualTo(kind.burnsFuel());
+            boolean burnsItem = kind.burnsFuel() && kind.fluid().isEmpty();
+            assertThat(GeneratorFuel.itemIdOf(kind).isPresent()).as(kind.name()).isEqualTo(burnsItem);
+            assertThat(GeneratorFuel.sourceOf(kind).isPresent()).as(kind.name()).isEqualTo(burnsItem);
         }
+        assertThat(GeneratorFuel.itemIdOf(GeneratorKind.CHARCOAL)).contains("CHARCOAL");
+        assertThat(GeneratorFuel.itemIdOf(GeneratorKind.NUCLEAR)).contains("nuclear_fuel_rod");
     }
 
     @Test

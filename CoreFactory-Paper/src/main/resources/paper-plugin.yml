@@ -1,0 +1,28 @@
+name: CoreFactory
+version: ${project.version}
+main: io.corefactory.paper.CoreFactoryPlugin
+description: Research. Refine. Rule. Needs WorldEdit or FastAsyncWorldEdit.
+# Quoted on purpose: YAML would read 26.3 as a float. Paper API 26.3 is the supported version.
+api-version: '26.3'
+authors: [CoreFactory]
+# Commands are registered in code through Paper's Brigadier command API, and permissions when the plugin enables, so this file lists
+# only the plugins it works with. load: BEFORE means the named plugin loads before this one. Either editor is enough: the plugin disables
+# itself if neither WorldEdit nor FastAsyncWorldEdit loads.
+dependencies:
+  server:
+    WorldEdit:
+      load: BEFORE
+      required: false
+    FastAsyncWorldEdit:
+      load: BEFORE
+      required: false
+    WorldGuard:
+      load: BEFORE
+      required: false
+    GriefPrevention:
+      load: BEFORE
+      required: false
+    # Our plugin loads before the Resource Pack Manager, so our pack is in its folder before it builds the merged pack.
+    ResourcePackManager:
+      load: AFTER
+      required: false

@@ -1,0 +1,1122 @@
+package io.corefactory.paper.turret;
+
+import io.corefactory.core.CoreFactoryCore;
+import io.corefactory.core.energy.Consumer;
+import io.corefactory.core.energy.Pos;
+import io.corefactory.core.hologram.Tone;
+import io.corefactory.core.railgun.RailgunCycle;
+import io.corefactory.core.railgun.RailgunLevel;
+import io.corefactory.core.text.Text;
+import io.corefactory.core.turret.ArmourBypass;
+import io.corefactory.core.turret.BeamPlan;
+import io.corefactory.core.turret.FireRate;
+import io.corefactory.core.turret.LaserRules;
+import io.corefactory.core.turret.Magazine;
+import io.corefactory.core.turret.RoundType;
+import io.corefactory.core.turret.TargetAssignment;
+import io.corefactory.core.turret.TargetAssignment.TurretSlot;
+import io.corefactory.core.turret.TargetKind;
+import io.corefactory.core.turret.TargetPolicy;
+import io.corefactory.core.turret.TargetRules;
+import io.corefactory.core.turret.TargetRules.Candidate;
+import io.corefactory.core.turret.TargetRules.Point;
+import io.corefactory.core.turret.TargetRules.Relation;
+import io.corefactory.core.turret.TargetRules.Verdict;
+import io.corefactory.core.turret.TurretAim;
+import io.corefactory.core.turret.TurretLevels;
+import io.corefactory.core.turret.TurretSettings;
+import io.corefactory.paper.energy.EnergyService;
+import io.corefactory.paper.energy.EnergySnapshots;
+import io.corefactory.paper.friends.FriendAccess;
+import io.corefactory.paper.hologram.Hologram;
+import io.corefactory.paper.railgun.RailgunShots;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
+import org.bukkit.FluidCollisionMode;
+import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
+import org.bukkit.entity.AbstractCubeMob;
+import org.bukkit.entity.AbstractHorse;
+import org.bukkit.entity.AbstractVillager;
+import org.bukkit.entity.Animals;
+import org.bukkit.entity.Display;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Ghast;
+import org.bukkit.entity.Golem;
+import org.bukkit.entity.ItemDisplay;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Monster;
+import org.bukkit.entity.Phantom;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Tameable;
+import org.bukkit.entity.TextDisplay;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
+import org.bukkit.util.BoundingBox;
+import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Transformation;
+import org.bukkit.util.Vector;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Predicate;
+
+/**
+ * The runtime of the turrets: the machine guns and the laser turrets. One scheduled task calls {@link #tick} every server tick, and the tick
+ * serves every turret: each loaded turret is checked for power, its cannons take their targets, turn toward them or sweep the arc, and fire
+ * when a barrel is on its target and its interval is up. A machine gun fires a round from its magazine, from one cannon, or from two at levels
+ * 4 and 5; a laser fires an instant beam from its one cannon and needs no rounds.
+ *
+ * <p>A turret's stats come from its level: range, fire interval, ammunition, power, cannons and damage. A target is a mob or a player that
+ * {@link TargetRules} allows, with the range measured as a sphere around the turret's head to the nearest point of the target's box.
+ *
+ * <p>The turrets of a world coordinate their targets. The coordinated pass ({@link #assignTargets}) runs every search interval, and on the
+ * tick after a held target dies. Between those passes the laser turrets get a pass of their own every laser search interval, so a laser
+ * finds a new target within a few ticks rather than a second. It collects each turret's candidates, the entities it can fire at now, and gives all the turrets' cannons
+ * to {@link TargetAssignment} together: each cannon keeps its target while it stays a candidate, the first cannons take the nearest mob that no
+ * turret holds, and a second cannon prefers a free mob within the dual spacing of its first target. The turrets spread over the mobs before
+ * any two share one. Between passes a cannon keeps its target while the target is
+ * alive and valid. The turret's power demand is a consumer of the energy network while it can fire, and its fire interval grows as its
+ * satisfaction falls.
+ *
+ * <p>Every hit on a mob is dealt with its vanilla hit delay cleared, so a turret's damage is never dropped by the delay of an earlier hit, and
+ * the turret's own fire interval is the only delay between its shots.
+ *
+ * <p>A rail gun is electric too: the laser pass gives it its targets, and its range, power and turning are the laser's. It does not fire from
+ * its cooldown. Its {@link RailgunCycle} charges while it holds a target and is aimed, and fires when the charge is complete; the shot is
+ * sent to {@link RailgunShots}, which flies the beam and deals the damage. Its light is held on the block it stands in, and its body, barrel,
+ * top and screen turn with its aim.
+ */
+public final class TurretService implements EnergyService.ConsumerSource {
+
+    private static final int ENSURE_TICKS = 20;
+    private static final int TEXT_TICKS = 10;
+    /** The power an idle turret draws, in W: enough to keep it in the assignment, far below a firing turret's demand. */
+    private static final int STANDBY_DEMAND_W = 1;
+    private static final int ROTATE_SOUND_TICKS = 12;
+    private static final int FIRE_SOUND_TICKS = 3;
+    private static final int CHARGE_SOUND_TICKS = 20;
+    private static final int SAVE_TICKS = 300;
+    private static final double SWEEP_FRACTION = 0.25;
+    private static final double TURN_EPSILON = 0.01;
+    private static final double DRAW_EPSILON = 0.25;
+    private static final double SHOT_CLEAR = 0.5;
+    private static final double BARREL_TO_MUZZLE = 0.6;
+    private static final double RAY_SIZE = 0.1;
+
+    private final CoreFactoryCore core;
+    private final TurretRegistry registry;
+    private final EnergyService energy;
+    private final TurretProtection protection;
+    private final FriendAccess friends;
+    private final TurretStore store;
+    private final TurretStats stats;
+    private final TurretEffects effects = new TurretEffects();
+    private final LaserEffects laserEffects = new LaserEffects();
+    private final LaserLight laserLight;
+    private final RailgunShots shots;
+    private final Random random;
+    private long ticks;
+    private boolean reassignSoon;
+
+    /**
+     * @param core       the core, for the items and the component definitions
+     * @param registry   the turrets and their entities
+     * @param energy     the energy network, which reads each turret's demand and gives its satisfaction
+     * @param protection the claim systems a turret respects, and the claims that name a turret's friends
+     * @param friends    the friend rule: who the owners' friends are, and who may use a turret
+     * @param store      the file the turrets are saved in
+     * @param random     the random numbers of the spread; a seeded one makes the shots repeatable
+     * @param stats      the stats of the turrets, by kind and level
+     * @param shots      the rail gun shots, which fly and deal the damage of a rail gun's shot
+     */
+    public TurretService(CoreFactoryCore core, TurretRegistry registry, EnergyService energy, TurretProtection protection,
+                         FriendAccess friends, TurretStore store, Random random, TurretStats stats, RailgunShots shots) {
+        this.core = core;
+        this.registry = registry;
+        registry.onPersist(this::save);
+        this.energy = energy;
+        this.protection = protection;
+        this.friends = friends;
+        this.store = store;
+        this.random = random;
+        this.stats = stats;
+        this.shots = shots;
+        this.laserLight = new LaserLight(protection);
+    }
+
+    /** The stats the turrets run with: the general settings, and the level table of each kind. */
+    public TurretStats stats() {
+        return stats;
+    }
+
+    /** The general settings of the machine gun turrets, which the laser shares for targeting and turning. */
+    public TurretSettings settings() {
+        return stats.settings();
+    }
+
+    /** The turrets and their entities. */
+    public TurretRegistry registry() {
+        return registry;
+    }
+
+    /** The friend rule, which decides who may use a turret its owner placed: the menu and the listener both ask it. */
+    public FriendAccess access() {
+        return friends;
+    }
+
+    /** Every turret that takes power while it can fire: its demand is the power demand of its kind and level. */
+    @Override
+    public Map<UUID, List<Consumer>> consumers() {
+        Map<UUID, List<Consumer>> byWorld = new HashMap<>();
+        if (!stats.settings().enabled()) {
+            return byWorld;
+        }
+        for (TurretDevice turret : registry.all()) {
+            if (!turret.isLoaded() || !isArmed(turret)) {
+                continue;
+            }
+            Pos pos = turret.pos();
+            String id = EnergySnapshots.consumerId(turret.world(), pos.x(), pos.y(), pos.z());
+            int demand = demandOf(turret);
+            byWorld.computeIfAbsent(turret.world(), key -> new ArrayList<>())
+                    .add(new Consumer(id, pos, demand));
+        }
+        return byWorld;
+    }
+
+    /**
+     * The power a turret asks for now. A rail gun asks for its level's demand only while it charges, as it reloads with none; any other turret
+     * asks for its demand while it holds a target.
+     */
+    private int demandOf(TurretDevice turret) {
+        if (turret.kind() == TurretKind.RAILGUN) {
+            return turret.cycle().charging() ? stats.railgun().level(railgunLevel(turret)).powerDemandW() : STANDBY_DEMAND_W;
+        }
+        return engaged(turret) ? viewOf(turret).powerDemandW() : STANDBY_DEMAND_W;
+    }
+
+    /** The rail gun level of a turret, which is its own level. */
+    private static RailgunLevel railgunLevel(TurretDevice turret) {
+        return RailgunLevel.ofNumber(turret.level());
+    }
+
+    /** Whether any cannon of the turret holds a target. Only an engaged turret draws its full power. */
+    private static boolean engaged(TurretDevice turret) {
+        for (int cannon = 0; cannon < TurretDevice.CANNONS; cannon++) {
+            if (turret.target(cannon) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Runs one server tick for every turret. Called by the one scheduled task of the turrets.
+     */
+    public void tick() {
+        ticks++;
+        if (!stats.settings().enabled()) {
+            return;
+        }
+        protection.beginTick();
+        effects.beginTick();
+        laserEffects.beginTick();
+        laserLight.tick(ticks);
+        if (ticks % ENSURE_TICKS == 0) {
+            registry.ensureEntities();
+        }
+        if (reassignSoon || ticks % stats.settings().searchIntervalTicks() == 0) {
+            reassignSoon = false;
+            assignTargets(kind -> true);
+        } else if (ticks % stats.laser().searchIntervalTicks() == 0) {
+            assignTargets(TurretKind::isElectric);
+        }
+        for (TurretDevice turret : registry.all()) {
+            if (turret.isLoaded()) {
+                tickOne(turret);
+            }
+        }
+        if (ticks % SAVE_TICKS == 0) {
+            save();
+        }
+    }
+
+    /**
+     * Places a turret on a block, and saves.
+     *
+     * @param kind  the kind of turret; a laser turret holds no rounds
+     * @param level the level it is placed at, from 1 to 5: a turret item of a higher level places a higher turret
+     */
+    public TurretDevice place(Location block, UUID owner, double facing, TurretKind kind, int level) {
+        int clamped = clampLevel(level);
+        TurretDevice turret = registry.add(new TurretDevice(UUID.randomUUID().toString(), kind, owner, block, facing,
+                Magazine.empty(stats.magazineCapacity(kind, clamped)), clamped));
+        reassignSoon = true;
+        save();
+        return turret;
+    }
+
+    /**
+     * Removes a turret, and saves.
+     *
+     * @return the items it gives back: its turret item at its level, and the rounds it held, in stacks
+     */
+    public List<ItemStack> remove(TurretDevice turret) {
+        List<ItemStack> drops = new ArrayList<>();
+        registry.itemOf(turret).ifPresent(drops::add);
+        drops.addAll(registry.roundStacks(turret.magazine()));
+        laserLight.hold(turret.block(), 0);
+        registry.remove(turret);
+        save();
+        return drops;
+    }
+
+    /**
+     * Moves a turret up to a level, and saves. The rounds it holds stay, and a machine gun's belt takes the new level's capacity. Its entities
+     * are made again for the new height, and its targets are dropped.
+     *
+     * @param level the level it moves to, from 2 to 5
+     */
+    public void upgrade(TurretDevice turret, int level) {
+        Magazine magazine = turret.magazine();
+        turret.setLevel(clampLevel(level));
+        if (turret.kind() == TurretKind.MACHINE_GUN) {
+            turret.setMagazine(new Magazine(magazine.type(), magazine.count(), stats.magazineCapacity(turret.kind(), turret.level())));
+        }
+        dropTargets(turret);
+        turret.cycle().reset();
+        reassignSoon = true;
+        registry.rebuild(turret);
+        save();
+    }
+
+    /**
+     * Adds rounds of a type to a turret, up to its room, and saves. A laser turret takes no rounds.
+     *
+     * @return the rounds taken; zero when the magazine holds another type or is full
+     */
+    public int load(TurretDevice turret, RoundType type, int amount) {
+        if (turret.kind() != TurretKind.MACHINE_GUN) {
+            return 0;
+        }
+        Magazine magazine = turret.magazine();
+        int take = Math.min(amount, magazine.roomFor(type));
+        if (take <= 0) {
+            return 0;
+        }
+        turret.setMagazine(magazine.add(type, take));
+        TurretSounds.reload(turret.barrel());
+        save();
+        return take;
+    }
+
+    /**
+     * Moves rounds from a player's inventory into a turret: one round type, up to the room the turret has for it. An empty turret takes the
+     * type of the first round found. A laser turret takes no rounds.
+     *
+     * @return the rounds taken
+     */
+    public int loadFromInventory(TurretDevice turret, Player player) {
+        if (turret.kind() != TurretKind.MACHINE_GUN) {
+            return 0;
+        }
+        PlayerInventory inventory = player.getInventory();
+        Magazine magazine = turret.magazine();
+        RoundType wanted = magazine.type();
+        if (wanted == null) {
+            wanted = firstRoundIn(inventory).orElse(null);
+        }
+        if (wanted == null || magazine.roomFor(wanted) < 1) {
+            return 0;
+        }
+        RoundType type = wanted;
+        int room = magazine.roomFor(type);
+        int taken = 0;
+        ItemStack[] contents = inventory.getContents();
+        for (int slot = 0; slot < contents.length && taken < room; slot++) {
+            ItemStack stack = contents[slot];
+            if (stack == null || roundOf(stack).filter(round -> round.equals(type)).isEmpty()) {
+                continue;
+            }
+            int from = Math.min(stack.getAmount(), room - taken);
+            taken += from;
+            ItemStack left = stack.clone();
+            left.setAmount(stack.getAmount() - from);
+            inventory.setItem(slot, left.getAmount() > 0 ? left : null);
+        }
+        if (taken > 0) {
+            turret.setMagazine(magazine.add(type, taken));
+            TurretSounds.reload(turret.barrel());
+            save();
+        }
+        return taken;
+    }
+
+    /**
+     * Takes every round out of a turret, and saves. The rounds go to the player's inventory, and what does not fit drops at the player.
+     *
+     * @return the rounds taken out
+     */
+    public int eject(TurretDevice turret, Player player) {
+        List<ItemStack> stacks = registry.roundStacks(turret.magazine());
+        int count = turret.magazine().count();
+        turret.setMagazine(turret.magazine().ejectAll());
+        for (ItemStack stack : stacks) {
+            for (ItemStack leftover : player.getInventory().addItem(stack).values()) {
+                player.getWorld().dropItemNaturally(player.getLocation(), leftover);
+            }
+        }
+        save();
+        return count;
+    }
+
+    /**
+     * Sets the targeting choices of a turret: its friendly-fire switch, its overrides, its player stances and its team mode. The held targets
+     * are dropped, so the turret searches again under the new choices, and the turret is saved.
+     */
+    public void setPolicy(TurretDevice turret, TargetPolicy policy) {
+        turret.setPolicy(policy);
+        dropTargets(turret);
+        reassignSoon = true;
+        save();
+    }
+
+    /**
+     * Switches a rail gun on or off, and saves. A switched-off rail gun drops its charge and its light, and stays idle until it is switched on
+     * again; it draws no power while it is off. Any other turret ignores the switch.
+     */
+    public void setPower(TurretDevice turret, boolean on) {
+        turret.setOn(on);
+        dropTargets(turret);
+        reassignSoon = true;
+        save();
+    }
+
+    /**
+     * Sets back the light and the glow of the laser shots that are standing in a chunk that is unloading, so none is left in the saved chunk.
+     */
+    public void releaseLightsIn(Chunk chunk) {
+        laserLight.restoreIn(chunk);
+    }
+
+    /** Writes every turret to the store file. */
+    public void save() {
+        store.write(registry.snapshot());
+    }
+
+    /** Sets back the lights, saves, and releases the entities of every turret. Called when the plugin stops. */
+    public void shutdown() {
+        laserLight.restoreAll();
+        save();
+        registry.releaseAll();
+    }
+
+    /** The level a turret may have, from 1 to the highest. */
+    static int clampLevel(int level) {
+        return Math.max(1, Math.min(level, TurretLevels.MAX_LEVEL));
+    }
+
+    /** The ids of the energy consumer of a turret. */
+    private static String consumerId(TurretDevice turret) {
+        Pos pos = turret.pos();
+        return EnergySnapshots.consumerId(turret.world(), pos.x(), pos.y(), pos.z());
+    }
+
+    /** The settings a turret runs with at its level: its range, interval, ammunition and power, with the general settings. */
+    private TurretSettings viewOf(TurretDevice turret) {
+        return stats.view(turret.kind(), turret.level());
+    }
+
+    /**
+     * True when a turret can fire at all: a laser always can, a rail gun can while it is switched on and its section is enabled, and a machine
+     * gun needs rounds for one shot.
+     */
+    private boolean isArmed(TurretDevice turret) {
+        return switch (turret.kind()) {
+            case MACHINE_GUN -> turret.magazine().canFire(stats.settings().ammoPerShot());
+            case LASER -> true;
+            case RAILGUN -> stats.railgun().enabled() && turret.on();
+        };
+    }
+
+    private void tickOne(TurretDevice turret) {
+        TurretSettings view = viewOf(turret);
+        if (!isArmed(turret)) {
+            dropTargets(turret);
+            turret.setSatisfaction(0.0);
+            turret.setStatus(turret.kind() == TurretKind.RAILGUN ? TurretStatus.OFF : TurretStatus.NO_ROUNDS);
+            if (turret.kind() == TurretKind.RAILGUN) {
+                idleRailgun(turret);
+            }
+            refreshText(turret);
+            return;
+        }
+        double satisfaction = energy.satisfaction(consumerId(turret));
+        turret.setSatisfaction(satisfaction);
+        for (int cannon = 0; cannon < TurretDevice.CANNONS; cannon++) {
+            if (turret.cooldown(cannon) > 0) {
+                turret.setCooldown(cannon, turret.cooldown(cannon) - 1);
+            }
+        }
+        if (turret.fireSoundIn() > 0) {
+            turret.setFireSoundIn(turret.fireSoundIn() - 1);
+        }
+        if (turret.rotateSoundIn() > 0) {
+            turret.setRotateSoundIn(turret.rotateSoundIn() - 1);
+        }
+        if (turret.chargeSoundIn() > 0) {
+            turret.setChargeSoundIn(turret.chargeSoundIn() - 1);
+        }
+        if (satisfaction <= 0.0) {
+            dropTargets(turret);
+            turret.setStatus(TurretStatus.NO_POWER);
+            if (turret.kind() == TurretKind.RAILGUN) {
+                idleRailgun(turret);
+            }
+            refreshText(turret);
+            return;
+        }
+
+        int cannons = stats.cannons(turret.kind(), turret.level());
+        Location barrel = turret.barrel();
+        LivingEntity[] targets = resolveTargets(turret, barrel, view, cannons);
+        boolean engaged = targets[0] != null;
+        double speed = view.rotationSpeedDegrees();
+        double[][] aims = new double[cannons][];
+        boolean turning = false;
+        for (int cannon = 0; cannon < cannons; cannon++) {
+            double yaw = turret.yaw(cannon);
+            double pitch = turret.pitch(cannon);
+            if (targets[cannon] != null) {
+                aims[cannon] = aimTo(barrel, targets[cannon]);
+                if (cannon == 0 && turret.kind() == TurretKind.LASER && turret.status() != TurretStatus.ENGAGING
+                        && turret.chargeSoundIn() <= 0) {
+                    TurretSounds.laserCharge(barrel);
+                    turret.setChargeSoundIn(CHARGE_SOUND_TICKS);
+                }
+                yaw = TurretAim.step(yaw, aims[cannon][0], speed);
+                pitch = TurretAim.step(pitch, aims[cannon][1], speed);
+            } else {
+                if (cannon == 0 && view.idleSweep()) {
+                    TurretAim.Idle idle = TurretAim.idle(yaw, turret.facing(), view.arcDegrees(),
+                            speed * SWEEP_FRACTION, turret.sweepingForward());
+                    yaw = idle.yaw();
+                    turret.setSweepingForward(idle.forward());
+                }
+                pitch = TurretAim.step(pitch, 0.0, speed);
+            }
+            turning |= Math.abs(TurretAim.wrap(yaw - turret.yaw(cannon))) > TURN_EPSILON
+                    || Math.abs(pitch - turret.pitch(cannon)) > TURN_EPSILON;
+            turret.aim(cannon, yaw, pitch);
+        }
+        turret.setStatus(engaged ? TurretStatus.ENGAGING : TurretStatus.IDLE);
+        if (TurretAim.playsRotationSound(engaged, turning) && turret.rotateSoundIn() <= 0) {
+            TurretSounds.rotate(barrel);
+            turret.setRotateSoundIn(ROTATE_SOUND_TICKS);
+        }
+        drawAim(turret);
+        if (turret.kind() == TurretKind.RAILGUN) {
+            tickRailgun(turret, targets[0], aims[0], satisfaction, barrel, view);
+            refreshText(turret);
+            return;
+        }
+
+        for (int cannon = 0; cannon < cannons; cannon++) {
+            if (aims[cannon] == null || turret.cooldown(cannon) > 0) {
+                continue;
+            }
+            if (!TurretAim.aligned(turret.yaw(cannon), turret.pitch(cannon), aims[cannon][0], aims[cannon][1])) {
+                continue;
+            }
+            OptionalInt interval = FireRate.intervalTicks(view.firingIntervalTicks(), satisfaction);
+            if (interval.isEmpty()) {
+                continue;
+            }
+            boolean fired = turret.kind() == TurretKind.LASER
+                    ? fireLaser(turret, targets[cannon], barrel, view)
+                    : fireRound(turret, cannon, targets[cannon], barrel, view);
+            if (fired) {
+                turret.setCooldown(cannon, interval.getAsInt());
+            }
+        }
+        refreshText(turret);
+    }
+
+    /**
+     * Runs a rail gun's cycle for one tick. The cycle charges while the rail gun holds a target, and fires when the charge is complete and the
+     * barrel is on the target. The light follows the charge, and the screen shows it.
+     *
+     * @param target       the target the rail gun holds, or null
+     * @param aim          the yaw and pitch of the target, or null when it holds none
+     * @param satisfaction the share of its power the rail gun gets
+     */
+    private void tickRailgun(TurretDevice turret, LivingEntity target, double[] aim, double satisfaction, Location barrel,
+                             TurretSettings view) {
+        RailgunLevel level = railgunLevel(turret);
+        boolean aimed = target != null && aim != null && TurretAim.aligned(turret.yaw(0), turret.pitch(0), aim[0], aim[1]);
+        RailgunCycle.Step step = turret.cycle().tick(stats.railgun(), level, turret.on(), target != null, aimed, satisfaction);
+        laserLight.hold(turret.block(), step.light());
+        // The target was chosen during the charge, and a claim may have been placed since: the rule is checked again before the shot leaves.
+        if (step.fired() && target != null && mayHarm(verdictOf(turret, target, barrel, view))) {
+            fireRailgun(turret, target, level);
+        }
+        turret.setStatus(turret.on() ? (target != null ? TurretStatus.ENGAGING : TurretStatus.IDLE) : TurretStatus.OFF);
+        refreshScreen(turret, step.phase(), satisfaction, step.charge());
+    }
+
+    /**
+     * Sends a rail gun's shot from the muzzle, along the barrel, to its target. The beam is the shots' own: it flies, and it deals the damage.
+     */
+    private void fireRailgun(TurretDevice turret, LivingEntity target, RailgunLevel level) {
+        double[] direction = TurretAim.direction(turret.yaw(0), turret.pitch(0));
+        Location source = turret.block().add(0.5, RailgunPose.trunnionBlocks(turret.level()), 0.5)
+                .add(direction[0] * BARREL_TO_MUZZLE, direction[1] * BARREL_TO_MUZZLE, direction[2] * BARREL_TO_MUZZLE);
+        shots.fire(source, target, level);
+    }
+
+    /**
+     * Shows a rail gun's screen: its power, its satisfaction, its charge and its switch. The text is written only when the lines change.
+     */
+    private void refreshScreen(TurretDevice turret, RailgunCycle.Phase phase, double satisfaction, double charge) {
+        if (turret.kind() != TurretKind.RAILGUN || turret.screen() == null) {
+            return;
+        }
+        if (!(Bukkit.getEntity(turret.screen()) instanceof TextDisplay text)) {
+            return;
+        }
+        int demand = demandOf(turret);
+        double share = Double.isNaN(satisfaction) ? 0.0 : Math.max(0.0, Math.min(1.0, satisfaction));
+        List<String> lines = RailgunScreen.lines(new RailgunScreen.Readout(demand * share, demand, satisfaction, charge, phase, turret.on()));
+        if (lines.equals(turret.screenLines())) {
+            return;
+        }
+        List<Component> parts = lines.stream().map(Text::parse).toList();
+        text.text(Component.join(JoinConfiguration.separator(Component.newline()), parts));
+        turret.setScreenLines(lines);
+    }
+
+    /**
+     * Resolves the targets of the cannons for this tick: each cannon keeps the target the coordinated pass gave it, for as long as the target
+     * is alive and valid. A dropped target leaves its cannon empty until the next pass.
+     *
+     * @return the target of each cannon, null where a cannon has none
+     */
+    private LivingEntity[] resolveTargets(TurretDevice turret, Location barrel, TurretSettings view, int cannons) {
+        LivingEntity[] kept = new LivingEntity[cannons];
+        for (int cannon = 0; cannon < cannons; cannon++) {
+            kept[cannon] = keepTarget(turret, cannon, barrel, view);
+        }
+        return kept;
+    }
+
+    /**
+     * The held target of a cannon while it is still alive and valid; the target is dropped otherwise. A target that died or is gone asks
+     * for a pass on the next tick, so its cannon is given another target at once; a target that left the reach of the turret waits for the
+     * next pass of its kind: the laser's scan interval for a laser, the search interval for a machine gun.
+     */
+    private LivingEntity keepTarget(TurretDevice turret, int cannon, Location barrel, TurretSettings view) {
+        UUID id = turret.target(cannon);
+        if (id == null) {
+            return null;
+        }
+        Entity entity = Bukkit.getEntity(id);
+        if (!(entity instanceof LivingEntity living) || living.isDead()) {
+            reassignSoon = true;
+            dropTarget(turret, cannon);
+            return null;
+        }
+        if (!living.getWorld().equals(barrel.getWorld()) || verdictOf(turret, living, barrel, view) != Verdict.VALID) {
+            dropTarget(turret, cannon);
+            return null;
+        }
+        return living;
+    }
+
+    private static void dropTarget(TurretDevice turret, int cannon) {
+        turret.setTarget(cannon, null);
+    }
+
+    /** Drops every target of a turret. */
+    private void dropTargets(TurretDevice turret) {
+        for (int cannon = 0; cannon < TurretDevice.CANNONS; cannon++) {
+            dropTarget(turret, cannon);
+        }
+    }
+
+    /**
+     * Advances a rail gun's cycle for a tick in which it cannot charge: it is off, has no power, or is disabled. Its charge is lost, its reload
+     * still runs down, and its light goes out. A reload is not skipped by switching the rail gun off and on again.
+     */
+    private void idleRailgun(TurretDevice turret) {
+        RailgunCycle.Step step = turret.cycle().tick(stats.railgun(), railgunLevel(turret), false, false, false, 0.0);
+        laserLight.hold(turret.block(), step.light());
+        refreshScreen(turret, step.phase(), 0.0, step.charge());
+    }
+
+    /**
+     * The coordinated pass. Every loaded turret that is armed and has power offers its candidates, and the cannons of the turrets of each
+     * world are given their targets together by {@link TargetAssignment}. A turret's candidates are the entities its verdict makes VALID,
+     * nearest first, so a held target that is still valid is among them and keeps its place. The pass reads the entities in each turret's
+     * range and their line of sight, and writes the target of each cannon. Its cost is one range query and one verdict per entity near each
+     * turret, once per search interval, or on the tick after a held target dies.
+     *
+     * @param which the kinds whose turrets are given targets; an electric pass leaves the machine guns' targets alone
+     */
+    private void assignTargets(Predicate<TurretKind> which) {
+        Map<UUID, List<TurretDevice>> byWorld = new HashMap<>();
+        for (TurretDevice turret : registry.all()) {
+            if (which.test(turret.kind()) && turret.isLoaded() && isArmed(turret)
+                    && energy.satisfaction(consumerId(turret)) > 0.0) {
+                byWorld.computeIfAbsent(turret.world(), key -> new ArrayList<>()).add(turret);
+            }
+        }
+        for (List<TurretDevice> turrets : byWorld.values()) {
+            assignWorld(turrets);
+        }
+    }
+
+    /** Gives the cannons of the turrets of one world their targets, from one assignment over all of them. */
+    private void assignWorld(List<TurretDevice> turrets) {
+        List<TurretSlot> slots = new ArrayList<>(turrets.size());
+        Map<UUID, Point> places = new HashMap<>();
+        for (TurretDevice turret : turrets) {
+            List<UUID> candidates = new ArrayList<>();
+            for (LivingEntity living : candidatesOf(turret, turret.barrel(), viewOf(turret))) {
+                candidates.add(living.getUniqueId());
+                places.put(living.getUniqueId(), pointOf(living.getBoundingBox().getCenter()));
+            }
+            List<UUID> claimed = new ArrayList<>(TurretDevice.CANNONS);
+            for (int cannon = 0; cannon < TurretDevice.CANNONS; cannon++) {
+                claimed.add(turret.target(cannon));
+            }
+            slots.add(new TurretSlot(turret.id(), stats.cannons(turret.kind(), turret.level()), claimed, candidates));
+        }
+        Map<String, List<UUID>> answer = TargetAssignment.assign(slots, claimsOutside(turrets), stats.spacing(), places::get);
+        for (TurretDevice turret : turrets) {
+            List<UUID> assigned = answer.getOrDefault(turret.id(), List.of());
+            for (int cannon = 0; cannon < TurretDevice.CANNONS; cannon++) {
+                turret.setTarget(cannon, cannon < assigned.size() ? assigned.get(cannon) : null);
+            }
+        }
+    }
+
+    /**
+     * The targets the loaded turrets of the pass's world hold outside the pass. A laser pass leaves the machine guns' targets
+     * alone, so a mob they hold is reserved: the pass gives it to a laser only when no other mob is free.
+     */
+    private Set<UUID> claimsOutside(List<TurretDevice> turrets) {
+        UUID world = turrets.get(0).world();
+        Set<String> passed = new HashSet<>();
+        for (TurretDevice turret : turrets) {
+            passed.add(turret.id());
+        }
+        Set<UUID> reserved = new HashSet<>();
+        for (TurretDevice other : registry.all()) {
+            if (other.isLoaded() && other.world().equals(world) && !passed.contains(other.id())) {
+                for (int cannon = 0; cannon < TurretDevice.CANNONS; cannon++) {
+                    if (other.target(cannon) != null) {
+                        reserved.add(other.target(cannon));
+                    }
+                }
+            }
+        }
+        return reserved;
+    }
+
+    /**
+     * The entities a turret can fire at now, nearest first: the living entities in its range that its verdict makes VALID. The range is a
+     * sphere around the barrel to the nearest point of each entity's box, so an entity whose nearest point lies out of it is left out before
+     * the verdict, which would refuse it on the same range.
+     */
+    private List<LivingEntity> candidatesOf(TurretDevice turret, Location barrel, TurretSettings view) {
+        World world = barrel.getWorld();
+        double range = view.range();
+        List<Entity> near = new ArrayList<>(world.getNearbyEntities(barrel, range, range, range,
+                entity -> entity instanceof LivingEntity));
+        near.sort(Comparator.comparingDouble(entity -> distanceTo(barrel, (LivingEntity) entity)));
+        Point head = pointOf(barrel);
+        List<LivingEntity> candidates = new ArrayList<>(near.size());
+        for (Entity entity : near) {
+            LivingEntity living = (LivingEntity) entity;
+            if (!TargetRules.inRange(head, nearestPointOf(barrel, living), range)) {
+                continue;
+            }
+            if (verdictOf(turret, living, barrel, view) == Verdict.VALID) {
+                candidates.add(living);
+            }
+        }
+        return candidates;
+    }
+
+    /** Whether the verdict lets a round or a beam harm the entity it hits. Only the entities that are not protected and are hostile are harmed. */
+    private static boolean mayHarm(Verdict verdict) {
+        return verdict == Verdict.VALID || verdict == Verdict.OUT_OF_RANGE || verdict == Verdict.OUT_OF_ARC || verdict == Verdict.BLOCKED;
+    }
+
+    /**
+     * The verdict of the targeting rule on an entity: its protection, its relation and team, the turret's own policy, the range as a
+     * sphere around the turret's head to the nearest point of the entity's box, and the line of sight from the head to its centre.
+     */
+    private Verdict verdictOf(TurretDevice turret, LivingEntity living, Location barrel, TurretSettings view) {
+        double[] aim = aimTo(barrel, living);
+        boolean withinArc = TurretAim.inReach(aim[0], aim[1], turret.facing(), view);
+        boolean protectedHere = protection.protects(living.getLocation());
+        Relation relation = relationOf(turret, living);
+        boolean teamMate = living instanceof Player player && teamMateOf(turret, player);
+        Candidate candidate = candidateOf(living, aim[2], withinArc, protectedHere, relation, teamMate, clearShot(barrel, living));
+        return TargetRules.verdict(candidate, view, turret.policy(), pointOf(barrel), nearestPointOf(barrel, living));
+    }
+
+    /**
+     * How a player stands to the turret: its owner, a friend of the owner or trusted in the turret's claim, or anyone else. The owner is
+     * always the owner. The friend checks run only while the turret's friendly-fire switch is on, since with the switch off no player is a
+     * target anyway.
+     */
+    private Relation relationOf(TurretDevice turret, LivingEntity living) {
+        if (!(living instanceof Player player)) {
+            return Relation.NONE;
+        }
+        UUID id = player.getUniqueId();
+        if (id.equals(turret.owner())) {
+            return Relation.OWNER;
+        }
+        if (!turret.policy().friendlyFire()) {
+            return Relation.OTHER;
+        }
+        if (friends.isFriend(turret.owner(), id) || protection.trusts(turret.block(), id, player.getName())) {
+            return Relation.FRIEND;
+        }
+        return Relation.OTHER;
+    }
+
+    /**
+     * True when a player is on the owner's scoreboard team. The owner's own scoreboard is read while the owner is online; while the owner is
+     * away, the main scoreboard is read in its place.
+     */
+    private static boolean teamMateOf(TurretDevice turret, Player player) {
+        Player owner = Bukkit.getPlayer(turret.owner());
+        Scoreboard board;
+        String ownerName;
+        if (owner != null) {
+            board = owner.getScoreboard();
+            ownerName = owner.getName();
+        } else {
+            OfflinePlayer offline = Bukkit.getOfflinePlayer(turret.owner());
+            ownerName = offline.getName();
+            board = Bukkit.getScoreboardManager() == null ? null : Bukkit.getScoreboardManager().getMainScoreboard();
+        }
+        if (board == null || ownerName == null) {
+            return false;
+        }
+        Team team = board.getEntryTeam(ownerName);
+        return team != null && team.hasEntry(player.getName());
+    }
+
+    private static Candidate candidateOf(LivingEntity living, double distance, boolean withinArc, boolean protectedHere,
+                                         Relation relation, boolean teamMate, boolean clearShot) {
+        boolean tamed = living instanceof Tameable tameable && tameable.isTamed()
+                || living instanceof AbstractHorse horse && horse.isTamed();
+        UUID playerId = living instanceof Player player ? player.getUniqueId() : null;
+        return new Candidate(kindOf(living), living instanceof Player, living instanceof AbstractVillager,
+                living instanceof Golem, living instanceof Animals, tamed, living.customName() != null,
+                protectedHere, distance, withinArc, living.getType().name(), relation, playerId, teamMate, clearShot);
+    }
+
+    private static TargetKind kindOf(LivingEntity living) {
+        if (living instanceof Monster) {
+            return TargetKind.MONSTER;
+        }
+        if (living instanceof Phantom) {
+            return TargetKind.PHANTOM;
+        }
+        if (living instanceof AbstractCubeMob) {
+            return TargetKind.SLIME;
+        }
+        if (living instanceof Ghast) {
+            return TargetKind.GHAST;
+        }
+        return TargetKind.OTHER;
+    }
+
+    /** The point of a location, as the targeting rule reads it. */
+    private static Point pointOf(Location location) {
+        return new Point(location.getX(), location.getY(), location.getZ());
+    }
+
+    private static Point pointOf(Vector vector) {
+        return new Point(vector.getX(), vector.getY(), vector.getZ());
+    }
+
+    /** The nearest point of an entity's bounding box to the turret's head. */
+    private static Point nearestPointOf(Location barrel, LivingEntity living) {
+        BoundingBox box = living.getBoundingBox();
+        return TargetRules.nearestPoint(pointOf(barrel), pointOf(box.getMin()), pointOf(box.getMax()));
+    }
+
+    /** The yaw, pitch and distance from a barrel to the centre of an entity. */
+    private static double[] aimTo(Location barrel, LivingEntity living) {
+        BoundingBox box = living.getBoundingBox();
+        Vector centre = box.getCenter();
+        double dx = centre.getX() - barrel.getX();
+        double dy = centre.getY() - barrel.getY();
+        double dz = centre.getZ() - barrel.getZ();
+        return new double[] {TurretAim.yawOf(dx, dz), TurretAim.pitchOf(dx, dy, dz), Math.sqrt(dx * dx + dy * dy + dz * dz)};
+    }
+
+    private static double distanceTo(Location barrel, LivingEntity living) {
+        return aimTo(barrel, living)[2];
+    }
+
+    /** True when no block that solid stands between the barrel and the entity. */
+    private static boolean clearShot(Location barrel, LivingEntity living) {
+        Vector centre = living.getBoundingBox().getCenter();
+        Vector toward = centre.clone().subtract(barrel.toVector());
+        double distance = toward.length();
+        if (distance < 1e-6) {
+            return true;
+        }
+        RayTraceResult hit = barrel.getWorld().rayTraceBlocks(barrel, toward.clone().normalize(), distance,
+                FluidCollisionMode.NEVER, true);
+        return hit == null || hit.getHitPosition().distance(barrel.toVector()) >= distance - SHOT_CLEAR;
+    }
+
+    /**
+     * Fires one round from a cannon at its target. The shot takes its rounds, flies along the cannon's spread, and harms the first entity it
+     * reaches. The damage is the level's damage with its boost, whatever the round type: the round type gives the armour it bypasses, its fire
+     * and its spread.
+     *
+     * @return false, and nothing is fired, when the magazine has no round for a shot or the line to the target is blocked
+     */
+    private boolean fireRound(TurretDevice turret, int cannon, LivingEntity target, Location barrel, TurretSettings view) {
+        RoundType type = turret.magazine().type();
+        if (type == null || !turret.magazine().canFire(view.ammoPerShot())) {
+            return false;
+        }
+        if (!clearShot(barrel, target)) {
+            dropTarget(turret, cannon);
+            return false;
+        }
+        TurretSettings.Round round = stats.settings().round(type);
+        double spread = view.accuracySpread() * round.spreadFactor();
+        double yaw = turret.yaw(cannon) + TurretAim.spreadOffset(random.nextDouble() * 2.0 - 1.0, spread);
+        double pitch = turret.pitch(cannon) + TurretAim.spreadOffset(random.nextDouble() * 2.0 - 1.0, spread);
+        double[] direction = TurretAim.direction(yaw, pitch);
+        Vector heading = new Vector(direction[0], direction[1], direction[2]);
+        World world = barrel.getWorld();
+        Location muzzle = barrel.clone().add(heading.clone().multiply(BARREL_TO_MUZZLE));
+
+        turret.setMagazine(turret.magazine().fire(view.ammoPerShot()).orElse(turret.magazine()));
+        RayTraceResult hit = world.rayTrace(muzzle, heading, view.range(), FluidCollisionMode.NEVER, true, RAY_SIZE,
+                entity -> entity instanceof LivingEntity);
+        Location end = hit != null ? hit.getHitPosition().toLocation(world)
+                : muzzle.clone().add(heading.clone().multiply(view.range()));
+        effects.shot(world, barrel, heading, end, type);
+        fireSound(turret, barrel, false);
+        if (hit != null && hit.getHitEntity() instanceof LivingEntity struck) {
+            harm(turret, struck, barrel, view, stats.damage(TurretKind.MACHINE_GUN, turret.level()), round);
+        }
+        return true;
+    }
+
+    /** Deals one round's damage to an entity, when the targeting rule and the claims allow it. */
+    private void harm(TurretDevice turret, LivingEntity struck, Location barrel, TurretSettings view, double damage,
+                      TurretSettings.Round round) {
+        Verdict verdict = verdictOf(turret, struck, barrel, view);
+        if (!mayHarm(verdict)) {
+            return;
+        }
+        double dealt = TurretStrike.strike(struck,
+                ArmourBypass.finalDamage(damage, TurretStrike.armourOf(struck), TurretStrike.toughnessOf(struck), round.armourBypass()));
+        if (dealt > 0.0) {
+            turret.countHit(ticks, dealt);
+        }
+        if (round.fireTicks() > 0) {
+            struck.setFireTicks(Math.max(struck.getFireTicks(), round.fireTicks()));
+        }
+    }
+
+    /**
+     * Fires one beam of a laser turret along its barrel. The beam needs no rounds and has no spread: it flies where the barrel points, and
+     * stops on the first block or living entity on its line within range. It harms that entity when the targeting rule and the claims allow it.
+     *
+     * @return false, and nothing is fired, when a block stands between the barrel and the target
+     */
+    private boolean fireLaser(TurretDevice turret, LivingEntity target, Location barrel, TurretSettings view) {
+        if (!clearShot(barrel, target)) {
+            dropTarget(turret, 0);
+            return false;
+        }
+        double[] direction = TurretAim.direction(turret.yaw(0), turret.pitch(0));
+        Vector heading = new Vector(direction[0], direction[1], direction[2]);
+        World world = barrel.getWorld();
+        Location muzzle = barrel.clone().add(heading.clone().multiply(BARREL_TO_MUZZLE));
+        RayTraceResult hit = world.rayTrace(barrel, heading, view.range(), FluidCollisionMode.NEVER, true, RAY_SIZE,
+                entity -> entity instanceof LivingEntity);
+        Location end = hit != null ? hit.getHitPosition().toLocation(world)
+                : barrel.clone().add(heading.clone().multiply(view.range()));
+        BeamPlan beam = BeamPlan.of(end.distance(muzzle), stats.laser().beamParticles());
+        laserEffects.shot(world, muzzle, heading, beam, hit != null ? end : null, turret.level() >= TurretLevels.MAX_LEVEL);
+        fireSound(turret, barrel, true);
+        laserLight.flash(barrel, heading, turret.block(), ticks);
+        if (turret.display() != null && Bukkit.getEntity(turret.display()) instanceof Display display) {
+            laserLight.glow(display, ticks);
+        }
+        if (hit != null && hit.getHitEntity() instanceof LivingEntity struck) {
+            harmWithBeam(turret, struck, barrel, view, stats.damage(TurretKind.LASER, turret.level()));
+        }
+        return true;
+    }
+
+    /** Deals one beam's damage to an entity, when the targeting rule and the claims allow it. The beam ignores the armour its share says. */
+    private void harmWithBeam(TurretDevice turret, LivingEntity struck, Location barrel, TurretSettings view, double damage) {
+        if (!mayHarm(verdictOf(turret, struck, barrel, view))) {
+            return;
+        }
+        double dealt = TurretStrike.strike(struck, LaserRules.damageAfterArmour(damage, TurretStrike.armourOf(struck),
+                TurretStrike.toughnessOf(struck), stats.laser().armourBypass()));
+        if (dealt > 0.0) {
+            turret.countHit(ticks, dealt);
+        }
+    }
+
+    /** The server ticks the turrets have run, which times the damage counter of each turret. */
+    long currentTick() {
+        return ticks;
+    }
+
+    /**
+     * Plays a turret's firing sound at the barrel of the cannon that fires. The sound is throttled by the turret's fire countdown, so two
+     * cannons firing in the same tick play one sound.
+     */
+    private static void fireSound(TurretDevice turret, Location barrel, boolean laser) {
+        if (turret.fireSoundIn() > 0) {
+            return;
+        }
+        if (laser) {
+            TurretSounds.laserFire(barrel);
+        } else {
+            TurretSounds.fire(barrel);
+        }
+        turret.setFireSoundIn(FIRE_SOUND_TICKS);
+    }
+
+    /**
+     * Turns the item displays to the barrel's yaw and pitch, when they moved enough to be worth a redraw. The lower half turns with the
+     * first cannon's barrel in both yaw and pitch. The upper half of a tall turret turns with it in yaw only, as the mount above the barrel.
+     */
+    private void drawAim(TurretDevice turret) {
+        double yaw = turret.yaw(0);
+        double pitch = turret.pitch(0);
+        if (!Double.isNaN(turret.shownYaw())
+                && Math.abs(TurretAim.wrap(yaw - turret.shownYaw())) < DRAW_EPSILON
+                && Math.abs(pitch - turret.shownPitch()) < DRAW_EPSILON) {
+            return;
+        }
+        float scale = core.settings().displayScale();
+        if (turret.kind() == TurretKind.RAILGUN) {
+            drawRailgun(turret, yaw, pitch, scale);
+        } else {
+            if (turret.display() != null && Bukkit.getEntity(turret.display()) instanceof ItemDisplay display) {
+                Quaternionf left = new Quaternionf().rotationY((float) Math.toRadians(-yaw))
+                        .rotateX((float) Math.toRadians(pitch));
+                setTransform(display, left, scale);
+            }
+            if (turret.topDisplay() != null && Bukkit.getEntity(turret.topDisplay()) instanceof ItemDisplay top) {
+                setTransform(top, new Quaternionf().rotationY((float) Math.toRadians(-yaw)), scale);
+            }
+        }
+        turret.setShown(yaw, pitch);
+    }
+
+    /**
+     * Turns a rail gun's parts to its aim: the body and the top turn with the yaw, the barrel tilts about its trunnion, and the screen
+     * turns with the body. Each part is moved to its pose by {@link RailgunPose}.
+     */
+    private static void drawRailgun(TurretDevice turret, double yaw, double pitch, float scale) {
+        if (turret.display() != null && Bukkit.getEntity(turret.display()) instanceof Display body) {
+            moveDisplay(body, RailgunPose.body(yaw, scale));
+        }
+        if (turret.gun() != null && Bukkit.getEntity(turret.gun()) instanceof Display barrel) {
+            moveDisplay(barrel, RailgunPose.barrel(turret.level(), yaw, pitch, scale));
+        }
+        if (turret.topDisplay() != null && Bukkit.getEntity(turret.topDisplay()) instanceof Display top) {
+            moveDisplay(top, RailgunPose.body(yaw, scale));
+        }
+        if (turret.screen() != null && Bukkit.getEntity(turret.screen()) instanceof Display screen) {
+            moveDisplay(screen, RailgunPose.screen(yaw, scale));
+        }
+    }
+
+    private static void moveDisplay(Display display, Transformation transformation) {
+        display.setInterpolationDelay(0);
+        display.setInterpolationDuration(2);
+        display.setTransformation(transformation);
+    }
+
+    private static void setTransform(ItemDisplay display, Quaternionf left, float scale) {
+        display.setInterpolationDelay(0);
+        display.setInterpolationDuration(2);
+        display.setTransformation(new Transformation(new Vector3f(0f, 0f, 0f), left,
+                new Vector3f(scale, scale, scale), new Quaternionf()));
+    }
+
+    /** A turret's background: green while it stands armed or fires, red while it has no rounds or no power. */
+    private static Tone turretTone(TurretStatus status) {
+        return switch (status) {
+            case IDLE, ENGAGING -> Tone.WORKING;
+            case OFF -> Tone.NEUTRAL;
+            case NO_ROUNDS, NO_POWER -> Tone.STUCK;
+        };
+    }
+
+    /** Redraws the hologram and the open menu, every few ticks, only when their text changed. */
+    private void refreshText(TurretDevice turret) {
+        if (turret.textIn() > 0) {
+            turret.setTextIn(turret.textIn() - 1);
+            return;
+        }
+        turret.setTextIn(TEXT_TICKS);
+        List<String> lines = TurretText.lines(turret.kind(), turret.level(), turret.magazine(), turret.status(),
+                turret.satisfaction());
+        Hologram hologram = turret.hologram();
+        if (hologram != null) {
+            hologram.setTone(turretTone(turret.status()));
+        }
+        if (hologram != null && !hologram.lines().equals(lines)) {
+            hologram.setLines(lines);
+        }
+        if (turret.existingMenu() != null && turret.existingMenu().isOpen()) {
+            turret.existingMenu().refresh();
+        }
+    }
+
+    /** The round type of an item, or empty when the item is no round. */
+    private Optional<RoundType> roundOf(ItemStack stack) {
+        return core.items().componentId(stack).flatMap(RoundType::ofItem);
+    }
+
+    /** The round type of the first round in an inventory, or empty when it holds none. */
+    private Optional<RoundType> firstRoundIn(PlayerInventory inventory) {
+        return Arrays.stream(inventory.getContents()).filter(Objects::nonNull).map(this::roundOf)
+                .flatMap(Optional::stream).findFirst();
+    }
+}

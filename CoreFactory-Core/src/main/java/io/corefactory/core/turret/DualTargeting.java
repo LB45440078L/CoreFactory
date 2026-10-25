@@ -1,10 +1,11 @@
 package io.corefactory.core.turret;
 
-import org.bukkit.configuration.ConfigurationSection;
+import io.corefactory.core.config.ConfigValues;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The choice of targets for a machine gun with two cannons. The first cannon takes the nearest candidate that stands in range. The
@@ -73,11 +74,10 @@ public final class DualTargeting {
      * The spacing between the two targets of a dual shot, read from {@code turrets.dual-spacing-blocks}. A missing key gives
      * {@link #DEFAULT_SPACING_BLOCKS}; the value is kept from 0 to 64 blocks.
      *
-     * @param config the root configuration, or any section that holds a {@code turrets} section
+     * @param config the root configuration as plain data, or any section that holds a {@code turrets} section
      */
-    public static double spacingOf(ConfigurationSection config) {
-        ConfigurationSection turrets = config == null ? null : config.getConfigurationSection("turrets");
-        double value = turrets == null ? DEFAULT_SPACING_BLOCKS : turrets.getDouble(KEY, DEFAULT_SPACING_BLOCKS);
+    public static double spacingOf(Map<String, Object> config) {
+        double value = ConfigValues.number(ConfigValues.section(config, "turrets"), KEY, DEFAULT_SPACING_BLOCKS);
         if (Double.isNaN(value)) {
             return DEFAULT_SPACING_BLOCKS;
         }

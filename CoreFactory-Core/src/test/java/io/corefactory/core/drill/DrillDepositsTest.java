@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalLong;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,43 +24,43 @@ class DrillDepositsTest {
     }
 
     @Test
-    void theDepositWithTheMostRemainingIsPicked() {
+    void theDepositWithTheLargestShareIsChosen() {
         Deposit small = deposit(1, 0, 0, 5, GALENA, 100);
         Deposit large = deposit(2, 0, 0, 5, GALENA, 300);
-        assertThat(DrillDeposits.pick(List.of(small, large))).contains(large);
+        assertThat(DrillDeposits.choose(List.of(small, large))).contains(large);
     }
 
     @Test
-    void aTieOfRemainingGoesToTheLowerId() {
-        Deposit five = deposit(5, 0, 0, 5, GALENA, 200);
-        Deposit three = deposit(3, 0, 0, 5, GALENA, 200);
-        assertThat(DrillDeposits.pick(List.of(five, three)).orElseThrow().id()).isEqualTo(3L);
-        assertThat(DrillDeposits.pick(List.of(three, five)).orElseThrow().id()).isEqualTo(3L);
+    void theShareCountsNotTheAmountLeft() {
+        // 300000 of 500000 is a share of 0.6; 900 of 1000 is 0.9, so the smaller amount is the larger share.
+        Deposit rich = new Deposit(1, "world", 0, 0, 5, GALENA, 500_000, 300_000);
+        Deposit poor = new Deposit(2, "world", 0, 0, 5, GALENA, 1_000, 900);
+        assertThat(DrillDeposits.choose(List.of(rich, poor))).contains(poor);
     }
 
     @Test
-    void aDepositWithNothingLeftIsNeverPicked() {
-        assertThat(DrillDeposits.pick(List.of(deposit(1, 0, 0, 5, GALENA, 0)))).isEmpty();
+    void aTieOfShareGoesToTheLowerId() {
+        Deposit five = new Deposit(5, "world", 0, 0, 5, GALENA, 1_000, 500);
+        Deposit three = new Deposit(3, "world", 0, 0, 5, GALENA, 400, 200);
+        assertThat(DrillDeposits.choose(List.of(five, three)).orElseThrow().id()).isEqualTo(3L);
+        assertThat(DrillDeposits.choose(List.of(three, five)).orElseThrow().id()).isEqualTo(3L);
+    }
+
+    @Test
+    void aDepositWithNothingLeftIsNeverChosen() {
+        assertThat(DrillDeposits.choose(List.of(deposit(1, 0, 0, 5, GALENA, 0)))).isEmpty();
         Deposit empty = deposit(1, 0, 0, 5, GALENA, 0);
         Deposit few = deposit(2, 0, 0, 5, GALENA, 4);
-        assertThat(DrillDeposits.pick(List.of(empty, few)).orElseThrow().id()).isEqualTo(2L);
-        assertThat(DrillDeposits.pick(List.of())).isEmpty();
+        assertThat(DrillDeposits.choose(List.of(empty, few)).orElseThrow().id()).isEqualTo(2L);
+        assertThat(DrillDeposits.choose(List.of())).isEmpty();
     }
 
     @Test
-    void aDrillKeepsItsCurrentDepositWhileItIsMineableAndHasSomethingLeft() {
-        Deposit current = deposit(1, 0, 0, 5, GALENA, 100);
-        Deposit richer = deposit(2, 0, 0, 5, GALENA, 300);
-        assertThat(DrillDeposits.choose(List.of(current, richer), OptionalLong.of(1))).contains(current);
-    }
-
-    @Test
-    void aDrillMovesOnWhenItsCurrentDepositIsEmptyOrOutOfRange() {
-        Deposit empty = deposit(1, 0, 0, 5, GALENA, 0);
-        Deposit other = deposit(2, 0, 0, 5, GALENA, 40);
-        assertThat(DrillDeposits.choose(List.of(empty, other), OptionalLong.of(1))).contains(other);
-        assertThat(DrillDeposits.choose(List.of(other), OptionalLong.of(9))).contains(other);
-        assertThat(DrillDeposits.choose(List.of(), OptionalLong.empty())).isEmpty();
+    void aDrillMovesToTheDepositWithTheLargestShareWhenAnotherOvertakesIt() {
+        Deposit first = new Deposit(1, "world", 0, 0, 5, GALENA, 1_000, 900);
+        Deposit second = new Deposit(2, "world", 0, 0, 5, GALENA, 1_000, 500);
+        assertThat(DrillDeposits.choose(List.of(first, second))).contains(first);
+        assertThat(DrillDeposits.choose(List.of(first.withRemaining(400), second))).contains(second);
     }
 
     @Test
@@ -162,7 +161,7 @@ class DrillDepositsTest {
     void theChosenDepositIsEmptyWhenTheSquareHoldsNoPickableDeposit() {
         Optional<Deposit> none = DrillDeposits.choose(DrillDeposits.mineable(
                 DrillDeposits.inSquare(List.of(deposit(1, 50, 50, 3, GALENA, 9)), SQUARE, DrillKind.ORE, KNOWN::contains),
-                new DrillSelection()), OptionalLong.empty());
+                new DrillSelection()));
         assertThat(none).isEmpty();
     }
 }

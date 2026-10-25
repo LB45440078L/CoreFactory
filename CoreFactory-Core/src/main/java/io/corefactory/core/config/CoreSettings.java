@@ -1,10 +1,10 @@
 package io.corefactory.core.config;
 
 import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemoryConfiguration;
 
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -51,49 +51,48 @@ public record CoreSettings(
         int lockoutSeconds
 ) {
 
-    public static CoreSettings from(ConfigurationSection config) {
-        ConfigurationSection settings = section(config, "settings");
-        ConfigurationSection performance = section(config, "performance");
-        ConfigurationSection protection = section(config, "protection");
-        ConfigurationSection display = section(config, "display");
-        ConfigurationSection placement = section(config, "placement");
-        ConfigurationSection persistence = section(config, "persistence");
-        ConfigurationSection locks = section(config, "locks");
+    /**
+     * Reads the settings from the plain data of {@code config.yml}.
+     *
+     * @param config the root of the configuration; a null or empty map gives every default
+     */
+    public static CoreSettings from(Map<String, Object> config) {
+        Map<String, Object> settings = ConfigValues.section(config, "settings");
+        Map<String, Object> performance = ConfigValues.section(config, "performance");
+        Map<String, Object> protection = ConfigValues.section(config, "protection");
+        Map<String, Object> display = ConfigValues.section(config, "display");
+        Map<String, Object> placement = ConfigValues.section(config, "placement");
+        Map<String, Object> persistence = ConfigValues.section(config, "persistence");
+        Map<String, Object> locks = ConfigValues.section(config, "locks");
 
-        Set<String> disabled = settings.getStringList("disabled-worlds").stream()
+        Set<String> disabled = ConfigValues.stringList(settings, "disabled-worlds", List.of()).stream()
                 .map(name -> name.toLowerCase(Locale.ROOT))
                 .collect(Collectors.toUnmodifiableSet());
 
-        Set<Material> unbreakable = protection.getStringList("unbreakable-materials").stream()
+        Set<Material> unbreakable = ConfigValues.stringList(protection, "unbreakable-materials", List.of()).stream()
                 .map(Material::matchMaterial)
                 .filter(material -> material != null)
                 .collect(Collectors.toUnmodifiableSet());
 
         return new CoreSettings(
-                settings.getBoolean("debug", false),
+                ConfigValues.bool(settings, "debug", false),
                 disabled,
-                Math.max(1, settings.getInt("max-chain-depth", 6)),
-                Math.max(1, settings.getInt("max-detonations-per-second", 60)),
-                Math.max(500, performance.getInt("blocks-per-tick", 25_000)),
-                Math.max(0, performance.getInt("instant-threshold", 4_000)),
-                Math.max(0, performance.getInt("chain-ignite-delay-ticks", 6)),
-                Math.max(50, performance.getInt("particles-per-tick", 1_500)),
-                Math.max(8.0, performance.getDouble("effect-view-distance", 96.0)),
+                Math.max(1, ConfigValues.integer(settings, "max-chain-depth", 6)),
+                Math.max(1, ConfigValues.integer(settings, "max-detonations-per-second", 60)),
+                Math.max(500, ConfigValues.integer(performance, "blocks-per-tick", 25_000)),
+                Math.max(0, ConfigValues.integer(performance, "instant-threshold", 4_000)),
+                Math.max(0, ConfigValues.integer(performance, "chain-ignite-delay-ticks", 6)),
+                Math.max(50, ConfigValues.integer(performance, "particles-per-tick", 1_500)),
+                Math.max(8.0, ConfigValues.number(performance, "effect-view-distance", 96.0)),
                 unbreakable,
-                protection.getBoolean("protect-from-pistons", true),
-                display.getBoolean("custom-textures", true),
-                (float) display.getDouble("display-scale", 1.002),
-                placement.getBoolean("direction-from-player", true),
-                Math.max(20, persistence.getInt("save-interval-seconds", 300) * 20),
-                persistence.getString("file", "placed-tnt.yml"),
-                Math.max(1, locks.getInt("max-attempts", 3)),
-                Math.max(0, locks.getInt("lockout-seconds", 30))
+                ConfigValues.bool(protection, "protect-from-pistons", true),
+                ConfigValues.bool(display, "custom-textures", true),
+                (float) ConfigValues.number(display, "display-scale", 1.002),
+                ConfigValues.bool(placement, "direction-from-player", true),
+                Math.max(20, ConfigValues.integer(persistence, "save-interval-seconds", 300) * 20),
+                ConfigValues.string(persistence, "file", "placed-tnt.yml"),
+                Math.max(1, ConfigValues.integer(locks, "max-attempts", 3)),
+                Math.max(0, ConfigValues.integer(locks, "lockout-seconds", 30))
         );
-    }
-
-    /** Returns the named subsection, or an empty one, so callers never null-check. */
-    static ConfigurationSection section(ConfigurationSection parent, String key) {
-        ConfigurationSection section = parent.getConfigurationSection(key);
-        return section != null ? section : new MemoryConfiguration();
     }
 }

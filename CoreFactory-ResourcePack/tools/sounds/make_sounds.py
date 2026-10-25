@@ -469,6 +469,20 @@ def accumulator_charge(seconds=1.2):
     return out
 
 
+def water_pump(seconds=2.0):
+    """A centrifugal pump: a turbine rumble (band-limited noise with a slow swell over the loop), a motor hum at 110 Hz with
+    a faint octave, and a soft swish at the vane passing rate, 8 per second (16 cycles over the 2 s loop). Every part
+    divides evenly into the loop, so it repeats seamlessly."""
+    n = samples(seconds)
+    swell = [0.8 + 0.2 * math.sin(TAU * i / n) for i in range(n)]
+    body = [v * s for v, s in zip(band(n, 40, 50, 350), swell)]
+    mix(body, tone(n, 110), 0.35)
+    mix(body, tone(n, 220), 0.06)
+    vanes = [0.25 + 0.75 * (0.5 - 0.5 * math.cos(TAU * 16 * i / n)) ** 3 for i in range(n)]
+    mix(body, [v * g for v, g in zip(band(n, 41, 300, 1400), vanes)], 0.3)
+    return loop_lowpass(body, 1000)
+
+
 # Procedural sounds: key, builder, peak level in dBFS. The hums sit a little lower because they play for long stretches.
 # The sourced sounds (press, turret, laser, generator and hiss keys, and the bubbling purifier) are in sources.json.
 SOUNDS = [
@@ -503,6 +517,7 @@ SOUNDS = [
     ("heavy_weapons_assembly", heavy_weapons_assembly, -15.0),
     ("pylon_hum", pylon_hum, -16.0),
     ("accumulator_charge", accumulator_charge, -15.0),
+    ("water_pump", water_pump, -14.0),
 ]
 
 

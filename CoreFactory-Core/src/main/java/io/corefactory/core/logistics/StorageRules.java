@@ -77,6 +77,51 @@ public final class StorageRules {
         return OptionalInt.empty();
     }
 
+    /**
+     * Adds exactly one item to a slot. The slot must be empty or hold the same item with room. The count must rise by exactly one;
+     * when it does not, the slot is set back to what it held and the insertion is refused.
+     *
+     * @param slot  the slot
+     * @param item  the item
+     * @param limit the largest stack of the item
+     * @return true when one item is in the slot; false when nothing was inserted
+     */
+    public static boolean insertOne(Stack slot, ItemRef item, int limit) {
+        ItemRef before = slot.ref();
+        int count = slot.count();
+        if (count >= limit || count > 0 && !item.equals(before)) {
+            return false;
+        }
+        slot.set(item, count + 1);
+        if (slot.count() == count + 1 && item.equals(slot.ref())) {
+            return true;
+        }
+        slot.set(before, count);
+        return false;
+    }
+
+    /**
+     * Removes exactly one item from a slot that holds the item. The count must fall by exactly one; when it does not, the slot is set
+     * back to what it held and the removal is refused. A slot holding one item empties, and that counts as the removal.
+     *
+     * @param slot the slot
+     * @param item the item the slot must hold
+     * @return true when one item left the slot; false when nothing was removed
+     */
+    public static boolean takeOne(Stack slot, ItemRef item) {
+        ItemRef before = slot.ref();
+        int count = slot.count();
+        if (count <= 0 || !item.equals(before)) {
+            return false;
+        }
+        slot.set(item, count - 1);
+        if (slot.count() == count - 1 && (count == 1 || item.equals(slot.ref()))) {
+            return true;
+        }
+        slot.set(before, count);
+        return false;
+    }
+
     private static int slotRoom(int itemLimit, Stack stack, ItemRef item) {
         if (stack.count() <= 0) {
             return itemLimit;

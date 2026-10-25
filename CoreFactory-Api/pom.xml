@@ -14,13 +14,13 @@
   <name>CoreFactory :: Api</name>
   <description>
     Public contracts: TNT definitions, the Mechanic SPI, service interfaces (block batches, client
-    effects, protection) and events. Contains no implementation and no WorldEdit or PacketEvents types.
+    effects, protection) and events. Contains no implementation and no WorldEdit types.
   </description>
 
   <dependencies>
     <dependency>
-      <groupId>org.spigotmc</groupId>
-      <artifactId>spigot-api</artifactId>
+      <groupId>io.papermc.paper</groupId>
+      <artifactId>paper-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>

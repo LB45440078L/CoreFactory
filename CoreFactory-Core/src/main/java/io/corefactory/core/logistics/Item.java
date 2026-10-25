@@ -3,7 +3,7 @@ package io.corefactory.core.logistics;
 import java.util.Objects;
 
 /**
- * An item on a belt, in a picker or in a splitter: a material or a component, identified by its id. The Spigot side maps
+ * An item on a belt, in a picker or in a splitter: a material or a component, identified by its id. The Paper side maps
  * its stacks to these records, so the logistics model never sees a Bukkit type.
  *
  * @param kind {@link #MATERIAL} or {@link #COMPONENT}

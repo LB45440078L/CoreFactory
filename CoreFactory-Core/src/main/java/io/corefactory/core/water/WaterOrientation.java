@@ -2,105 +2,92 @@ package io.corefactory.core.water;
 
 import io.corefactory.core.energy.Pos;
 
-import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
 /**
- * The turns of the water models. A model is drawn along one axis, or as a bend in the horizontal plane, or as a T or cross in the
- * horizontal plane; the placed block is turned to match its connections. Yaws are degrees about the vertical axis, quarter turns
- * only, and rolls are degrees about the north-south axis, for the vertical pipe.
+ * The turns of the water models. A pipe is drawn as a straight run or as a bend, in any plane; a splitter is drawn in the plane of
+ * its input and its outputs; a pump is drawn with its front toward the player. A pipe or splitter is turned by a {@link WaterFrame},
+ * which maps the model's own axes to world faces, so a model can lie in a horizontal or a vertical plane alike. A pump is turned by
+ * a yaw, since its front is always horizontal.
  *
- * <p>The turns follow the display transform: a yaw of {@code a} maps a horizontal direction {@code (x, z)} to
- * {@code (x cos a + z sin a, -x sin a + z cos a)}. Pure: the caller applies the degrees to the display.
+ * <p>The yaw of {@code a} maps a horizontal direction {@code (x, z)} to {@code (x cos a + z sin a, -x sin a + z cos a)}. Pure: the
+ * caller applies the frame or the degrees to the display.
  */
 public final class WaterOrientation {
 
-    /** The shape of a pipe's model: a straight run on one axis, or a bend. */
+    /** The shape of a pipe's model: a straight run along the frame's X axis, or a bend in the frame's X and Z plane. */
     public enum PipeShape {
-        /** Straight along the east-west axis: the model as drawn. */
-        STRAIGHT_X,
-        /** Straight along the north-south axis: the model turned a quarter by yaw. */
-        STRAIGHT_Z,
-        /** Straight up and down: the model rolled a quarter. */
-        STRAIGHT_Y,
-        /** A 90 degree bend in the horizontal plane. */
-        BEND
+        /** A straight run. */
+        STRAIGHT,
+        /** A 90 degree bend. */
+        BEND,
+        /**
+         * Three or more connections: a hub in the middle with one arm to each connected face. The arms are drawn one by one, so every
+         * connection shows.
+         */
+        JUNCTION
     }
 
     /**
-     * How to draw a pipe: its shape, and its yaw and roll in degrees.
+     * How to draw a pipe: its shape, and the frame that turns its model.
      *
      * @param shape the shape of the model
-     * @param yaw   the yaw about the vertical axis, a multiple of 90
-     * @param roll  the roll about the north-south axis, 0 or 90
+     * @param frame the turn of the model
      */
-    public record PipeModel(PipeShape shape, int yaw, int roll) {
+    public record PipeModel(PipeShape shape, WaterFrame frame) {
     }
 
     private WaterOrientation() {
     }
 
     /**
-     * The model of a pipe from the faces it connects on. A corner of two horizontal faces with no vertical connection is a bend. Otherwise
-     * the pipe is straight on the axis with the most connections, and on the first axis in the order east-west, north-south, up-down when
-     * the counts tie. A pipe with no connection is straight on the east-west axis.
+     * The model of a pipe from the faces it connects on. Three or more connections make a junction, which draws every arm. Two connections
+     * that are not opposite make a bend, in the plane they span, vertical or horizontal. Otherwise the pipe is straight on the axis of its
+     * two connections, or along the east-west axis when it has fewer than two. A pipe with no connection is straight on the east-west axis.
      *
      * @param connections the faces where the pipe joins a neighbour
      */
     public static PipeModel pipe(Set<Face> connections) {
         Objects.requireNonNull(connections, "connections");
+        if (connections.size() >= 3) {
+            return new PipeModel(PipeShape.JUNCTION, WaterFrame.identity());
+        }
+        if (connections.size() == 2 && !isOpposite(connections)) {
+            var pair = connections.stream().sorted().toList();
+            return new PipeModel(PipeShape.BEND, WaterFrame.bend(pair.get(0), pair.get(1)));
+        }
         int alongX = count(connections, Face.EAST, Face.WEST);
         int alongZ = count(connections, Face.NORTH, Face.SOUTH);
         int alongY = count(connections, Face.UP, Face.DOWN);
-        EnumSet<Face> horizontal = EnumSet.noneOf(Face.class);
-        for (Face face : connections) {
-            if (face.horizontal()) {
-                horizontal.add(face);
-            }
-        }
-        if (alongY == 0 && horizontal.size() == 2 && !isOpposite(horizontal)) {
-            return new PipeModel(PipeShape.BEND, bendYaw(horizontal), 0);
-        }
-        PipeShape shape = PipeShape.STRAIGHT_X;
+        Face along = Face.EAST;
         int best = alongX;
         if (alongZ > best) {
-            shape = PipeShape.STRAIGHT_Z;
+            along = Face.SOUTH;
             best = alongZ;
         }
         if (alongY > best) {
-            shape = PipeShape.STRAIGHT_Y;
+            along = Face.UP;
         }
-        return switch (shape) {
-            case STRAIGHT_X -> new PipeModel(shape, 0, 0);
-            case STRAIGHT_Z -> new PipeModel(shape, 90, 0);
-            case STRAIGHT_Y -> new PipeModel(shape, 0, 90);
-            case BEND -> throw new IllegalStateException("a bend is not a straight run");
-        };
+        return new PipeModel(PipeShape.STRAIGHT, WaterFrame.straight(along));
     }
 
     /**
-     * The yaw that turns a bend's model so its open ends are the two given faces. The model's open ends are west and south.
+     * The default output of a T whose input is horizontal: the face across the input that the model's +Z points to. An input on the
+     * east or west line gives south; an input on the north or south line gives east.
      *
-     * @param ends the two horizontal faces the bend joins
-     * @return the yaw, 0, 90, 180 or 270
-     * @throws IllegalArgumentException when the faces are not a horizontal corner
+     * @param input the horizontal input face
+     * @throws IllegalArgumentException when the input is vertical
      */
-    public static int bendYaw(Set<Face> ends) {
-        if (ends.size() != 2 || isOpposite(ends) || !ends.stream().allMatch(Face::horizontal)) {
-            throw new IllegalArgumentException("a bend joins two horizontal faces that are not opposite, got " + ends);
+    public static Face defaultOutput(Face input) {
+        if (!input.horizontal()) {
+            throw new IllegalArgumentException("a default output needs a horizontal input, got " + input);
         }
-        for (int yaw = 0; yaw < 360; yaw += 90) {
-            EnumSet<Face> turned = EnumSet.of(turn(Face.WEST, yaw), turn(Face.SOUTH, yaw));
-            if (turned.equals(EnumSet.copyOf(ends))) {
-                return yaw;
-            }
-        }
-        throw new IllegalStateException("no quarter turn joins " + ends);
+        return input == Face.EAST || input == Face.WEST ? Face.SOUTH : Face.EAST;
     }
 
     /**
-     * The yaw that turns a model's horizontal face to a target face.
+     * The yaw that turns a model's horizontal face to a target face. Used for the pump, whose front is horizontal.
      *
      * @param modelFace the face the model has at its unturned position, horizontal
      * @param target    the face it must reach, horizontal
@@ -128,6 +115,15 @@ public final class WaterOrientation {
     public static Face inputFromLook(double playerYaw) {
         double radians = Math.toRadians(playerYaw);
         return dominantFace(Math.sin(radians), 0.0, -Math.cos(radians));
+    }
+
+    /**
+     * The horizontal face the player looks toward, from the player's yaw: the face a vertical splitter's outputs lie across.
+     *
+     * @param playerYaw the player's yaw in degrees, as the server reports it
+     */
+    public static Face lookFace(double playerYaw) {
+        return inputFromLook(playerYaw).opposite();
     }
 
     /**

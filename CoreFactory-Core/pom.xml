@@ -14,8 +14,8 @@
   <name>CoreFactory :: Core</name>
   <description>
     Implementation of every mechanic, the TNT and component items, recipes, placed-block registry,
-    the staged block pipeline and configuration. Depends on the Api and Spigot-API only; WorldEdit and
-    PacketEvents are reached through the Api's service interfaces, which the Spigot module implements.
+    the staged block pipeline and configuration. Depends on the Api and Paper-API only. WorldEdit and the
+    client effects are reached through the Api service interfaces, which the Paper module implements.
   </description>
 
   <dependencies>
@@ -24,8 +24,8 @@
       <artifactId>CoreFactory-Api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.spigotmc</groupId>
-      <artifactId>spigot-api</artifactId>
+      <groupId>io.papermc.paper</groupId>
+      <artifactId>paper-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>

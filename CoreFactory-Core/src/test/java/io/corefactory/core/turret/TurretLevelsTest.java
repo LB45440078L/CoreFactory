@@ -1,6 +1,7 @@
 package io.corefactory.core.turret;
 
-import org.bukkit.configuration.MemoryConfiguration;
+import io.corefactory.core.config.TestConfig;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -89,16 +90,16 @@ class TurretLevelsTest {
 
     @Test
     void aMissingSectionGivesTheDefaults() {
-        assertThat(TurretLevels.from(TurretType.MACHINE_GUN, new MemoryConfiguration())).isEqualTo(TurretLevels.MACHINE_GUN);
-        assertThat(TurretLevels.from(TurretType.LASER, new MemoryConfiguration())).isEqualTo(TurretLevels.LASER);
+        assertThat(TurretLevels.from(TurretType.MACHINE_GUN, Map.of())).isEqualTo(TurretLevels.MACHINE_GUN);
+        assertThat(TurretLevels.from(TurretType.LASER, Map.of())).isEqualTo(TurretLevels.LASER);
         assertThat(TurretLevels.from(TurretType.LASER, null)).isEqualTo(TurretLevels.LASER);
     }
 
     @Test
     void aLevelOverrideReplacesOnlyTheKeysItNames() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("turrets.levels.4.damage-boost-percent", 40);
-        config.set("turrets.levels.3.range", 29);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "turrets.levels.4.damage-boost-percent", 40);
+        TestConfig.set(config, "turrets.levels.3.range", 29);
 
         TurretLevels table = TurretLevels.from(TurretType.MACHINE_GUN, config);
 
@@ -123,9 +124,9 @@ class TurretLevelsTest {
 
     @Test
     void aLaserLevelsRotationIsReadFromItsSectionAndAMachineGunLevelDoesNotReadIt() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("laser-turret.levels.5.rotation-degrees-per-tick", 15);
-        config.set("turrets.levels.5.rotation-degrees-per-tick", 15);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "laser-turret.levels.5.rotation-degrees-per-tick", 15);
+        TestConfig.set(config, "turrets.levels.5.rotation-degrees-per-tick", 15);
 
         assertThat(TurretLevels.from(TurretType.LASER, config).level(5).rotationDegreesPerTick()).isEqualTo(15.0);
         assertThat(TurretLevels.from(TurretType.MACHINE_GUN, config).level(5).rotationDegreesPerTick()).isZero();
@@ -133,14 +134,14 @@ class TurretLevelsTest {
 
     @Test
     void everyStatOfALevelCanBeOverridden() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("turrets.levels.2.damage", 7.5);
-        config.set("turrets.levels.2.damage-boost-percent", 15);
-        config.set("turrets.levels.2.fire-interval-ticks", 9);
-        config.set("turrets.levels.2.range", 27);
-        config.set("turrets.levels.2.ammo-capacity", 300);
-        config.set("turrets.levels.2.cannons", 2);
-        config.set("turrets.levels.2.power-demand-w", 35000);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "turrets.levels.2.damage", 7.5);
+        TestConfig.set(config, "turrets.levels.2.damage-boost-percent", 15);
+        TestConfig.set(config, "turrets.levels.2.fire-interval-ticks", 9);
+        TestConfig.set(config, "turrets.levels.2.range", 27);
+        TestConfig.set(config, "turrets.levels.2.ammo-capacity", 300);
+        TestConfig.set(config, "turrets.levels.2.cannons", 2);
+        TestConfig.set(config, "turrets.levels.2.power-demand-w", 35000);
 
         assertThat(TurretLevels.from(TurretType.MACHINE_GUN, config).level(2))
                 .isEqualTo(new TurretLevel(2, 7.5, 15, 9, 27.0, 300, 2, 35_000, false));
@@ -148,11 +149,11 @@ class TurretLevelsTest {
 
     @Test
     void theLaserReadsItsOwnSectionAndIgnoresAnAmmoCapacity() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("laser-turret.levels.5.range", 66);
-        config.set("laser-turret.levels.5.damage", 15);
-        config.set("laser-turret.levels.1.ammo-capacity", 64);
-        config.set("turrets.levels.5.range", 50);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "laser-turret.levels.5.range", 66);
+        TestConfig.set(config, "laser-turret.levels.5.damage", 15);
+        TestConfig.set(config, "laser-turret.levels.1.ammo-capacity", 64);
+        TestConfig.set(config, "turrets.levels.5.range", 50);
 
         TurretLevels laser = TurretLevels.from(TurretType.LASER, config);
 
@@ -163,17 +164,17 @@ class TurretLevelsTest {
 
     @Test
     void aMachineGunNeverHasAnEmptyBelt() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("turrets.levels.1.ammo-capacity", 0);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "turrets.levels.1.ammo-capacity", 0);
 
         assertThat(TurretLevels.from(TurretType.MACHINE_GUN, config).level(1).ammoCapacity()).isEqualTo(1);
     }
 
     @Test
     void theTallFlagFollowsTheUpgradeRuleNotTheConfig() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("turrets.levels.2.tall", true);
-        config.set("turrets.levels.3.tall", false);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "turrets.levels.2.tall", true);
+        TestConfig.set(config, "turrets.levels.3.tall", false);
 
         TurretLevels table = TurretLevels.from(TurretType.MACHINE_GUN, config);
 
@@ -183,12 +184,12 @@ class TurretLevelsTest {
 
     @Test
     void oddValuesAreClampedToTheirRanges() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("turrets.levels.1.cannons", 9);
-        config.set("turrets.levels.2.range", 500);
-        config.set("turrets.levels.3.fire-interval-ticks", 0);
-        config.set("turrets.levels.4.damage-boost-percent", -20);
-        config.set("turrets.levels.5.power-demand-w", -5);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "turrets.levels.1.cannons", 9);
+        TestConfig.set(config, "turrets.levels.2.range", 500);
+        TestConfig.set(config, "turrets.levels.3.fire-interval-ticks", 0);
+        TestConfig.set(config, "turrets.levels.4.damage-boost-percent", -20);
+        TestConfig.set(config, "turrets.levels.5.power-demand-w", -5);
 
         TurretLevels table = TurretLevels.from(TurretType.MACHINE_GUN, config);
 

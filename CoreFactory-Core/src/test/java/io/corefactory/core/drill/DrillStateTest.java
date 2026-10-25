@@ -1,9 +1,11 @@
 package io.corefactory.core.drill;
 
+import io.corefactory.core.oil.Fluid;
 import io.corefactory.core.process.Machine;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 class DrillStateTest {
 
@@ -73,12 +75,12 @@ class DrillStateTest {
     }
 
     @Test
-    void anOreDrillBurnsPetroleumEveryOtherCycle() {
+    void anOreDrillNeverHasAFuelItemDueBecausePetroleumComesFromTheNetwork() {
         DrillState drill = state(DrillKind.ORE, 3);
-        finishBurning(drill);
-        assertThat(drill.fuelDue()).isFalse();
-        finishBurning(drill);
-        assertThat(drill.fuelDue()).isTrue();
+        for (int cycle = 0; cycle < 4; cycle++) {
+            finishBurning(drill);
+            assertThat(drill.fuelDue()).isFalse();
+        }
     }
 
     @Test
@@ -103,13 +105,30 @@ class DrillStateTest {
     }
 
     @Test
-    void theDefinitionOfADrillIsItsMachineWithOneFuelSlotAndNineOutputs() {
+    void theDefinitionOfAnOreDrillIsItsMachineWithNoFuelSlotAndNineOutputs() {
         Machine machine = new DrillDefinition("ore_drill_1", "Ore Drill", "BARREL", DrillKind.ORE,
                 DrillTable.level(1)).machine();
         assertThat(machine.host()).isEqualTo("BARREL");
         assertThat(machine.inputSlots()).isZero();
-        assertThat(machine.fuelSlots()).isEqualTo(1);
+        assertThat(machine.fuelSlots()).isZero();
         assertThat(machine.outputSlots()).isEqualTo(DrillTable.OUTPUT_SLOTS);
+    }
+
+    @Test
+    void theDefinitionOfAPetroleumDrillIsItsMachineWithOneCharcoalSlotAndNoOutputs() {
+        Machine machine = new DrillDefinition("petroleum_drill_1", "Petroleum Drill", "BARREL", DrillKind.PETROLEUM,
+                DrillTable.level(1)).machine();
+        assertThat(machine.fuelSlots()).isEqualTo(1);
+        assertThat(machine.outputSlots()).isZero();
+    }
+
+    @Test
+    void anOreDrillDrawsItsLitresOverEachTickOfItsCycle() {
+        assertThat(DrillKind.ORE.litresPerTick(600)).isCloseTo(0.5 / 600, within(1e-12));
+        assertThat(DrillKind.ORE.fluid()).contains(Fluid.PETROLEUM);
+        assertThat(DrillKind.ORE.fuel()).isEmpty();
+        assertThat(DrillKind.PETROLEUM.fluid()).isEmpty();
+        assertThat(DrillKind.PETROLEUM.litresPerTick(600)).isZero();
     }
 
     private static void finishBurning(DrillState drill) {

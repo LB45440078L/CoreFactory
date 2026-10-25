@@ -43,6 +43,24 @@ class PylonTest {
     }
 
     @Test
+    void theHugeAndColossalRangesAreTheirOwnSquares() {
+        assertThat(pylon(PylonType.HUGE).covers(new Pos(25, 64, -25))).isTrue();
+        assertThat(pylon(PylonType.HUGE).covers(new Pos(26, 64, 0))).isFalse();
+        assertThat(pylon(PylonType.HUGE).covers(new Pos(0, 64, -26))).isFalse();
+        assertThat(pylon(PylonType.COLOSSAL).covers(new Pos(40, 64, -40))).isTrue();
+        assertThat(pylon(PylonType.COLOSSAL).covers(new Pos(41, 64, 0))).isFalse();
+        assertThat(pylon(PylonType.COLOSSAL).covers(new Pos(0, 64, 41))).isFalse();
+    }
+
+    @Test
+    void theHugeAndColossalPylonsCarryTheirCapacityAndCurrent() {
+        assertThat(pylon(PylonType.HUGE).maxCurrentA()).isEqualTo(4_000.0);
+        assertThat(pylon(PylonType.HUGE).capacityW()).isEqualTo(920_000.0);
+        assertThat(pylon(PylonType.COLOSSAL).maxCurrentA()).isEqualTo(10_000.0);
+        assertThat(pylon(PylonType.COLOSSAL).capacityW()).isEqualTo(2_300_000.0);
+    }
+
+    @Test
     void aPylonCarriesTheCapacityAndCurrentOfItsType() {
         assertThat(pylon(PylonType.SMALL).capacityW()).isEqualTo(23_000.0);
         assertThat(pylon(PylonType.MEDIUM).maxCurrentA()).isEqualTo(400.0);

@@ -1,6 +1,6 @@
 package io.corefactory.core.research;
 
-import org.bukkit.configuration.ConfigurationSection;
+import io.corefactory.core.config.ConfigValues;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,27 +82,28 @@ public final class ResearchTree {
     /**
      * Reads {@code nodes:} from research.yml. A node that is malformed is logged and left out; the rest still load.
      */
-    public static ResearchTree parse(ConfigurationSection root, Logger log) {
+    public static ResearchTree parse(Map<String, Object> root, Logger log) {
         List<Node> ordered = new ArrayList<>();
-        if (root == null || root.getConfigurationSection("nodes") == null) {
+        Map<String, Object> section = ConfigValues.optionalSection(root, "nodes");
+        if (section == null) {
             return of(ordered);
         }
-        ConfigurationSection section = root.getConfigurationSection("nodes");
-        for (String id : section.getKeys(false)) {
-            ConfigurationSection node = section.getConfigurationSection(id);
+        for (String id : section.keySet()) {
+            Map<String, Object> node = ConfigValues.optionalSection(section, id);
             if (node == null) {
                 log.warning("Research node '" + id + "' is not a section, skipped.");
                 continue;
             }
             Map<String, Integer> cost = new LinkedHashMap<>();
-            ConfigurationSection costSection = node.getConfigurationSection("cost");
+            Map<String, Object> costSection = ConfigValues.optionalSection(node, "cost");
             if (costSection != null) {
-                for (String pack : costSection.getKeys(false)) {
-                    cost.put(pack, Math.max(0, costSection.getInt(pack)));
+                for (String pack : costSection.keySet()) {
+                    cost.put(pack, Math.max(0, ConfigValues.integer(costSection, pack, 0)));
                 }
             }
-            ordered.add(new Node(id, node.getString("name", id), node.getString("description", ""),
-                    node.getStringList("requires"), cost, node.getStringList("unlocks")));
+            ordered.add(new Node(id, ConfigValues.string(node, "name", id), ConfigValues.string(node, "description", ""),
+                    ConfigValues.stringList(node, "requires", List.of()), cost,
+                    ConfigValues.stringList(node, "unlocks", List.of())));
         }
         try {
             return of(ordered);

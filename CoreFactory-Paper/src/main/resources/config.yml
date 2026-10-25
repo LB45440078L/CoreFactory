@@ -1,0 +1,721 @@
+# =====================================================================================================
+#  CoreFactory configuration
+#
+#  Per-TNT settings (mechanics, radii, recipes, textures) live in tnts.yml.
+#  Crafting components (the ingredients that make the strong TNT) live in items.yml.
+#  After editing any of the three files run /cf reload. Placed TNT is kept across reloads.
+#
+#  Durations are in ticks (20 ticks = 1 second) unless the key says "seconds".
+# =====================================================================================================
+
+settings:
+  # Verbose console output: loaded definitions, skipped entries, detonation traces.
+  debug: false
+  # Worlds where custom TNT cannot be placed or lit. Names are case-insensitive.
+  disabled-worlds: []
+  # The longest chain of detonations one ignition may start. A guard against runaway chains.
+  max-chain-depth: 6
+  # Global cap on detonations per second (a rolling 20-tick window). Extra detonations are dropped.
+  max-detonations-per-second: 60
+
+performance:
+  # Block writes applied per server tick by the staged pipeline. Large blasts (nuclear craters, sculpt
+  # shells, debris) are spread over as many ticks as they need at this rate. Lower it on weak hosts.
+  blocks-per-tick: 25000
+  # Change sets up to this many blocks are applied in a single tick, without staging.
+  instant-threshold: 4000
+  # Ticks between a vanilla explosion reaching a placed custom TNT and that TNT igniting.
+  chain-ignite-delay-ticks: 6
+  # Particle packets sent per tick across every effect. Keeps shockwaves and beams from flooding clients.
+  particles-per-tick: 1500
+  # Players farther than this many blocks from an effect receive none of its sounds or particles.
+  effect-view-distance: 96
+
+effects:
+  # Sprite effects: fireballs, shock rings, mushroom clouds, machine steam and research bursts, drawn as item displays.
+  # Turn off to show none of them. Read at startup, so a change needs a restart.
+  enabled: true
+  # The most sprites alive at once. While the count is at this cap, newer effects are dropped and one warning is logged.
+  max-sprites: 600
+
+holograms:
+  # Progress holograms over the lab tools and drills while they run: a bar and a percentage, shown to players nearby. Turn off to
+  # show none. Read at startup, so a change needs a restart.
+  enabled: true
+  # Blocks from a player within which the player sees a lab tool's or drill's hologram. Read at startup.
+  view-distance: 32
+
+energy:
+  # Pylons and accumulators, the power network. Read at startup, so a change needs a restart.
+  consumers:
+    # Power a placed lab tool asks for, in watts (W). It runs at the share of this its network gives it, so a lab tool with no
+    # pylon in range stops. A value of 0 means a lab tool needs no power.
+    lab-demand: 4000
+    # Power a placed drill asks for when its level is not known, in watts (W). A drill normally asks for the power of its level
+    # (15 kW to 90 kW). A drill runs on the stronger of its own power (redstone, solar, fuel) and its network.
+    drill-demand: 15000
+  # Generators (wind, solar, charcoal, petroleum, diesel and nuclear) are placed on air like pylons, and a nuclear one may also stand
+  # in water. Their output, burn times and fuel are fixed by the energy table of the core, so they have no keys here.
+  # Ticks between saves of energy.yml, which holds the devices, wires, accumulator charge and generator fuel. The file is also saved on shutdown.
+  save-interval-ticks: 300
+  # Blocks from a player within which a wire is drawn to them. A wire is drawn only when its grid was solved this tick. Read at startup.
+  wire-view-blocks: 24
+  # The most particles a player is sent for the wires in one redraw, which is every 5 ticks, so about 64 a tick at 320. A wire of 24
+  # blocks costs about 50 particles, so the nearest wires are drawn whole and the rest wait. 0 turns the wires off for every player.
+  # Read at startup, so a change needs a restart.
+  wire-particle-cap: 320
+
+# The items a drill yields per second at full power, one rate for each level from 1 to 5. A drill works at the power it has,
+# its own source or its network when that is stronger, so a petroleum drill on charcoal yields 35% of its rate. Each rate is
+# finite and 0 or more, and a higher level never yields less than the one below. Read at startup, so a change needs a restart.
+# A petroleum drill's rate is litres of petroleum per second, pushed into the oil network, not items; an ore drill yields items.
+drill-rates:
+  - 1.0
+  - 1.5
+  - 2.5
+  - 4.0
+  - 6.0
+
+machine-upgrades:
+  # The work pace factor of each lab machine level, level I, II and III. A machine of level II runs its process 1.5 times as
+  # fast at full power, level III twice as fast; the power it draws is unchanged. Each factor is finite and above zero, and a
+  # higher level is never slower than the one below. Read at startup, so a change needs a restart.
+  speed:
+    - 1.0
+    - 1.5
+    - 2.0
+
+charts:
+  # Grid charts (/cf grid create): a hologram of a grid's satisfaction, production or storage. Read at startup, so a change
+  # needs a restart. The most charts one grid may have.
+  charts-per-grid: 1
+  # The most charts the server may have, in all.
+  charts-total: 5
+  # Ticks between the refreshes of a chart's text. A chart is refreshed only while a player is within 48 blocks of it.
+  refresh-ticks: 10
+
+logistics:
+  # The most item displays on belts at once. Each item on a belt is shown as a small item display that glides along the belt. Past
+  # this cap the items are still carried, but not shown, and one warning is logged. Read at startup, so a change needs a restart.
+  max-item-displays: 2000
+  # Ticks between saves of logistics.yml, which holds the belts, pickers, splitters and the items on the belts. The file is also saved
+  # on shutdown.
+  save-interval-ticks: 300
+
+chunks:
+  # Keeps loaded the chunks that hold working devices (drills, lab machines, generators, pumps, the refinery, turrets, pylons and belts),
+  # so that mining, lab work and networks keep running while no player is near. The artillery pieces, their Command Centers and the target
+  # area of a set target are kept loaded too, outside the cap below. Turn off to let those chunks unload as usual.
+  # Read at startup, so a change needs a restart.
+  keep-loaded: true
+  # The most chunks the plugin keeps loaded with tickets. A value of 0 keeps none. Past this cap, the rest of the device chunks are not
+  # kept loaded and one warning is logged. Read at startup, so a change needs a restart.
+  max-forced: 256
+
+vertical-belt:
+  # The carry speed of each vertical belt level, level I, II and III, in blocks per second. The same speeds as the regular belt levels.
+  # Each speed is finite and above zero. Read at startup, so a change needs a restart.
+  speed:
+    - 1.875
+    - 3.75
+    - 7.5
+  # The items a block of tower holds at each level, level I, II and III. Each is a whole number of at least 1.
+  capacity:
+    - 4
+    - 8
+    - 12
+  # The most item displays on towers at once. Past this cap the items are still carried, but not shown, and one warning is logged.
+  # Read at startup, so a change needs a restart.
+  max-item-displays: 600
+
+turrets:
+  # Machine gun turrets. A turret is placed on air like a generator and fires at hostile mobs in its range. Read at startup, so a change
+  # needs a restart. Turn off to stop every turret: none searches, aims or fires, and none asks the network for power.
+  enabled: true
+  # The turret scan rate: ticks between two coordinated passes that give every turret in an area its targets (20 is one second).
+  # Lower scans more often and costs more server time; higher scans less often and reacts later. A turret keeps its target between
+  # passes while the target stays alive, in range and in its line of fire, and a pass also runs straight after a target dies. Allowed: 1 to 1200.
+  search-interval-ticks: 20
+  # The most a machine gun turns in one tick, in degrees. A laser turns at its level's rotation-degrees-per-tick, under laser-turret.
+  rotation-speed-degrees: 6
+  # The total sweep of a turret in degrees, centred on the way it faced when it was placed. 360 turns all round, so a turret fires at every
+  # hostile mob in its range whichever way it faces. A smaller value restricts it to a sector; a mob outside that sector is out of reach.
+  arc-degrees: 360
+  # The most a turret tilts up or down, in degrees. 90 looks straight up and down, so a mob above or below the turret is in reach. A smaller
+  # value refuses a mob beyond that tilt.
+  pitch-limit-degrees: 90
+  # Sweep the arc slowly while a turret has no target. Turn off to keep still until a target appears.
+  idle-sweep: true
+  # The spread of a regular round, as a half angle in degrees. Each round type scales it by its spread-factor below.
+  accuracy-spread: 3
+  # The rounds one shot uses.
+  ammo-per-shot: 1
+  # The kinds of mob a turret fires at. monsters is every hostile monster; phantoms, slimes and ghasts are spared until you add them
+  # to this list. Remove monsters to spare every mob, or leave the list empty to fire at none.
+  targets:
+    - monsters
+  # Fire at a mob that has a custom name. Off keeps named mobs safe.
+  target-named: false
+  # Fire at a tamed mob. Off keeps tamed mobs safe.
+  target-tamed: false
+  # Blocks between the two targets of a dual shot. A machine gun with two cannons (levels 4 and 5) prefers a second mob within this many
+  # blocks of its first target, and takes the nearest free mob when none is that close. Kept from 0 to 64.
+  dual-spacing-blocks: 6
+  # Each turret's own targets, and its friendly fire, are set in its menu (right-click it, or sneak-click). Its owner's friends are kept with
+  # /cf friends. A turret never fires at a friend or its owner. A player with a target stance, or a teammate in team mode target, is the exception.
+  # The four rounds. A turret's damage per hit comes from its level below, so a round adds no damage of its own. armour-bypass is the
+  # share of the target's armour the round ignores, from 0 to 1. fire-ticks sets the target alight for that many ticks. spread-factor
+  # scales accuracy-spread: lower is tighter.
+  rounds:
+    regular:
+      armour-bypass: 0
+      fire-ticks: 0
+      spread-factor: 1
+    armor-piercing:
+      armour-bypass: 0.5
+      fire-ticks: 0
+      spread-factor: 1
+    incendiary:
+      armour-bypass: 0
+      fire-ticks: 80
+      spread-factor: 1
+    depleted-uranium:
+      armour-bypass: 0.35
+      fire-ticks: 0
+      spread-factor: 0.5
+  # Upgrade levels, 1 to 5. Level 1 is the turret as placed, and each upgrade kit moves a turret up one level. A key that a level leaves
+  # out keeps its default. The keys: damage is the damage per hit before the boost, the same for every round; damage-boost-percent raises
+  # it, in per cent; fire-interval-ticks is the ticks between shots at full power; range is in blocks; ammo-capacity is the rounds the belt
+  # holds; cannons is 1 or 2, one target each; power-demand-w is the power in W. Levels 3 and up are two blocks high, as a door: the upgrade
+  # rule sets that, so it is not a key here.
+  levels:
+    # The turret as placed.
+    1:
+      damage: 6
+      damage-boost-percent: 0
+      fire-interval-ticks: 10
+      range: 24
+      ammo-capacity: 128
+      cannons: 1
+      power-demand-w: 24000
+    # First upgrade.
+    2:
+      damage: 6
+      damage-boost-percent: 10
+      fire-interval-ticks: 8
+      range: 26
+      ammo-capacity: 256
+      cannons: 1
+      power-demand-w: 33000
+    # Second upgrade. Two blocks high from here.
+    3:
+      damage: 6
+      damage-boost-percent: 20
+      fire-interval-ticks: 7
+      range: 28
+      ammo-capacity: 384
+      cannons: 1
+      power-demand-w: 42000
+    # Third upgrade. The second cannon comes with this level.
+    4:
+      damage: 6
+      damage-boost-percent: 35
+      fire-interval-ticks: 5
+      range: 30
+      ammo-capacity: 512
+      cannons: 2
+      power-demand-w: 51000
+    # Fourth upgrade, the highest.
+    5:
+      damage: 6
+      damage-boost-percent: 50
+      fire-interval-ticks: 4
+      range: 32
+      ammo-capacity: 768
+      cannons: 2
+      power-demand-w: 60000
+
+laser-turret:
+  # Laser turrets. Electric: they hold no rounds and fire an instant beam at the mobs a machine gun turret fires at, with the same targets,
+  # the same arc, and the same per-turret menu (the turrets section above). Their turning and scan rate are their own, below. They stop
+  # with the turrets when enabled is off. Read at startup, so a change needs a restart.
+  # The share of a target's armour the beam ignores, from 0 to 1. 1 ignores all of it, so armour takes none of the damage.
+  armour-bypass: 1.0
+  # Dust particles one beam draws at most, from 0 to 32. The beam is spread evenly along its length when it is longer than the cap allows.
+  # A shot draws the beam's particles and, on a hit, a burst of six more: fewer than 40 in all.
+  beam-particles: 24
+  # The laser scan rate: ticks between two passes that give each laser its target (5 is a quarter of a second). A laser that loses its
+  # target, or whose target leaves its reach, finds the next one within this many ticks. Lower scans more often and costs more server time.
+  # The machine guns keep turrets.search-interval-ticks. Allowed: 1 to 1200.
+  search-interval-ticks: 5
+  # Upgrade levels, 1 to 5, as for the machine gun. A laser holds no rounds, so it has no ammo-capacity here, and an ammo-capacity key is
+  # ignored. Every level has one cannon: one beam. Levels 3 and up are two blocks high, as a door, which the upgrade rule sets. Range,
+  # damage, interval, power and rotation are read from these levels only. At level 5 the beam and its impact are blue. damage-boost-percent
+  # raises the beam's damage, in per cent. rotation-degrees-per-tick is the most the laser turns in one tick, in degrees: higher turns onto a
+  # new target sooner.
+  levels:
+    # The turret as placed.
+    1:
+      damage: 12
+      damage-boost-percent: 0
+      fire-interval-ticks: 10
+      range: 40
+      cannons: 1
+      power-demand-w: 60000
+      rotation-degrees-per-tick: 6
+    # First upgrade.
+    2:
+      damage: 12
+      damage-boost-percent: 10
+      fire-interval-ticks: 8
+      range: 44
+      cannons: 1
+      power-demand-w: 75000
+      rotation-degrees-per-tick: 6
+    # Second upgrade. Two blocks high from here.
+    3:
+      damage: 12
+      damage-boost-percent: 20
+      fire-interval-ticks: 6
+      range: 48
+      cannons: 1
+      power-demand-w: 90000
+      rotation-degrees-per-tick: 8
+    # Third upgrade.
+    4:
+      damage: 12
+      damage-boost-percent: 35
+      fire-interval-ticks: 5
+      range: 54
+      cannons: 1
+      power-demand-w: 105000
+      rotation-degrees-per-tick: 10
+    # Fourth upgrade, the highest.
+    5:
+      damage: 12
+      damage-boost-percent: 50
+      fire-interval-ticks: 4
+      range: 60
+      cannons: 1
+      power-demand-w: 120000
+      rotation-degrees-per-tick: 12
+
+# The rail guns. Electric, like the laser turret: they hold no rounds and fire one heavy shot at the mobs a machine gun turret fires at, with
+# the same targets, the same arc and the same per-turret menu (the turrets section above). The shot is a helix that flies to its target: its
+# flame frontier moves at the helix speed below, and the shot arrives when the frontier reaches the target. Built for armoured mobs and
+# bosses. Read at startup, so a change needs a restart.
+railgun:
+  # Turn off to stop every rail gun: none searches, aims or fires, and none asks the network for power.
+  enabled: true
+  # The distance from the frontier to the target at which the shot arrives and deals its damage, in blocks.
+  hit-distance-blocks: 0.5
+  # The share of a target's armour the shot ignores, from 0 to 1. 1 ignores all of it, so armour takes none of the damage. At 0.75 a
+  # quarter of the armour still counts.
+  armour-bypass: 0.75
+  # The speed of the flame frontier at level I, in blocks per second. Level III uses helix-speed-level-3, and level II is halfway between.
+  helix-speed-level-1: 2
+  # The speed of the flame frontier at level III, in blocks per second.
+  helix-speed-level-3: 9
+  # Seconds after the frontier leaves the barrel before the blue spiral begins. 0.5 is ten ticks.
+  spiral-delay-seconds: 0.5
+  # The radius of the red strands that wind around the path, in blocks.
+  strand-radius-blocks: 0.3
+  # The number of red strands, spaced evenly around the path, from 1 to 8. Four strands are a quarter turn apart.
+  strands: 4
+  # The turns the red strands make around the path for each block it travels. 0.5 is one turn every two blocks.
+  strand-twist-turns-per-block: 0.5
+  # The radius of the blue spiral, in blocks. It is larger than the strands' radius, so it wraps them.
+  spiral-radius-blocks: 0.75
+  # The turns the blue spiral makes around the path for each block it travels.
+  spiral-turns-per-block: 1
+  # The distance along the path between two drawn points of a strand or the spiral, in blocks, from 0.05 to 2. The smaller, the smoother
+  # the helix and the more points it costs. A path too long for the budget at this spacing is drawn with the spacing doubled until it fits.
+  sample-spacing-blocks: 0.25
+  # The turns the helix turns about the path each second, toward the target, from 0 to 10. It is what makes the beam look alive.
+  spin-turns-per-second: 1
+  # The most points one shot draws in one tick: its frontier, strands and spiral together, from 0 to 256. A shot with a budget of 0 draws
+  # no points. The frontier is drawn first, then the strands, then the spiral takes a quarter of what is left once it has started.
+  particle-budget: 96
+  # The most points all the rail guns' shots in flight draw in one tick together, from 0 to 2000. The shots share it equally, so a battery
+  # of many rail guns firing at once draws no more than this, and each shot draws less as more are in flight. 192 is two shots at the budget.
+  max-particles-per-tick: 192
+  # The light level of a rail gun, from 0 to 15. It rises from 0 over the charge and is at this level when the rail gun is ready to fire.
+  max-light: 15
+  # Upgrade levels, 1 to 3. A rail gun has no level 4 or 5. Each level has its own damage, power, range, charge and reload. The
+  # upgrade rule sets the tall flag: level 3 is two blocks high, as a door. Rail guns keep the turrets' shared rotation speed.
+  levels:
+    # The rail gun as placed.
+    1:
+      # Damage of one shot to the mob it hits, in HP (2 HP is one heart), before the armour the shot does not ignore.
+      damage: 400
+      # Power the level draws, in W, while it charges and while it fires. It draws none while it reloads.
+      power-demand-w: 2000000
+      # Reach in blocks: how far the turret sees a target, and how far the shot travels.
+      range: 60
+      # Seconds from a target acquired to a shot ready.
+      charge-seconds: 6
+      # Seconds from a shot to the next charge starting.
+      reload-seconds: 10
+    # First upgrade.
+    2:
+      damage: 1200
+      power-demand-w: 4000000
+      range: 80
+      charge-seconds: 5
+      reload-seconds: 9
+    # Second upgrade, the highest. Two blocks high.
+    3:
+      damage: 3500
+      power-demand-w: 8000000
+      range: 110
+      charge-seconds: 4
+      reload-seconds: 8
+
+# The artillery: pieces that fire shells at a point on the ground, up to 9000 blocks away at level VII. A shell is loaded with a charge; a
+# higher charge tier reaches further, reloads more slowly and scatters its shells more. Read at startup, so a change needs a restart.
+artillery:
+  levels:
+    # The model height of levels I to VII, in blocks. Seven values, in that order.
+    height-blocks: [1.5, 1.5, 2.5, 2.5, 2.5, 3.0, 3.75]
+    # The electrical power of levels I to VII at full satisfaction, in watts (W). Seven values, in that order. Each step is about 1.5 times the one
+    # below, so the power rises smoothly rather than in jumps.
+    power-w: [100000, 150000, 230000, 350000, 540000, 830000, 1270000]
+    # The range of a level I piece with a tier I charge, in blocks. The other levels grow from it in equal ratios up to level VII.
+    range-level-1-blocks: 1500
+    # The range of a level VII piece with a tier I charge, in blocks.
+    range-level-7-blocks: 9000
+    # The reload of a level I piece with a tier I charge, in ticks (20 is one second): 20 seconds.
+    reload-level-1-ticks: 400
+    # The reload of a level VII piece with a tier I charge, in ticks: 60 seconds. The levels between reload in equal steps.
+    reload-level-7-ticks: 1200
+    # The scatter of a level I piece's landing points: the standard deviation, in blocks, at 1000 blocks of range. A shot at another range
+    # scatters in proportion to its range.
+    scatter-level-1-blocks: 60
+    # The same scatter for a level VII piece. The levels between fall in equal ratios.
+    scatter-level-7-blocks: 8
+  ballistics:
+    # The linear air drag on a shell, as the share of its speed lost each second. Small, so the arc is close to a parabola but a shell
+    # falls a little short of the vacuum range (about 5 per cent at 9000 blocks).
+    drag-per-second: 0.002
+  # The most shells, and the most charges, a piece's magazine takes. A load (the Load button of a piece's dialog) adds one shell and one
+  # charge, so a full magazine holds this many of each. Each shot uses one shell and one charge. Read at startup, so a change needs a restart.
+  magazine-capacity: 16
+  charges:
+    # The charge a shell is loaded with. Each multiplier scales the value it names for the level it is fired from: range, reload (a higher
+    # value reloads more slowly) and scatter (a higher value spreads the landing points more).
+    tier-1:
+      range: 1.0
+      reload: 1.0
+      scatter: 1.0
+    # A bigger propellant load: a quarter further and a quarter slower to reload. A bigger charge also varies more in its muzzle speed, so it
+    # scatters more.
+    tier-2:
+      range: 1.25
+      reload: 1.25
+      scatter: 1.2
+    # The charge the most powerful shells need. It is the charge of levels VI and VII, with the longest range and the widest scatter.
+    tier-3:
+      range: 1.6
+      reload: 1.5
+      scatter: 1.5
+  shells:
+    # The tons of TNT one block of TNT holds, for the high explosive shell, which is a number of such blocks.
+    tnt-block-tons: 1.0
+    # A normal shell, with about 1 ton of TNT. It explodes on impact.
+    explosive:
+      yield-tons: 1.0
+    # A shell with ten TNT blocks of filler: its yield is the blocks times tnt-block-tons, so ten tons. It explodes exactly on impact.
+    high-explosive:
+      tnt-blocks: 10
+    # Bursts in the air, between the altitudes below, and spreads a toxic smoke cloud where its light particles land. It deals no blast.
+    white-phosphorus:
+      burst-min-blocks: 25
+      burst-max-blocks: 35
+      # The radius of the cloud on the ground, in blocks: 8, so a player who walks out of it in a few seconds is clear of it.
+      cloud-radius-blocks: 8
+      # The damage a creature takes each tick at the start of the cloud, in HP: 0.05, which is 1 HP a second, one heart every 2 seconds.
+      # That is the rate of burning, and a little above Poison I. A creature that stays in a fresh cloud for ten seconds takes about 4 hearts.
+      damage-per-tick: 0.05
+      # How long the cloud lasts, in seconds. A minute is long enough to deny an area and short enough that it is not a permanent hazard.
+      duration-seconds: 60
+      # The damage halves every this many seconds while the cloud hangs. Over a minute the cloud's damage falls to an eighth, so it is
+      # dangerous when fresh and only a nuisance at the end.
+      half-life-seconds: 20
+      # The light particles one burst spawns, for the visual. Between 400 and 800 reads as a cloud; the default is in the middle.
+      light-particles: 600
+    # Sets a strip of ground on fire on impact, with no damage to the terrain. The burst is an ellipse along the shot.
+    napalm:
+      # The length of the burst along the shot, in blocks.
+      length-blocks: 30
+      # The width of the burst across the shot, in blocks.
+      width-blocks: 12
+    # Opens in mid-air and releases its submunitions. Each one is a small blast.
+    cluster:
+      # The tons of TNT one submunition holds: a few tons, so it breaks a few blocks and hurts what stands next to it.
+      yield-tons: 3
+      burst-min-blocks: 30
+      burst-max-blocks: 50
+      # The submunitions one shell releases.
+      submunitions: 40
+      # The radius of the disc the submunitions land in, around the burst point, in blocks. At least 25.
+      spread-radius-blocks: 30
+      # The least distance between two submunitions, in blocks, so they do not pile on one spot.
+      min-spacing-blocks: 4
+    # A Little Boy class warhead, burst a few blocks above the ground so its blast does not dig a crater. Its yield is read from the
+    # Little Boy in tnts.yml (nuke_little_boy), so it is not set here.
+    enriched-uranium:
+      burst-min-blocks: 8
+      burst-max-blocks: 8
+    # A megaton-class thermonuclear warhead, burst high above the ground. The yield is one megaton.
+    hydrogen-thermonuclear:
+      yield-tons: 1000000
+      burst-min-blocks: 20
+      burst-max-blocks: 30
+    # Five small uranium bombs, each a share of the Davy Crockett in tnts.yml (nuke_davy_crockett, 20 tons), scattered over a wide area.
+    # Each bomb is burst 8 blocks above the ground.
+    cluster-enriched-uranium:
+      # The share of the Davy Crockett's yield one bomb holds: 0.75 of 20 tons is 15 tons. From 0 to 1, above 0.
+      bomb-share-of-davy-crockett: 0.75
+      burst-min-blocks: 8
+      burst-max-blocks: 8
+      # The bombs one shell releases.
+      bombs: 5
+      # The radius of the disc the bombs land in, around the burst point, in blocks. The bombs are at most this far from the centre.
+      spread-radius-blocks: 50
+      # The least distance between two bombs, in blocks, so one bomb does not set off the next.
+      min-spacing-blocks: 40
+      # The least elevation of the shot, in degrees, so the bombs fall from above.
+      min-elevation-degrees: 25
+    # Half a gigaton of condensed antimatter, burst 50 blocks above the ground. The fallout rule keeps every player about 2810 blocks from the
+    # target: three times the blast reach (913 blocks) plus 3 sigma of the scatter, which is 72 blocks at 2000 blocks. The piece itself must
+    # be at least safety.minimum-distance-antimatter-blocks away. One shot per player per cooldown, which is
+    # safety.antimatter-cooldown-hours (12 hours).
+    condensed-antimatter:
+      yield-tons: 500000000
+      burst-min-blocks: 50
+      burst-max-blocks: 50
+  safety:
+    # The least distance from a piece to its target for a conventional shell, in blocks.
+    minimum-distance-conventional-blocks: 50
+    # The least distance for a nuclear shell, in blocks.
+    minimum-distance-nuclear-blocks: 200
+    # The least distance for the antimatter shell, in blocks: it is fired from a long way off.
+    minimum-distance-antimatter-blocks: 2000
+    # The gap, in blocks, kept between the reach of a blast and the piece or the player who fires.
+    blast-margin-blocks: 20
+    # How many standard deviations of scatter the blast checks allow for. Three covers all but about 3 shots in 1000 on each axis.
+    scatter-sigmas: 3
+    # The blast radius per cube root of the yield in tons, in blocks. A 15 kiloton warhead gives about 28 blocks, the Little Boy's radius in
+    # tnts.yml.
+    blast-radius-constant: 1.15
+    # The least blast radius, in blocks, so a small shell is checked against a real explosion and not a spark.
+    blast-radius-floor-blocks: 15
+    # The fallout radius as a multiple of the reach. A nuclear shell may not be fired at a target within this of a player.
+    fallout-multiple: 3
+    # The lowest elevation of any shot, in degrees.
+    min-elevation-degrees: 5
+    # The highest elevation of any shot, in degrees.
+    max-elevation-degrees: 85
+    # The time a player must wait between two antimatter shots, in hours.
+    antimatter-cooldown-hours: 12
+  # The sounds, particles and motion of a shot. The sounds are vanilla ones, chosen in the code; these numbers tune how loud and how much.
+  presentation:
+    # The volume of the launch report, which is heard about 16 blocks for each volume unit. 4 is about 64 blocks.
+    launch-volume: 4.0
+    # The pitch of the launch report, from 0.5 to 2.0. Low sounds heavy.
+    launch-pitch: 0.5
+    # How far the barrel kicks back at a shot, in blocks. It returns to its place over about half a second.
+    recoil-blocks: 0.5
+    # The volume of the whistle of a shell in the air. 0.5 is heard about 8 blocks away, so it is near the shell only.
+    whistle-volume: 0.5
+    # The ticks between two whistles of one shell: 40 is two seconds.
+    whistle-interval-ticks: 40
+    # The trail puffs one shell leaves each tick, at most. A few are enough for a line of smoke behind a fast shell.
+    trail-puffs-per-tick: 3
+    # The volume of the thud of a shell that lands without a blast, such as a napalm shell.
+    impact-volume: 3.0
+    # The debris particles a blast throws up where it lands on the ground. A blast in the air throws none.
+    debris-particles: 60
+    # The volume of the hiss of a phosphorus cloud and the crackle of a napalm fire.
+    hazard-volume: 0.6
+    # The ticks between two hisses or crackles of one cloud or fire: 80 is four seconds.
+    hazard-interval-ticks: 80
+    # The volume of the mechanical sound when a piece is ready to fire again.
+    reload-volume: 0.7
+
+# The Artillery Command Center: its screen, its map and the Set Target mode. Read at startup, so a change needs a restart.
+command-center:
+  # Seconds the Set Target listening mode stays open with no click, after which it ends by itself.
+  listen-timeout-seconds: 20
+  # Blocks from the centre of the map to its edge. The map is one view of the world, centred on the player, so it shows a square of
+  # twice this across.
+  map-radius-blocks: 64
+  # The zoom levels of the map in blocks per pixel, from the closest to the widest. Strictly increasing, each above 0.
+  zoom-levels: [1, 2, 4]
+  # Ticks between two refreshes of the Command Center's screen. 10 is half a second.
+  screen-refresh-ticks: 10
+  # The side of the map wall in item frames, 3 or 5. The wall stands above the Command Center, in front of its screen, one frame to each
+  # block, and shows the map while the Set Target mode is open. Any other value gives 5.
+  map-wall-size: 5
+  # The most chunks the Set Target map reads from the server at once, without generating them. Reading a chunk that was explored before
+  # costs one main-thread callback, so this bounds the work of one tick.
+  terrain-reads-in-flight: 8
+  # The most unexplored chunks the Set Target map generates at once. Generation is slow, so this is kept low.
+  terrain-generations-in-flight: 4
+  # The chunks whose terrain the map keeps in memory, the least recently used dropped first. About 256 bytes each.
+  terrain-cache-chunks: 4096
+
+# The water network: pipes, splitters and pumps. A pump stands on a water block and feeds the pipes joined to it. Lab machines and
+# nuclear generators that have a pipe on one of their faces take water from the network. Read at startup, so a change needs a restart.
+water:
+  # The water blocks a pump's source needs, counted 6-connected from the pump's block. A pump below this count is refused when placed,
+  # and stops while its source is below it.
+  source-min-blocks: 100
+  # Ticks between two checks of a pump's source. A source that drops is noticed within this many ticks (200 is ten seconds).
+  source-check-ticks: 200
+  # Ticks between two solves of the water network, which share the water among the consumers. Lower follows changes sooner and costs more.
+  solve-ticks: 5
+  # Units of water per second each pump level delivers, level I to V. Each value is finite and 0 or more.
+  pump-flow:
+    - 2
+    - 4
+    - 8
+    - 12
+    - 16
+  # Power each pump level draws in W, level I to V. Levels I and II burn fuel instead (coal or charcoal, then diesel from the oil network), so they draw none.
+  # Each value is 0 or more.
+  pump-power-w:
+    - 0
+    - 0
+    - 60000
+    - 120000
+    - 240000
+  # Units of water one run of a process takes from its network, in place of the water bucket it would take. The machine asks for this
+  # many units spread over the run's length, so a longer run asks for less water per second. At least 1.
+  unit-per-process-run: 1
+
+# The oil network: oil tubes carry petroleum and diesel, as litres of fluid, from the petroleum drills and refineries they join to the
+# generators and lab machines that take it. Read at startup, so a change needs a restart.
+oil:
+  # Litres of fluid one oil tube holds.
+  tube-capacity-litres: 100
+  # Litres per second each oil network moves from its sources to its sinks at most. A fraction that a tick does not move is carried to
+  # the next tick. Finite and 0 or more.
+  pipe-flow-litres-per-second: 4
+
+concealment:
+  # Hides the barrel under each lab tool and drill from nearby players, so they see the custom model instead. The barrel
+  # stays on the server and in every other player's view. A click on the machine still opens it or breaks it. Turn off to
+  # show the barrels as usual. Read at startup, so a change needs a restart.
+  enabled: true
+  # Blocks from a machine's barrel within which a player sees it hidden. Players farther away see the barrel. Read at startup.
+  range: 48
+
+integrations:
+  # Respect other plugins' claims. Each is used only when the plugin is installed. Blasts never change blocks inside a WorldGuard
+  # region that denies TNT, or inside a GriefPrevention claim. Belts, pickers and splitters also deliver into containers only where
+  # their placer may use them. Set to false to ignore these plugins.
+  worldguard: true
+  griefprevention: true
+
+protection:
+  # Materials no blast may change. Add or remove as your server's rules require.
+  unbreakable-materials:
+    - BEDROCK
+    - BARRIER
+    - COMMAND_BLOCK
+    - CHAIN_COMMAND_BLOCK
+    - REPEATING_COMMAND_BLOCK
+    - STRUCTURE_BLOCK
+    - STRUCTURE_VOID
+    - JIGSAW
+    - END_PORTAL
+    - END_PORTAL_FRAME
+    - END_GATEWAY
+    - REINFORCED_DEEPSLATE
+  # Stop pistons from moving placed TNT, which would leave its item display behind.
+  protect-from-pistons: true
+
+locks:
+  # Wrong PINs on one locked nuclear TNT before its keypad is locked out. A correct PIN clears the count.
+  max-attempts: 3
+  # Seconds the keypad of that TNT stays locked out after the last allowed wrong PIN.
+  lockout-seconds: 30
+
+display:
+  # Show each placed TNT with its own custom model (an item display sits over the vanilla TNT block).
+  # Turn off to place plain TNT blocks. The item and recipe still work either way.
+  custom-textures: true
+  # Scale of that display. Slightly above 1 so the vanilla texture never shows through.
+  display-scale: 1.002
+
+placement:
+  # Record the placing player's horizontal facing as the TNT's direction (used by shaped charges and napalm).
+  direction-from-player: true
+
+deposits:
+  # The world is cut into square cells of this many blocks. Each cell holds at most one deposit, planned from the world
+  # seed, so the same seed always gives the same deposits. Must be at least twice max-radius, and at most 4096.
+  cell-size: 160
+  # Chance that a cell holds a deposit, from 0 to 1.
+  density: 0.6
+  # Chance that a deposit is crude petroleum rather than a solid ore, from 0 to 1.
+  oil-share: 0.25
+  # Smallest and largest radius of a deposit, in blocks. The range is 1 to 256, with min-radius at most max-radius.
+  min-radius: 24
+  max-radius: 48
+  # Smallest and largest amount a deposit starts with. The amounts are spread evenly on a log scale.
+  min-amount: 500000
+  max-amount: 25000000
+  # Share of the stone blocks in a deposit's footprint that show as its ore block, from 0 to 1. Only blocks in the
+  # ore's height range that it may replace are changed. Each chunk changes at most 4096 blocks.
+  ore-block-density: 0.3
+  # Radius, in blocks, that a scan of the ore density scanner searches around the player. A deposit counts when its circle
+  # reaches within this radius. From 1 to 512.
+  scanner-radius: 96
+  # Ticks between two scans of the same scanner, so a held scanner cannot scan every tick. 20 ticks is one second. From 0 to 1200.
+  scan-cooldown-ticks: 60
+  # Seconds that a scan's outline of deposits stays drawn around the player. From 1 to 120.
+  outline-seconds: 20
+
+
+persistence:
+  # Placed TNT (positions, links, targets, directions) is written here, inside the plugin's data folder.
+  file: placed-tnt.yml
+  # Seconds between automatic saves. The registry is always saved on shutdown.
+  save-interval-seconds: 300
+
+storage:
+  # Where research progress is kept, permanently. "sqlite" keeps it in one file in the plugin folder, for a single
+  # server. "postgresql" keeps it in a shared database, so several servers see the same research.
+  type: sqlite
+  sqlite-file: research.db
+  postgresql:
+    host: localhost
+    port: 5432
+    database: corefactory
+    user: corefactory
+    password: ""
+    pool-size: 6
+
+# Player-facing text. Colour codes use ampersands. {placeholders} are filled in by the plugin.
+messages:
+  prefix: "&8[&cCoreFactory&8] &7"
+  no-permission: "&cYou do not have permission to do that."
+  player-only: "&cThis command can only be used by a player."
+  unknown-id: "&cUnknown TNT or component: &f{id}"
+  player-offline: "&cNo online player named &f{player}&c."
+  given: "&7Gave &f{amount}x {name}&7 to &f{player}&7."
+  reloaded: "&aConfiguration reloaded: &f{tnts} &7TNT types, &f{components} &7components."
+  not-placed: "&cLook at a placed custom TNT block first."
+  aimed: "&7Direction set to &f{direction}&7."
+  target-set: "&7Teleport target set to &f{x}, {y}, {z}&7."
+  link-start: "&7Linked TNT selected. Right-click a second custom TNT to link them."
+  link-made: "&aFuse link created between two TNT blocks."
+  link-same: "&cA TNT cannot be linked to itself."
+  link-cleared: "&7All fuse links removed from this TNT."
+  disabled-world: "&cCoreFactory is disabled in this world."
+  placed-count: "&7Placed custom TNT: &f{count}&7."
+  info-header: "&6--- {name} &6---"
+  info-line: "&7{label}: &f{value}"
+  scan-result: "&7Scan of the marked region: &f{count} &7blocks, mostly {top}."

@@ -1,9 +1,9 @@
 package io.corefactory.core.deposit;
 
-import org.bukkit.configuration.file.YamlConfiguration;
+import io.corefactory.core.config.TestConfig;
 import org.junit.jupiter.api.Test;
 
-import java.io.StringReader;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,8 +13,8 @@ class ScannerSettingsTest {
 
     private static final Logger LOG = Logger.getLogger("scanner-settings-test");
 
-    private static YamlConfiguration yaml(String text) {
-        return YamlConfiguration.loadConfiguration(new StringReader(text));
+    private static Map<String, Object> yaml(String text) {
+        return TestConfig.yaml(text);
     }
 
     @Test

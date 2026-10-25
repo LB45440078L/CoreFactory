@@ -110,7 +110,7 @@ class RestoreTest {
 
     @Test
     void aComponentItemMapsToAComponentRefAndBack() {
-        assertThat(PortItems.refOf(Item.component("petroleum"))).isEqualTo(ItemRef.item("petroleum"));
-        assertThat(PortItems.itemOf(ItemRef.item("petroleum"))).isEqualTo(Item.component("petroleum"));
+        assertThat(PortItems.refOf(Item.component("raw_galena"))).isEqualTo(ItemRef.item("raw_galena"));
+        assertThat(PortItems.itemOf(ItemRef.item("raw_galena"))).isEqualTo(Item.component("raw_galena"));
     }
 }

@@ -19,9 +19,9 @@ import java.util.stream.Stream;
  *
  * <pre>
  * OUT/textures/block/tnt/ID.png          TNT block textures (32 x 32)
- * OUT/textures/item/component/ID.png     component item sprites (32 x 32)
+ * OUT/textures/item/component/ID.png     component item sprites (32 x 32); an animated sprite is a 32 x 32n strip of n frames
  * OUT/specs/tnt/ID.yml                   one descriptor per TNT
- * OUT/specs/component/ID.yml             one descriptor per component
+ * OUT/specs/component/ID.yml             one descriptor per component, with its animation when it has one
  * OUT/textures/block/machine/ID/FACE.png  six face textures per machine (block atlas) (north, south, east, west, up, down);
  *                                        an animated face is a 16 x 128 strip of 8 frames
  * OUT/specs/machine/ID.yml               one descriptor per machine: its face textures, animation and cuboids
@@ -65,7 +65,8 @@ public final class ArtGenerator {
             Canvas canvas = new Canvas();
             ComponentArt.paint(canvas, spec);
             tiles.add(canvas.toImage());
-            writePng(canvas.toImage(), out.resolve("textures/item/component/" + spec.id() + ".png"));
+            BufferedImage image = ShellArt.clip(spec.id()).isPresent() ? ShellArt.strip(spec) : canvas.toImage();
+            writePng(image, out.resolve("textures/item/component/" + spec.id() + ".png"));
             writeText(out.resolve("specs/component/" + spec.id() + ".yml"), componentDescriptor(spec));
         }
         for (MachineArt.Spec spec : MachineArt.ALL) {
@@ -136,7 +137,7 @@ public final class ArtGenerator {
             text.append("  ").append(face.key()).append(": ").append(machineTexture(spec, face)).append("\n");
         }
         MachineAnimation.clip(spec.id()).ifPresent(clip -> text.append("animation:\n")
-                .append("  frames: ").append(MachineAnimation.FRAMES).append("\n")
+                .append("  frames: ").append(clip.frames()).append("\n")
                 .append("  frametime: ").append(clip.frametime()).append("\n")
                 .append("  textures: [").append(clip.face().key()).append("]\n"));
         text.append("elements:\n");
@@ -219,8 +220,9 @@ public final class ArtGenerator {
                 + "texture: textures/item/particle/" + spec.id() + ".png\n";
     }
 
+    /** A component descriptor. An animated sprite names its frame count and frame time, and the builder writes its {@code .mcmeta}. */
     private static String componentDescriptor(ComponentArt.Spec spec) {
-        return header()
+        String text = header()
                 + "id: " + spec.id() + "\n"
                 + "kind: component\n"
                 + "model: sprite\n"
@@ -228,6 +230,9 @@ public final class ArtGenerator {
                 + "palette:\n"
                 + "  base: \"" + spec.base() + "\"\n"
                 + "  accent: \"" + spec.accent() + "\"\n";
+        return ShellArt.clip(spec.id())
+                .map(clip -> text + "animation:\n  frames: " + clip.frames() + "\n  frametime: " + clip.frametime() + "\n")
+                .orElse(text);
     }
 
     private static String header() {

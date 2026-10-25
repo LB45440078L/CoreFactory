@@ -1,6 +1,7 @@
 package io.corefactory.core.turret;
 
-import org.bukkit.configuration.MemoryConfiguration;
+import io.corefactory.core.config.TestConfig;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -11,7 +12,7 @@ class TurretSettingsTest {
 
     @Test
     void aMissingSectionGivesTheDocumentedDefaults() {
-        TurretSettings settings = TurretSettings.from(new MemoryConfiguration());
+        TurretSettings settings = TurretSettings.from(Map.of());
 
         assertThat(settings.enabled()).isTrue();
         assertThat(settings.range()).isEqualTo(24.0);
@@ -26,9 +27,9 @@ class TurretSettingsTest {
 
     @Test
     void theValuesAreReadFromTheTurretsSection() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("turrets.arc-degrees", 90);
-        config.set("turrets.ammo-per-shot", 2);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "turrets.arc-degrees", 90);
+        TestConfig.set(config, "turrets.ammo-per-shot", 2);
 
         TurretSettings settings = TurretSettings.from(config);
 
@@ -38,11 +39,11 @@ class TurretSettingsTest {
 
     @Test
     void theLevelStatsAreNotReadFromTheRootKeys() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("turrets.range", 30);
-        config.set("turrets.firing-interval-ticks", 4);
-        config.set("turrets.ammo-capacity", 64);
-        config.set("turrets.power-demand-w", 12000);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "turrets.range", 30);
+        TestConfig.set(config, "turrets.firing-interval-ticks", 4);
+        TestConfig.set(config, "turrets.ammo-capacity", 64);
+        TestConfig.set(config, "turrets.power-demand-w", 12000);
 
         TurretSettings settings = TurretSettings.from(config);
 
@@ -54,8 +55,8 @@ class TurretSettingsTest {
 
     @Test
     void unknownTargetNamesAreSkippedAndPhantomsAndSlimesCanBeAdded() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("turrets.targets", List.of("monsters", "Phantoms", "dragons"));
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "turrets.targets", List.of("monsters", "Phantoms", "dragons"));
 
         TurretSettings settings = TurretSettings.from(config);
 
@@ -67,18 +68,18 @@ class TurretSettingsTest {
 
     @Test
     void anEmptyTargetListTargetsNothing() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("turrets.targets", List.of());
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "turrets.targets", List.of());
 
         assertThat(TurretSettings.from(config).targets()).isEmpty();
     }
 
     @Test
     void outOfRangeValuesAreClamped() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("turrets.search-interval-ticks", 0);
-        config.set("turrets.arc-degrees", 720);
-        config.set("turrets.ammo-per-shot", 9);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "turrets.search-interval-ticks", 0);
+        TestConfig.set(config, "turrets.arc-degrees", 720);
+        TestConfig.set(config, "turrets.ammo-per-shot", 9);
 
         TurretSettings settings = TurretSettings.from(config);
 
@@ -89,11 +90,11 @@ class TurretSettingsTest {
 
     @Test
     void eachRoundHasItsOwnValues() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("turrets.rounds.armor-piercing.armour-bypass", 0.6);
-        config.set("turrets.rounds.depleted-uranium.damage", 12);
-        config.set("turrets.rounds.depleted-uranium.spread-factor", 0.25);
-        config.set("turrets.rounds.incendiary.fire-ticks", 100);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "turrets.rounds.armor-piercing.armour-bypass", 0.6);
+        TestConfig.set(config, "turrets.rounds.depleted-uranium.damage", 12);
+        TestConfig.set(config, "turrets.rounds.depleted-uranium.spread-factor", 0.25);
+        TestConfig.set(config, "turrets.rounds.incendiary.fire-ticks", 100);
 
         TurretSettings settings = TurretSettings.from(config);
 

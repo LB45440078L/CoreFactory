@@ -4,6 +4,7 @@ import io.corefactory.core.energy.Pos;
 import org.junit.jupiter.api.Test;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,7 +37,7 @@ class WaterRulesTest {
     }
 
     @Test
-    void consumerConnectsOnlyToAPipe() {
+    void consumerConnectsToAPipeAndNotToAPumpOrAnotherConsumer() {
         WaterNode consumer = WaterNode.consumer(ORIGIN, EnumSet.allOf(Face.class));
         for (Face face : Face.values()) {
             Pos at = face.step(ORIGIN);
@@ -44,8 +45,22 @@ class WaterRulesTest {
             assertThat(WaterRules.connects(consumer, face, WaterNode.pump(at))).as("pump on %s", face).isFalse();
             assertThat(WaterRules.connects(consumer, face, WaterNode.consumer(at, EnumSet.allOf(Face.class))))
                     .as("consumer on %s", face).isFalse();
-            assertThat(WaterRules.connects(consumer, face, WaterNode.splitter(at, WaterKind.SPLITTER_X, Face.NORTH)))
-                    .as("splitter on %s", face).isFalse();
+        }
+    }
+
+    @Test
+    void consumerConnectsToASplitterOnItsOutputButNotOnItsInput() {
+        WaterNode consumer = WaterNode.consumer(ORIGIN, EnumSet.allOf(Face.class));
+        for (Face face : List.of(Face.NORTH, Face.SOUTH, Face.EAST, Face.WEST)) {
+            Pos at = face.step(ORIGIN);
+            // The T's line runs across the consumer's face: its input is across, so the consumer sits on an output side
+            Face across = face == Face.NORTH || face == Face.SOUTH ? Face.EAST : Face.NORTH;
+            // The T's input faces the consumer: water would flow into the consumer, so the two do not join
+            WaterNode inputTowardConsumer = WaterNode.splitter(at, WaterKind.SPLITTER_T, face.opposite(), across);
+            assertThat(WaterRules.connects(consumer, face, inputTowardConsumer)).as("input on %s", face).isFalse();
+            // The T's output faces the consumer: the consumer joins it
+            WaterNode outputTowardConsumer = WaterNode.splitter(at, WaterKind.SPLITTER_T, across, face.opposite());
+            assertThat(WaterRules.connects(consumer, face, outputTowardConsumer)).as("output on %s", face).isTrue();
         }
     }
 
@@ -108,7 +123,7 @@ class WaterRulesTest {
     }
 
     @Test
-    void kindRulesAreSymmetricAndOnlyAPipeJoinsAConsumer() {
+    void kindRulesAreSymmetricAndOnlyPipesAndSplittersJoinAConsumer() {
         for (WaterKind a : WaterKind.values()) {
             for (WaterKind b : WaterKind.values()) {
                 assertThat(WaterRules.kindsConnect(a, b)).as("%s-%s", a, b)
@@ -118,7 +133,7 @@ class WaterRulesTest {
         assertThat(WaterRules.kindsConnect(WaterKind.PIPE, WaterKind.CONSUMER)).isTrue();
         assertThat(WaterRules.kindsConnect(WaterKind.CONSUMER, WaterKind.CONSUMER)).isFalse();
         assertThat(WaterRules.kindsConnect(WaterKind.CONSUMER, WaterKind.PUMP)).isFalse();
-        assertThat(WaterRules.kindsConnect(WaterKind.CONSUMER, WaterKind.SPLITTER_T)).isFalse();
+        assertThat(WaterRules.kindsConnect(WaterKind.CONSUMER, WaterKind.SPLITTER_T)).isTrue();
         assertThat(WaterRules.kindsConnect(WaterKind.PUMP, WaterKind.SPLITTER_X)).isTrue();
     }
 

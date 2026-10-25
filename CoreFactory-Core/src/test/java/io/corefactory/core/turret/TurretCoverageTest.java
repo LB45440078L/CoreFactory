@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Proves the coverage the owner asked for: a turret fires at every hostile target inside its spherical range, in every direction (all 360
  * degrees of yaw and the full pitch range), with nothing refused by the arc or the tilt limit, and refuses what it must.
  *
- * <p>The verdict is computed the way the Spigot side computes it: the aim from the turret's head to the target's box centre gives the yaw
+ * <p>The verdict is computed the way the Paper side computes it: the aim from the turret's head to the target's box centre gives the yaw
  * and pitch, {@link TurretAim#inReach} gives the arc and tilt verdict against the turret's facing, and {@link TargetRules#verdict} takes the
  * sphere from the head to the nearest point of the target's box. Pure: no world, no server.
  */
@@ -199,7 +199,7 @@ class TurretCoverageTest {
     }
 
     /**
-     * The verdict the Spigot side reaches for a zombie. The aim from the head to the box centre gives the arc and tilt, the sphere runs from
+     * The verdict the Paper side reaches for a zombie. The aim from the head to the box centre gives the arc and tilt, the sphere runs from
      * the head to the nearest point of the box, and {@code clearShot} is what the line of sight from the head to the centre reports.
      */
     private static Verdict verdictOf(Placed mob, double facing, TurretSettings settings, boolean clearShot) {

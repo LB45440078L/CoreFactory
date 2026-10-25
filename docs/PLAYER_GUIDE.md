@@ -22,6 +22,7 @@ Every mod item, bomb, machine, ore and research pack has its picture next to its
 - **Tables** give recipes, machine numbers and bomb stats. A recipe grid shows where each item goes in the 3 by 3 crafting table. Empty squares are empty. Vanilla items have no picture in this guide, so they are written as plain names.
 - **Times** are shown in seconds. A machine that says 200 ticks takes 10 seconds, because 20 ticks make one second. Fuse times for bombs work the same way.
 - **Numbers** come from the mod's own data. Nothing here is a guess.
+- **Commands** start with `/cf` (or `/corefactory`). Type `/cf help` to see the commands and their usage. The command words are case-sensitive, and a number that is not a number is refused. In the help, click a command to type it into the chat, and hover over it to read what it does. A command you lack the permission for cannot be run, and tab completion does not offer it (unverified in game). The full list is in [COMMANDS_AND_PERMISSIONS.md](COMMANDS_AND_PERMISSIONS.md).
 - Some words are in the [Glossary](#glossary) at the end. When a word is new, look it up there.
 
 ## Table of contents
@@ -66,6 +67,7 @@ Every mod item, bomb, machine, ore and research pack has its picture next to its
   - [Hoppers and barrels](#hoppers-and-barrels)
   - [The hidden barrel](#the-hidden-barrel)
   - [Progress holograms](#progress-holograms)
+  - [Device screens](#device-screens)
   - [Machine effects](#machine-effects)
   - [Crusher](#crusher)
   - [Roasting kiln](#roasting-kiln)
@@ -78,6 +80,10 @@ Every mod item, bomb, machine, ore and research pack has its picture next to its
   - [Particle accelerator](#particle-accelerator)
   - [Antimatter condenser](#antimatter-condenser)
   - [Research console](#research-console)
+- [Lab machine levels](#lab-machine-levels)
+  - [The levels](#the-levels)
+  - [Upgrade modules](#upgrade-modules)
+  - [Tutorial: upgrading a machine](#tutorial-upgrading-a-machine)
 - [Research](#research)
   - [How research works](#how-research-works)
   - [The research line](#the-research-line)
@@ -94,7 +100,8 @@ Every mod item, bomb, machine, ore and research pack has its picture next to its
   - [Petroleum drills](#petroleum-drills)
   - [Ore drills](#ore-drills)
   - [The solar panel](#the-solar-panel)
-  - [Petroleum](#petroleum)
+  - [Oil tubes](#oil-tubes)
+  - [Petroleum and diesel](#petroleum-and-diesel)
 - [Electricity](#electricity)
   - [Units in plain words](#units-in-plain-words)
   - [What powers what](#what-powers-what)
@@ -107,6 +114,21 @@ Every mod item, bomb, machine, ore and research pack has its picture next to its
   - [Grids and outlines](#grids-and-outlines)
   - [Grid charts](#grid-charts)
   - [Building a grid in five steps](#building-a-grid-in-five-steps)
+- [Water](#water)
+  - [The water pump](#the-water-pump)
+  - [Source tubes: a pump on land](#source-tubes-a-pump-on-land)
+  - [Pump levels and kits](#pump-levels-and-kits)
+  - [Tall pumps: levels IV and V](#tall-pumps-levels-iv-and-v)
+  - [Fuel and power for a pump](#fuel-and-power-for-a-pump)
+  - [The pump hologram](#the-pump-hologram)
+  - [The pump sound](#the-pump-sound)
+  - [Water pipes](#water-pipes)
+  - [Bends and vertical pipes](#bends-and-vertical-pipes)
+  - [Water splitters](#water-splitters)
+  - [Water for lab processes](#water-for-lab-processes)
+  - [The nuclear generator and pipes](#the-nuclear-generator-and-pipes)
+  - [Tutorial: a pump on a lake](#tutorial-a-pump-on-a-lake)
+  - [Tutorial: a pump on land with a source tube](#tutorial-a-pump-on-land-with-a-source-tube)
 - [Belts and automation](#belts-and-automation)
   - [Belts](#belts)
   - [Placing a belt](#placing-a-belt)
@@ -114,14 +136,34 @@ Every mod item, bomb, machine, ore and research pack has its picture next to its
   - [The end of a line](#the-end-of-a-line)
   - [Belts and chests: the claim rule](#belts-and-chests-the-claim-rule)
   - [Pickers](#pickers)
+  - [Crafters](#crafters)
   - [Splitters](#splitters)
   - [Where a picker or splitter can go](#where-a-picker-or-splitter-can-go)
   - [Example: a crusher fed by a belt](#example-a-crusher-fed-by-a-belt)
   - [Example: a splitter that sorts raw ores](#example-a-splitter-that-sorts-raw-ores)
+- [Vertical transport belts](#vertical-transport-belts)
+  - [The three levels](#the-three-levels)
+  - [Building a tower](#building-a-tower)
+  - [Direction](#direction)
+  - [Input and output](#input-and-output)
+  - [Items on a tower](#items-on-a-tower)
+  - [Known limitation](#known-limitation)
+  - [Tutorial: a three-block tower](#tutorial-a-three-block-tower)
 - [Ammunition and the machine gun turret](#ammunition-and-the-machine-gun-turret)
   - [The laser turret](#the-laser-turret)
+  - [The rail gun turret](#the-rail-gun-turret)
   - [Upgrading a turret](#upgrading-a-turret)
   - [Turret commands](#turret-commands)
+- [Artillery](#artillery)
+  - [What the artillery is](#what-the-artillery-is)
+  - [Charge tiers](#charge-tiers)
+  - [The shells](#the-shells)
+  - [Range and scatter charts](#range-and-scatter-charts)
+  - [Loading and unloading](#loading-and-unloading)
+  - [The Command Center](#the-command-center)
+  - [Safety rules](#safety-rules)
+  - [Research and recipes](#research-and-recipes)
+  - [Not yet verified in game](#not-yet-verified-in-game)
 - [Crafting](#crafting)
   - [Crafting basics](#crafting-basics)
   - [Machine recipes](#machine-recipes)
@@ -150,6 +192,7 @@ Every mod item, bomb, machine, ore and research pack has its picture next to its
   - [The cut in the ground](#the-cut-in-the-ground)
   - [Fallout and dose](#fallout-and-dose)
   - [The beacon array](#the-beacon-array)
+- [Friends](#friends)
 - [Protection](#protection)
   - [Radioactive suit in detail](#radioactive-suit-in-detail)
   - [Geiger counter in detail](#geiger-counter-in-detail)
@@ -197,9 +240,12 @@ There are three kinds of new item: the things you craft, the things you dig up o
 | Protection | <img src="images/components/hazmat_fabric.png" width="24" height="24" align="absmiddle"> Hazmat fabric, the four Radioactive Suit pieces, <img src="images/components/geiger_counter.png" width="24" height="24" align="absmiddle"> Geiger counter | Crafting table, after research |
 | Machines | <img src="images/components/crusher.png" width="24" height="24" align="absmiddle"> Crusher, <img src="images/components/roaster.png" width="24" height="24" align="absmiddle"> Roasting kiln, <img src="images/components/separator.png" width="24" height="24" align="absmiddle"> Centrifugal separator, <img src="images/components/purifier.png" width="24" height="24" align="absmiddle"> Purification still, <img src="images/components/converter.png" width="24" height="24" align="absmiddle"> Fluorination converter, <img src="images/components/enrichment_cascade.png" width="24" height="24" align="absmiddle"> Enrichment cascade, <img src="images/components/transmuter.png" width="24" height="24" align="absmiddle"> Neutron transmuter, <img src="images/components/spectrometer.png" width="24" height="24" align="absmiddle"> Spectrometer, <img src="images/components/particle_accelerator.png" width="24" height="24" align="absmiddle"> Particle accelerator, <img src="images/components/antimatter_condenser.png" width="24" height="24" align="absmiddle"> Antimatter condenser, <img src="images/components/research_console.png" width="24" height="24" align="absmiddle"> Research console | Crafting table, after research |
 | Drills and power | <img src="images/components/petroleum_drill_1.png" width="24" height="24" align="absmiddle"> Petroleum drills I to V, <img src="images/components/ore_drill_1.png" width="24" height="24" align="absmiddle"> Ore drills I to V, <img src="images/components/solar_panel.png" width="24" height="24" align="absmiddle"> Solar panel, <img src="images/components/ore_density_scanner.png" width="24" height="24" align="absmiddle"> Ore density scanner (finds deposits) | Crafting table, after research. The scanner needs Laboratory Basics |
-| Petroleum | <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> Petroleum | A petroleum drill working a crude petroleum deposit |
+| Oil system | Oil tube, Oil T splitter, Oil cross splitter | Component assembly, after Materials Purification |
 | Research packs | <img src="images/components/research_pack_basic.png" width="24" height="24" align="absmiddle"> Basic, <img src="images/components/research_pack_chemical.png" width="24" height="24" align="absmiddle"> Chemical, <img src="images/components/research_pack_nuclear.png" width="24" height="24" align="absmiddle"> Nuclear, <img src="images/components/research_pack_plasma.png" width="24" height="24" align="absmiddle"> Plasma, <img src="images/components/research_pack_exotic.png" width="24" height="24" align="absmiddle"> Exotic | Spectrometer |
 | Crafted parts for machines | <img src="images/components/superconducting_magnet.png" width="24" height="24" align="absmiddle"> Superconducting magnet, <img src="images/components/neutron_flux_cell.png" width="24" height="24" align="absmiddle"> Neutron flux cell, <img src="images/components/tesseract_lattice.png" width="24" height="24" align="absmiddle"> Tesseract lattice | Crafting table, after research |
+| Upgrade modules | <img src="images/components/machine_upgrade_2.png" width="24" height="24" align="absmiddle"> Upgrade Module II, <img src="images/components/machine_upgrade_3.png" width="24" height="24" align="absmiddle"> Upgrade Module III | Component assembly and heavy weapons assembly, after research |
+| Water system | <img src="images/components/water_pump.png" width="24" height="24" align="absmiddle"> Water pump, <img src="images/components/water_pump_upgrade_2.png" width="24" height="24" align="absmiddle"> Pump Upgrade II, <img src="images/components/water_pump_upgrade_3.png" width="24" height="24" align="absmiddle"> Pump Upgrade III, <img src="images/components/water_pump_upgrade_4.png" width="24" height="24" align="absmiddle"> Pump Upgrade IV, <img src="images/components/water_pump_upgrade_5.png" width="24" height="24" align="absmiddle"> Pump Upgrade V, <img src="images/components/water_pipe.png" width="24" height="24" align="absmiddle"> Water pipe, <img src="images/components/water_splitter_t.png" width="24" height="24" align="absmiddle"> Water splitter T, <img src="images/components/water_splitter_x.png" width="24" height="24" align="absmiddle"> Water splitter X | Component assembly and heavy weapons assembly, after research |
+| Transport | <img src="images/components/vertical_belt_1.png" width="24" height="24" align="absmiddle"> Vertical transport belt I, <img src="images/components/vertical_belt_2.png" width="24" height="24" align="absmiddle"> Vertical transport belt II, <img src="images/components/vertical_belt_3.png" width="24" height="24" align="absmiddle"> Vertical transport belt III | Component assembly, after research |
 
 Custom items only match custom items. If a recipe asks for a component, a vanilla item of the same material will not stand in for it. Read the recipe grids in [Crafting](#crafting) before you gather materials.
 
@@ -246,7 +292,7 @@ Three things decide what you find and how much of it there is:
 | <img src="images/ores/galena_ore.png" width="24" height="24" align="absmiddle"> Galena Ore | -32 and 40 | Light gray glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_galena.png" width="24" height="24" align="absmiddle"> Raw galena |
 | <img src="images/ores/cinnabar_ore.png" width="24" height="24" align="absmiddle"> Cinnabar Ore | -32 and 24 | Red glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_cinnabar.png" width="24" height="24" align="absmiddle"> Raw cinnabar |
 | <img src="images/ores/fluorite_ore.png" width="24" height="24" align="absmiddle"> Fluorite Ore | -48 and 64 | Purple glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_fluorite.png" width="24" height="24" align="absmiddle"> Raw fluorite |
-| <img src="images/ores/crude_petroleum_deposit.png" width="24" height="24" align="absmiddle"> Crude Petroleum Deposit | -64 and 0 | White glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> Petroleum |
+| <img src="images/ores/crude_petroleum_deposit.png" width="24" height="24" align="absmiddle"> Crude Petroleum Deposit | -64 and 0 | White glazed terracotta | 500,000 to 25,000,000 | Petroleum fluid, in litres (no item) |
 | <img src="images/ores/saltpeter_deposit.png" width="24" height="24" align="absmiddle"> Saltpeter Deposit | -32 and 80 | Lime glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_saltpeter.png" width="24" height="24" align="absmiddle"> Raw saltpeter |
 | <img src="images/ores/sulfur_deposit.png" width="24" height="24" align="absmiddle"> Sulfur Deposit | -48 and 32 | Orange glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_sulfur.png" width="24" height="24" align="absmiddle"> Raw sulfur |
 | <img src="images/ores/zinc_deposit.png" width="24" height="24" align="absmiddle"> Sphalerite (Zinc Ore) | -48 and 48 | Cyan glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_sphalerite.png" width="24" height="24" align="absmiddle"> Raw sphalerite |
@@ -334,14 +380,14 @@ In the world, a deposit shows as a patch of its colour. Most patch blocks are gl
 
 - **Where:** from y -64 to y 0, in stone and deepslate.
 - **The mineral:** crude oil, black and thick. The game calls it petroleum.
-- **Drill yield:** one <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> petroleum for each unit a petroleum drill takes from a deposit. Digging a patch block by hand gives one petroleum too, and the deposit loses one unit.
+- **Drill yield:** a petroleum drill pumps the deposit's petroleum into the oil network, in litres. Digging a patch block by hand gives nothing: the deposit is a fluid, not an item, so it drops nothing, even with silk touch.
 - **Silk touch:** on an ore block item that you placed, keeps the block as an item. See [The silk touch trick](#the-silk-touch-trick).
-- **Pumping:** a petroleum drill draws the deposit down, one petroleum for each unit, until it is empty. The amount left is shown on the drill's info item. See [Petroleum drills](#petroleum-drills).
-- **Why it matters:** petroleum is the fuel of the ore drills. See [Petroleum](#petroleum).
+- **Pumping:** a petroleum drill draws the deposit down, in litres, until it is empty. The amount left is shown on the drill's info item and hologram. See [Petroleum drills](#petroleum-drills).
+- **Why it matters:** the petroleum runs the ore drills and the generators. See [Petroleum and diesel](#petroleum-and-diesel).
 
 ### What to mine with
 
-**Hand-mining takes a little, drills take the rest.** Each patch block you dig by hand gives one item of its ore from the deposit, and the deposit loses that one unit. Coal gives charcoal, and crude petroleum gives petroleum. A drill takes one item for each unit of the deposit, at its level's rate. See [Ore drills](#ore-drills) and [Petroleum drills](#petroleum-drills).
+**Hand-mining takes a little, drills take the rest.** Each patch block you dig by hand gives one item of its ore from the deposit, and the deposit loses that one unit. Coal gives charcoal. Crude petroleum gives nothing by hand. An ore drill takes one item for each unit of its deposit, at its level's rate, and a petroleum drill pumps its petroleum in litres. See [Ore drills](#ore-drills) and [Petroleum drills](#petroleum-drills).
 
 - **Empty deposits.** When a deposit has nothing left, a patch block still breaks, but it gives nothing.
 - **Blocks you placed.** A host block that you place on a patch, or that a piston or dispenser puts there, gives no ore, even on a mined-out site. A blast gives no ore either.
@@ -727,7 +773,21 @@ When a lab tool runs, a hologram floats over it. The game calls it a hologram. I
 
 The hologram shows while the tool runs or has what it needs to start a run. When the tool is idle, the hologram goes. Players within the view distance can read it. The default view distance is 32 blocks. Some servers turn the lines off.
 
-Drills have their own four-line hologram. See [The drill hologram](#the-drill-hologram).
+Drills have their own five-line hologram. See [The drill hologram](#the-drill-hologram).
+
+The text of a hologram is drawn at half size, and the hologram stands above its device and grows upward. The background of a hologram shows a tone:
+
+- A faint green background means the device works.
+- A faint red background means the device is stuck, for example with no power, no fuel or no room.
+- No background means the device is idle, or its state is not a fault.
+
+Machines, drills, generators, turrets and pumps show a tone. Pylons, accumulators, belts and charts do not. The colours are unverified in game.
+
+### Device screens
+
+Each generator, drill and lab machine has a small black panel on its front face, the refinery included. The panel shows four lines of status. Its first line is green while the device works, red while it is stuck, and grey while it is idle. The front face is the horizontal side that faced you when you placed the device.
+
+The panel is a block of black concrete, drawn as a display, not a texture. unverified in game: where the panel sits on the face, and how its text is turned and fitted.
 
 ### Machine effects
 
@@ -960,6 +1020,42 @@ The condenser holds antiprotons in a field until they condense into antimatter. 
 
 The research console is a machine with no processes. It has its own screen, and it is where you finish research nodes. The console has a page of research nodes and six pack slots along the bottom. See [Using the research console](#using-the-research-console) for how to use it.
 
+## Lab machine levels
+
+<img src="images/components/machine_upgrade_2.png" width="48" height="48" align="absmiddle">
+
+Every lab machine has three levels: I, II and III. A new machine is level I. A higher level makes the machine work faster, and you raise a machine's level with an upgrade module. You do not need a new machine.
+
+### The levels
+
+- **Level I.** The normal pace, as you place the machine.
+- **Level II.** The machine works 1.5 times as fast, at full power. It has gold trim.
+- **Level III.** The machine works 2 times as fast, at full power. It has cyan trim and three lamps on the front.
+
+The power draw is the same at every level. The title of the machine's hologram shows its level as I, II or III.
+
+Drills do not take modules. Drills have their own levels. See [The five levels](#the-five-levels).
+
+### Upgrade modules
+
+| Module | Takes a machine from | To | Made in | Research |
+|---|---|---|---|---|
+| <img src="images/components/machine_upgrade_2.png" width="24" height="24" align="absmiddle"> Upgrade Module II | Level I | Level II | Component assembly | Unlocked at Materials Purification |
+| <img src="images/components/machine_upgrade_3.png" width="24" height="24" align="absmiddle"> Upgrade Module III | Level II | Level III | Heavy weapons assembly | Unlocked at Tesseract Geometry |
+
+To use a module, hold it in your hand and right-click the machine. Do not sneak. The module fits a machine you placed, or a machine a friend of yours placed. A machine saved before owners were kept takes anyone's module.
+
+- The machine's level goes up by one, and the module is used up.
+- The machine's contents and its progress stay as they are.
+- A module for the wrong level is refused with a message, and you keep the module. Module II works only on a level I machine, and Module III only on a level II machine.
+
+### Tutorial: upgrading a machine
+
+1. **Get a module.** Make Upgrade Module II in the component assembly, or Upgrade Module III in the heavy weapons assembly.
+2. **Hold it.** Put the module in your hand.
+3. **Right-click the machine.** Do not sneak. The machine goes up one level, and the module is used up.
+4. **Check the title.** Look at the machine's hologram. Its title now shows II or III.
+
 ## Research
 
 <img src="images/components/research_pack_basic.png" width="48" height="48" align="absmiddle">
@@ -1054,7 +1150,7 @@ The console screen has a page of research tiles and a row of six pack slots alon
 1. Put research packs into the six pack slots along the bottom. Only research packs go in.
 2. Click a yellow tile. The console takes the packs it needs from your slots.
 3. The message in chat tells you what happened. "Fed 3 pack(s) into" the node means the progress was saved. "Research finished" means the node is done.
-4. If you clicked a grey tile, the message says what you must finish first.
+4. If you clicked a grey tile, the message says what you must finish first. Hover over a name in the message to read that node's description.
 5. If you have no packs in the slots, the message asks you to put packs in first.
 
 Packs that are not needed stay in the slots. You keep them.
@@ -1091,16 +1187,16 @@ Drills need research. The first ones come after Chemical Separation, and the las
 ### What a drill does
 
 - **It works a square.** The square is centred on the drill, and its side is the area of its level. A deposit counts when its circle touches the square, whatever its size, so the largest deposits are found too. The drill works one deposit at a time: the one with the most left in the square. When that deposit is empty, it moves on to the next. When it moves on before the items it made for the old deposit are all in its outputs, it keeps the old deposit until they are, so no item is lost for want of room.
-- **It makes items at its level's rate.** At full power a level 1 drill makes 1.0 item a second, and each level is faster. A petroleum drill mines crude petroleum deposits. An ore drill mines the other ores, including coal, which gives charcoal. Each unit it takes from a deposit becomes one item.
-- **It has its own storage.** Its barrel holds one fuel item and nine products. You take products out by clicking them. A hopper can fill the fuel slot and take products out. Nothing else goes in.
+- **It works at its level's rate.** At full power a level 1 drill works at 1.0 a second, and each level is faster. For an ore drill that is items a second. For a petroleum drill it is litres a second. A petroleum drill pumps crude petroleum deposits into the oil network. An ore drill mines the other ores, including coal, which gives charcoal. Each unit an ore drill takes from a deposit becomes one item.
+- **It has its own storage.** An ore drill's barrel holds nine products and no fuel. You take products out by clicking them, and a hopper can take them out too. A petroleum drill's barrel holds one fuel item, charcoal, and no products. A hopper can fill its fuel slot. Nothing else goes in.
 - **It needs power.** Without power, it does nothing. See [The power of a drill](#the-power-of-a-drill).
-- **It stops when full.** When its output slots have no room, the drill makes nothing and takes nothing, so the deposit keeps its amount until there is room.
+- **It stops when full.** When an ore drill's output slots have no room, it makes nothing and takes nothing, so the deposit keeps its amount until there is room. When the oil network refuses a petroleum drill's petroleum, the drill shows Network full and takes nothing from its deposit.
 - **Explosions.** A blast that reaches the drill breaks it, and its storage drops. A drill outside the blast's radius, or on protected ground, stays where it is.
 
 ### Placing a drill
 
 - **Stand it on hard stone.** The block under the drill must be stone, granite, diorite, andesite, tuff or deepslate. On any other block the drill will not place, and a message says why.
-- **Open it with a right-click.** Its screen has the info item at the top, the fuel slot on the left, and the output slots in a grid. The info item shows the drill's level, area, depth, status, rate and power. It also lists what can power the drill, and says which source runs it.
+- **Open it with a right-click.** Its screen has the info item at the top. A petroleum drill has a fuel slot on the left. An ore drill has its output slots in a grid instead. The info item shows the drill's level, area, depth, status, rate and power. It also lists what can power the drill, and says which source runs it.
 - **Break it to take it back.** Breaking a drill drops its items on the ground, and the drill itself.
 - **Levels IV and V are two blocks tall.** Like a door, they need the block above them free too. The block above is also checked
   by any claim or region there. If it is protected, the drill will not place, and the game says "This spot is protected." Breaking
@@ -1109,7 +1205,7 @@ Drills need research. The first ones come after Chemical Separation, and the las
 
 ### The five levels
 
-| Level | Square (blocks) | Items a second at full power | Items a minute at full power | Fuel cycle at full power |
+| Level | Square (blocks) | Rate a second at full power | Rate a minute at full power | Fuel cycle at full power |
 |---|---|---|---|---|
 | 1 | 10 by 10 | 1.0 | 60 | 30 seconds |
 | 2 | 14 by 14 | 1.5 | 90 | 24 seconds |
@@ -1117,7 +1213,7 @@ Drills need research. The first ones come after Chemical Separation, and the las
 | 4 | 28 by 28 | 4.0 | 240 | 12 seconds |
 | 5 | 40 by 40 | 6.0 | 360 | 6 seconds |
 
-Each higher level is wider and faster. Every drill has nine output slots. The fuel cycle is the drill's fuel clock, and it does not set the output. The info item still shows a depth for each level, but the depth does not limit which deposits the drill finds.
+The rate is items for an ore drill and litres for a petroleum drill. Each higher level is wider and faster. An ore drill has nine output slots; a petroleum drill has none. The fuel cycle is the drill's fuel clock, and it does not set the output. The info item still shows a depth for each level, but the depth does not limit which deposits the drill finds.
 
 ### The power of a drill
 
@@ -1128,49 +1224,51 @@ A drill runs at the power of its best source. The source's name shows on the dri
 | Petroleum | Solar | An older solar panel (a daylight detector) touching the drill, on any side | The panel's power out of 15 | solar |
 | Petroleum | Redstone | A redstone block, redstone dust or a powered lever touching the drill | The redstone power out of 15. A redstone block gives 15 | redstone |
 | Petroleum | Charcoal | Charcoal in the fuel slot | 35 percent | charcoal |
-| Ore | Petroleum | Petroleum in the fuel slot | 100 percent | petroleum |
+| Ore | Petroleum | Petroleum in the oil network the drill touches | 100 percent | petroleum |
 | Any drill | Grid | A pylon's square covers the drill, and a generator is wired to that pylon | The grid's share of full power, as a percentage | grid |
 
 - **The best source wins.** If two sources are equal, the solar panel counts first, then redstone, then charcoal.
 - **The grid wins only when it is stronger.** The grid is used when its share is more than the drill's other source. It can run an ore drill that has no petroleum.
 - **Percentages round down.** A panel at power 5 reads 33 percent. That is less than the 35 percent of charcoal, so charcoal runs the drill instead. A panel at power 15 reads 100 percent.
 - **Charcoal burns only when it runs the drill.** While the drill runs on charcoal, the drill counts its fuel cycles, and one charcoal burns for every 8 cycles counted. When a panel or redstone is stronger, the charcoal stays in the slot.
-- **An ore drill burns petroleum while it runs.** While it runs, the drill counts its fuel cycles, and one petroleum burns for every 2 cycles counted. Without petroleum, the drill stops.
+- **An ore drill draws petroleum while it runs.** While it runs, it takes half a litre of petroleum from its oil network for each cycle it counts, so one litre for every 2 cycles. Without petroleum, the drill stops.
 
 ### Drill status
 
-The info item and the hologram show the drill's status. The status is checked in this order: no power (or no petroleum for an ore drill), then output full, then no deposit in range, then deposit exhausted. The first one that applies is shown. If none applies, the drill is running.
+The info item and the hologram show the drill's status. The status is checked in this order: no power (or no petroleum for an ore drill), then output full (network full for a petroleum drill), then no deposit in range, then deposit exhausted. The first one that applies is shown. If none applies, the drill is running.
 
 | Status | What it means | What to do |
 |---|---|---|
 | No power | A petroleum drill has no redstone, older solar panel, charcoal or grid power to run on. | Put a redstone block next to it, put charcoal in the fuel slot, or place it inside a pylon's square with a generator wired to that pylon. |
-| No petroleum | An ore drill has no petroleum in its fuel slot. | Put petroleum in the fuel slot, by hand or with a hopper. |
-| Output full | The output slots have no room for another item. | Take the products out, by hand or with a hopper. |
+| No petroleum | An ore drill's oil network holds no petroleum for it. | Connect the drill, with oil tubes, to the network of a petroleum drill. |
+| Output full | An ore drill's output slots have no room for another item. | Take the products out, by hand or with a hopper. |
+| Network full | A petroleum drill's oil network has no room for the petroleum it pumps. | Draw petroleum off the network, with a generator or a refinery on it. |
 | No deposit in range | No deposit that the drill can mine touches its square. A petroleum drill looks only for crude petroleum deposits, and an ore drill only for the other ores. | Move the drill over a deposit. Deposits lie underground in their own bands of depth. |
 | Deposit exhausted: no items left in range | The deposits in range are all empty. The drill stays where it is. | Move the drill to a new spot. |
 | Running | The drill has power, room and a deposit with something left. | Nothing. |
 
-The hologram goes when a drill has no power or its outputs are full. For those two, read the info item.
+The hologram goes when a drill has no power, or when its outputs or its network are full. For those, read the info item.
 
 ### The drill hologram
 
-A drill's hologram has five lines. It shows while the drill has power and room in its outputs.
+A drill's hologram has five lines. It shows while the drill has power and room: in its output slots for an ore drill, in its oil network for a petroleum drill.
 
 1. **The name.** The level and the kind, such as L1 Petroleum drill.
 2. **The power.** The source and its percentage, such as Power: solar 33%.
-3. **The rate or status.** While the drill runs, its rate: items per second, then items per minute, such as Extracting 1.00/s (60.0/min) at level 1 and full power. When the drill cannot run, this line shows its status instead, such as No deposit in range.
+3. **The rate or status.** While the drill runs, its rate: items per second, then items per minute, such as Extracting 1.00/s (60.0/min) at level 1 and full power. For a petroleum drill the figure is litres a second, and the hologram shows no unit. When the drill cannot run, this line shows its status instead, such as No deposit in range.
 4. **The deposit.** The ore of the deposit the drill is working on, and what is left of it, such as Deposit Galena Ore 1.2M / 2.5M (48%). It reads Deposit none in range when no deposit is in its square.
-5. **The storage and fuel.** The items in the output slots, then the most they can hold, then the fuel count, such as Stored 0/576 · fuel 0. The most is nine full stacks of 64, which is 576.
+5. **The storage and fuel.** The items in the output slots, then the most they can hold, then the fuel count, such as Stored 0/576 · fuel 0. The most is nine full stacks of 64, which is 576. A petroleum drill has no output slots, so its line reads Stored 0/0 and its fuel count.
 
 The info item shows the same rate and the same deposit line. Its rate line reads stopped until the drill runs.
 
 ### Petroleum drills
 
-A petroleum drill works the crude petroleum deposits in its square, one deposit at a time: the one with the most left. It draws the deposit down, one petroleum for each unit, and the amount left is shown on the drill's info item and hologram. When a deposit is empty, the drill moves on to the next one in its square.
+A petroleum drill works the crude petroleum deposits in its square, one deposit at a time: the one with the most left. It pumps the deposit's petroleum into the oil network in litres, and the amount left is shown on the drill's info item and hologram. When a deposit is empty, the drill moves on to the next one in its square.
 
 - **Power.** It runs on redstone, on charcoal, or on the grid. See [The power of a drill](#the-power-of-a-drill).
 - **Solar panel.** An older solar panel next to the drill gives it power. Full sun gives full speed, and night gives none. See [The solar panel](#the-solar-panel).
 - **Charcoal.** Charcoal in the fuel slot gives 35 percent of full speed. While it runs on charcoal, one charcoal burns for every 8 cycles counted.
+- **Output.** Its petroleum goes into the oil network of the tubes it touches. It has no output slots. When the network refuses petroleum, it shows Network full.
 
 Several solar panels do not add up. The best one counts.
 
@@ -1178,7 +1276,7 @@ Several solar panels do not add up. The best one counts.
 
 An ore drill works the deposits of the other ores in its square, one deposit at a time: the one with the most left. Each unit it takes becomes one raw mineral, which goes into the output slots. It does not touch ordinary stone. Coal deposits are among the ones it mines, and each unit of coal gives you one charcoal.
 
-- **Fuel.** Petroleum goes in the fuel slot. While it runs, one petroleum burns for every 2 cycles counted. Without petroleum, the drill stops and shows No petroleum.
+- **Petroleum.** It has no fuel slot. It takes petroleum from the oil network it touches: half a litre for each cycle it counts, so one litre for every 2 cycles. Without petroleum, the drill stops and shows No petroleum.
 - **Power.** It runs at full speed while it has petroleum. Solar panels and redstone do nothing for an ore drill. A grid in range can run it without petroleum, at the grid's share of full speed.
 - **Resources menu.** Open the drill and use its resources button to see one entry for each deposit in its square. Each entry shows the ore's icon and the deposit's amounts. A toggle for each ore sets whether the drill mines it or ignores it, and the toggle applies to every deposit of that ore. Six entries show on each page, with arrows to turn the pages. An empty deposit shows a grey glass pane.
 
@@ -1197,13 +1295,30 @@ Older solar panels are different. A solar panel placed before the electrical sys
 - **A new panel does not power a drill by touching it.** Wire it to a pylon instead. A drill then gets power from the grid, if the pylon's square covers it.
 - **Breaking it.** Breaking any daylight detector gives you a solar panel back. A new panel gives back the same item.
 
-### Petroleum
+### Oil tubes
 
-<img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> **Petroleum**
+Oil tubes carry petroleum and diesel from the drills and the refinery to the devices that use them. A tube holds fluid, not items. The oil tube, the oil T splitter and the oil cross splitter are made in the component assembly, and they are unlocked at Materials Purification.
 
-Petroleum is crude oil. It has one use: fuel for the ore drills. It has no recipe. You get it from a crude petroleum deposit, one unit at a time, by working the deposit with a petroleum drill. Each unit the drill takes gives one petroleum, and the deposit is drawn down by that amount. Digging a patch block by hand also gives one petroleum, and takes one unit from the deposit.
+| Part | Made from | Time |
+|---|---|---|
+| Oil tube, two at a time | Two iron plates, one high-purity graphite and one circuit board | 10 seconds |
+| Oil T splitter | Two oil tubes and one iron plate | 15 seconds |
+| Oil cross splitter | Four oil tubes and two iron plates | 20 seconds |
 
-Patch blocks lie from y -64 to y 0, in stone and deepslate. See [Crude petroleum deposit](#crude-petroleum-deposit).
+- **Where it goes.** An oil tube goes on air only. It cannot take a spot that already holds a device, a machine or a water part, and a protected spot refuses it.
+- **What it joins.** A tube joins the tubes and the devices on its faces, as a water pipe does. A device joins every network that touches its footprint.
+- **One fluid per network.** A network holds petroleum or diesel, never both. A tube that would join a petroleum network to a diesel network is refused with "Petroleum and diesel cannot share a pipe." A drill, the refinery, a generator or a pump that would mix them is refused with "This would mix petroleum and diesel in one oil network."
+- **Capacity.** Each tube holds up to 100 litres. A network moves at most 4 litres a second from the devices that give fluid to the devices that use it. Both figures are set in `config.yml` (`oil.tube-capacity-litres` and `oil.pipe-flow-litres-per-second`). unverified in game: how the flow looks in play.
+- **Breaking it.** Breaking a tube gives the tube back. The fluid in it is lost.
+- **After a restart.** A saved network that holds both fluids is settled at start-up: the smaller share is emptied, and the server logs a warning. On a tie, petroleum is kept. unverified in game.
+
+### Petroleum and diesel
+
+Petroleum and diesel are fluids. They are not items: there is no petroleum or diesel item, and no recipe takes one. A fluid is measured in litres. A volume of 1000 litres or more is shown in cubic metres, and a flow in litres a second.
+
+- **Petroleum** is crude oil. A petroleum drill pumps it from a crude petroleum deposit into the oil network. The ore drills, the petroleum generator and the crude oil refinery draw it from the network.
+- **Diesel** is made from petroleum by the crude oil refinery. The diesel generator and the level II water pump draw it from the network.
+- **Carrying.** Oil tubes carry the fluids. A picker, a splitter, a hopper or a belt cannot move petroleum or diesel.
 
 ## Electricity
 
@@ -1236,16 +1351,17 @@ A lab tool or drill that is short of power shows a Grid line on its hologram. Th
 | Part | What it does | Research |
 |---|---|---|
 | <img src="images/components/pylon_1.png" width="24" height="24" align="absmiddle"> Pylon I, <img src="images/components/pylon_2.png" width="24" height="24" align="absmiddle"> Pylon II, <img src="images/components/pylon_3.png" width="24" height="24" align="absmiddle"> Pylon III | Carries power to the machines in its square. | Metallurgy, Chemical Separation, Particle Physics |
+| Pylon IV, Pylon V | Carries power to the machines in a larger square. Made by process in the heavy weapons assembly, not by hand. | Pylon IV, Pylon V |
 | <img src="images/components/energy_wire.png" width="24" height="24" align="absmiddle"> Energy Wire | Joins two pylons, or a generator to a pylon. | Metallurgy |
 | <img src="images/components/accumulator_1.png" width="24" height="24" align="absmiddle"> Accumulator I, <img src="images/components/accumulator_2.png" width="24" height="24" align="absmiddle"> Accumulator II, <img src="images/components/accumulator_3.png" width="24" height="24" align="absmiddle"> Accumulator III | Stores power, and gives it back when a machine runs short. | Chemical Separation, Fluorine Chemistry, Particle Physics |
+| Accumulator IV, Accumulator V | Stores more power, and gives it back faster. Made by process in the heavy weapons assembly, not by hand. | Accumulator IV, Accumulator V |
 | <img src="images/components/wind_generator.png" width="24" height="24" align="absmiddle"> Wind Generator | Makes power from the wind. | Metallurgy |
 | <img src="images/components/solar_panel.png" width="24" height="24" align="absmiddle"> Solar Panel | Makes power from daylight. | Metallurgy |
 | <img src="images/components/charcoal_generator.png" width="24" height="24" align="absmiddle"> Charcoal Generator | Burns charcoal. | Chemical Separation |
-| <img src="images/components/petroleum_generator.png" width="24" height="24" align="absmiddle"> Petroleum Generator | Burns petroleum. | Fluorine Chemistry |
-| <img src="images/components/diesel_generator.png" width="24" height="24" align="absmiddle"> Diesel Generator | Burns diesel. | Nuclear Fission |
-| <img src="images/components/nuclear_generator.png" width="24" height="24" align="absmiddle"> Nuclear Generator | Makes the most power. It runs only in water. | Isotope Transmutation |
+| <img src="images/components/petroleum_generator.png" width="24" height="24" align="absmiddle"> Petroleum Generator | Burns petroleum from the oil network. | Fluorine Chemistry |
+| <img src="images/components/diesel_generator.png" width="24" height="24" align="absmiddle"> Diesel Generator | Burns diesel from the oil network. | Nuclear Fission |
+| <img src="images/components/nuclear_generator.png" width="24" height="24" align="absmiddle"> Nuclear Generator | Makes the most power. It runs in water, or from water flowing through a pipe. | Isotope Transmutation |
 | <img src="images/components/crude_oil_refinery.png" width="24" height="24" align="absmiddle"> Crude Oil Refinery | Makes diesel from petroleum. | Fluorine Chemistry |
-| <img src="images/components/diesel.png" width="24" height="24" align="absmiddle"> Diesel | Fuel for the diesel generator. | None |
 | <img src="images/components/nuclear_fuel_rod.png" width="24" height="24" align="absmiddle"> Nuclear Fuel Rod | Fuel for the nuclear generator. | Hydrogen Processes |
 
 ### Pylons
@@ -1257,7 +1373,10 @@ A pylon is a tower. You place it on air. Around it is a square of ground, its ra
 | Pylon I | 5 | 11 by 11 blocks | 100 A | 23 kW |
 | Pylon II | 9 | 19 by 19 blocks | 400 A | 92 kW |
 | Pylon III | 15 | 31 by 31 blocks | 1600 A | 368 kW |
+| Pylon IV | 25 | 51 by 51 blocks | 4000 A | 920 kW |
+| Pylon V | 40 | 81 by 81 blocks | 10000 A | 2.3 MW |
 
+- **Pylons IV and V are made in the heavy weapons assembly.** Pylon IV needs a Pylon III, a tesseract lattice, four superconducting magnets, two antiproton capsules and two enriched uranium. Pylon V needs a Pylon IV, two tesseract lattices, an antimatter containment, four antiproton capsules and eight superconducting magnets. They are researched as Pylon IV and Pylon V, after Tesseract Geometry and the antimatter shell. The recipes are in [Crafting](CRAFTING.md#processes-processesyml).
 - **Placing.** Hold the pylon and right-click the side of a block. The pylon goes on the air beside the face you clicked. That spot must be air.
 - **Machines need no wire.** A machine inside the square gets the power. Only pylons and generators take wires.
 - **The edge counts.** A block on the edge of the square is in range.
@@ -1322,25 +1441,27 @@ A chart is a hologram that shows one grid over time. It is one block above your 
 
 A generator makes power. You place it on air, like a pylon, and wire it to a pylon. The nuclear generator is the one exception: it can stand in water. The wind, charcoal, petroleum, diesel and nuclear generators are two blocks tall, like a door, so the block above the one you place on must be free too. Breaking either half breaks the generator. The solar panel stays one block.
 
-| Generator | Power from | Fuel | Makes | One fuel item lasts |
+| Generator | Power from | Fuel | Makes | One fuel item, or one litre, lasts |
 |---|---|---|---|---|
 | Wind Generator | The wind | None | 73 W to 3 kW | Not used |
 | Solar Panel | The sun | None | Up to 320 W at noon, 0 at night | Not used |
 | Charcoal Generator | Burning | Charcoal | 25 kW while burning | 30 seconds |
-| Petroleum Generator | Burning | Petroleum | 80 kW while burning | About 160 seconds |
-| Diesel Generator | Burning | Diesel | 150 kW while burning | About 96 seconds |
-| Nuclear Generator | Nuclear fission | Nuclear Fuel Rod | 2 MW while burning, in water | 178 hours |
+| Petroleum Generator | Burning | Petroleum from the oil network | 80 kW while burning | About 150 seconds per litre |
+| Diesel Generator | Burning | Diesel from the oil network | 150 kW while burning | About 96 seconds per litre |
+| Nuclear Generator | Nuclear fission | Nuclear Fuel Rod | 2 MW while burning, in water or fed by a water pipe | 178 hours |
 
 - **Wind.** The wind changes over the day and from moment to moment. It gives from about 73 W up to its 3 kW limit. It needs six blocks of open air above it, and it must stand at height 96 or higher.
 - **Solar.** Its output rises in the morning, peaks at noon, and falls to nothing at night. A solar panel placed on air does not need open sky above it.
-- **Burning generators.** A fuel item burns for its time, and the generator makes its full power while it burns. With no item burning and none in the fuel slot, it makes nothing. A generator keeps up to 64 fuel items.
-- **Nuclear.** It makes power only in water. Its own block must be water, and so must the block above it and the four blocks beside it. Out of the water it stops, and it keeps its fuel.
-- **The menu.** Right-click a generator to open its menu. The fuel slot takes the fuel for that generator, by hand or with a shift-click. You can take fuel back out. The status row shows four things: the output, the power made since the generator was placed, the fuel count with the time left on the burning item, and the status.
+- **Burning generators.** A charcoal or nuclear generator burns a fuel item for its time, and makes its full power while it burns. With no item burning and none in the fuel slot, it makes nothing. It keeps up to 64 fuel items.
+- **Fluid generators.** A petroleum or diesel generator has no fuel slot. While it runs, it draws litres from the oil network: about 0.0066 litres a second for the petroleum generator and 0.0104 litres a second for the diesel generator, at full output. Their efficiencies are 35 percent for petroleum and 40 percent for diesel. With no petroleum or diesel in its network, it makes no power and shows no fuel.
+- **Nuclear.** Without a water pipe, it makes power only in water. Its own block must be water, and so must the block above it and the four blocks beside it. Out of the water it stops, and it keeps its fuel. A water pipe on any face changes this: the generator then runs while water flows through the pipe network, without standing in water. See [The nuclear generator and pipes](#the-nuclear-generator-and-pipes).
+- **The menu.** Right-click a generator to open its menu. The fuel slot of a charcoal or nuclear generator takes its fuel, by hand or with a shift-click. You can take fuel back out. A petroleum or diesel generator has no fuel slot. The status row shows four things: the output, the power made since the generator was placed, the fuel count with the time left on the burning item (for a petroleum or diesel generator, the litres its network holds instead), and the status.
 - **Breaking it.** Break a generator to take it back. Its fuel comes back to you with it.
 - **One player at a time.** Only one player can have a generator's menu open. A second player sees "Someone is already using this generator."
-- **Status words.** A generator shows one of five words. Running means it makes power or has fuel ready. No fuel means it has nothing to burn. Closed (wind) means the wind site is not open. Night (solar) means the sun is down. Not underwater (nuclear) means the nuclear generator is out of the water.
-- **The hologram.** One line: the name, then the output, such as 25.0 kW, with the fuel count while it makes power. Otherwise the status word.
+- **Status words.** A generator shows one of five words. Running means it makes power or has fuel ready. No fuel means it has nothing to burn. Closed (wind) means the wind site is not open. Night (solar) means the sun is down. Not underwater (nuclear) means the nuclear generator is out of the water and no water is flowing to it through a pipe.
+- **The hologram.** One line: the name, then the output, such as 25.0 kW, with the fuel count while it makes power. A petroleum or diesel generator shows the litres its network holds and its burn rate instead, such as network 850 L 0.0066 L/s. Otherwise the status word.
 - **Particles.** A charcoal generator puffs smoke while it burns. A petroleum or diesel generator gives off a campfire-like smoke while it burns. A nuclear generator gives off sparks while it makes power.
+- **Recipes.** The petroleum generator is made from an oil tube, an oil T splitter and purified iron, in any arrangement. The diesel generator is made from a petroleum generator, purified iron and a deuterium cell, in any arrangement.
 
 ### Accumulators
 
@@ -1351,7 +1472,10 @@ An accumulator stores power. It stands on air inside a pylon's square. It needs 
 | Accumulator I | 5 kWh | 5 kW | 5 kW |
 | Accumulator II | 20 kWh | 20 kW | 20 kW |
 | Accumulator III | 80 kWh | 60 kW | 60 kW |
+| Accumulator IV | 320 kWh | 200 kW | 200 kW |
+| Accumulator V | 1.28 MWh | 800 kW | 800 kW |
 
+- **Accumulators IV and V are made in the heavy weapons assembly.** Accumulator IV needs an Accumulator III, four pulse capacitors, two superconducting magnets and a tesseract lattice. Accumulator V needs an Accumulator IV, eight pulse capacitors, two antiproton capsules, four enriched uranium and a tesseract lattice. They are researched after Particle Physics and after the antimatter shell. The recipes are in [Crafting](CRAFTING.md#processes-processesyml).
 - **It charges from spare power only.** It takes in power that no machine used during that moment, from the grid that covers it. A grid that is busy gives it nothing.
 - **It keeps 90 % of what it takes in.** The rest is lost when it charges.
 - **It gives power only when a machine is short.** A machine that cannot get enough from its grid takes the rest from an accumulator that shares a grid with it. A machine that is fully powered never draws from the accumulator.
@@ -1360,14 +1484,14 @@ An accumulator stores power. It stands on air inside a pylon's square. It needs 
 
 ### The crude oil refinery and diesel
 
-The crude oil refinery is a lab tool. Place it, then right-click it to open it. It works like the other lab tools, and it needs power.
+The crude oil refinery is a lab machine. Place it and give it power, as for the other lab machines. Its device screen shows its status (see [Device screens](#device-screens)).
 
-- **The input.** One slot holds the petroleum.
-- **The output.** Two slots hold the diesel.
-- **The process.** Three petroleum make two diesel. One batch takes 30 seconds.
-- **Hoppers.** A hopper next to the refinery fills the input and takes the diesel out. The other lab tools work the same way.
+- **Petroleum in.** Connect an oil tube that carries petroleum to any face of the refinery: a petroleum drill on that tube fills it. The refinery takes petroleum from every tube network on its faces that holds petroleum. It has no input slot.
+- **Diesel out.** Connect an oil tube to any other face. The refinery pushes its diesel into the first tube network that takes it, so a diesel tube may stand on any face that is not a petroleum tube. A tube takes diesel when it holds diesel, or when a diesel generator or a level II water pump stands on it. A tube with nothing on it stays empty and takes no diesel, so a drill can still be placed on it later. Unverified in game. It has no output slot.
+- **The process.** Three litres of petroleum make two litres of diesel. At full speed it draws 0.1 litres of petroleum a second, and one full pass takes 600 ticks, which is 30 seconds.
+- **Stalls.** It shows No petroleum when no tube beside it holds petroleum. It shows "Stuck: no output tube takes diesel" when no diesel tube beside it takes diesel. Its info item shows the number of diesel outputs.
 
-Diesel is the fuel of the diesel generator. Put it in the generator's fuel slot by hand. Or let a picker carry it: a picker placed on the side of the refinery takes the diesel out of it and moves it into the generator. See [Pickers](#pickers).
+Diesel is not an item. A picker, a hopper or a belt cannot carry it. A diesel generator or a level II water pump takes diesel from the oil tube it stands on, so put it on a diesel tube of the refinery.
 
 ### Building a grid in five steps
 
@@ -1380,6 +1504,163 @@ You need the research for each part first. Finish Metallurgy at a [Research Cons
 5. **Place a lab tool in the square.** Put a crusher inside the square. Its hologram's Grid line shows 100 % when the crusher has full power.
 
 To run more, add generators and wires to the same grid, or add another pylon and wire it to the grid. A generator that is wired into a grid powers the whole grid.
+
+## Water
+
+<img src="images/components/water_pump.png" width="48" height="48" align="absmiddle">
+
+Water is a system of its own. A water pump draws water from a source, such as a lake, and sends it along water pipes to the machines that need it. Splitters divide one pipe line into several. A lab process that needs a water bucket can take its water from a pipe instead, and a nuclear generator can run from a pipe.
+
+The water system is unlocked at Materials Purification. Pump Upgrades IV and V come later, at Tesseract Geometry.
+
+| Part | What it does |
+|---|---|
+| <img src="images/components/water_pump.png" width="24" height="24" align="absmiddle"> Water pump | Draws water from a source, at up to five levels. |
+| <img src="images/components/water_pump_upgrade_2.png" width="24" height="24" align="absmiddle"> Pump Upgrade II to <img src="images/components/water_pump_upgrade_5.png" width="24" height="24" align="absmiddle"> Pump Upgrade V | Kits that raise a pump one level each. |
+| <img src="images/components/water_pipe.png" width="24" height="24" align="absmiddle"> Water pipe | Carries water between pumps, splitters and machines. |
+| <img src="images/components/water_splitter_t.png" width="24" height="24" align="absmiddle"> Water splitter T and <img src="images/components/water_splitter_x.png" width="24" height="24" align="absmiddle"> Water splitter X | Divide one water line into two or three. |
+
+Water splitters are not the item splitters from [Belts and automation](#belts-and-automation). They carry water, not items.
+
+### The water pump
+
+<img src="images/components/water_pump.png" width="24" height="24" align="absmiddle"> **Water pump**
+
+The water pump is made in the component assembly and unlocked at Materials Purification.
+
+- **Placing.** Hold the pump and right-click a spot. A pump goes on air or water, so you can stand it on dry land. It needs no water under it.
+- **Its source is the water its pipes reach.** The pump does not look only at the water under it. Its source is the water that its network reaches: each pump, pipe and splitter in the network counts the water it stands in or touches, and the water connected to that water, six ways (up, down and the four sides), is counted. A machine does not count. It needs at least 100 blocks of water to be a source. A pump with fewer has no source and stops. Its hologram says so (see [The pump hologram](#the-pump-hologram)). The placement is never refused for its source.
+- **Sharing.** The output of a pump is shared among the machines in its network that ask for water. A machine that asks for less than its share gets its full request.
+
+### Source tubes: a pump on land
+
+A pipe that stands in water, or on land beside water, and is joined to the pump is a **source tube**. The water it reaches becomes the pump's source. This is how a pump works on dry land: you run a pipe into a lake, and the pump on the shore draws from the lake through the pipe.
+
+- The pipe may stand in the water, or on the shore touching the water.
+- It must be joined to the pump, so the pump and the pipe share a face.
+- A pump that touches a lake also counts that water, with no pipe at all.
+- The source is the best count anywhere in the network. So a line of pipes that reaches a big lake gives the pump its source, even when the lake is at the far end of the line.
+
+### Pump levels and kits
+
+A pump has five levels. Each level gives more flow, and each needs a different source of power.
+
+| Level | Flow | Power |
+|---|---|---|
+| I | 2 units of water per second | Coal or charcoal, as fuel |
+| II | 4 units per second | Diesel from the oil network |
+| III | 8 units per second | Electricity, 60 kW, needs a pylon |
+| IV | 12 units per second | Electricity, 120 kW, needs a pylon |
+| V | 16 units per second | Electricity, 240 kW, needs a pylon |
+
+The kits raise a pump's level:
+
+- <img src="images/components/water_pump_upgrade_2.png" width="24" height="24" align="absmiddle"> **Pump Upgrade II** and <img src="images/components/water_pump_upgrade_3.png" width="24" height="24" align="absmiddle"> **Pump Upgrade III** are made in the component assembly. They are unlocked at Materials Purification.
+- <img src="images/components/water_pump_upgrade_4.png" width="24" height="24" align="absmiddle"> **Pump Upgrade IV** and <img src="images/components/water_pump_upgrade_5.png" width="24" height="24" align="absmiddle"> **Pump Upgrade V** are made in the heavy weapons assembly. They are unlocked at Tesseract Geometry.
+
+To use a kit, hold it and right-click a pump you own. Each kit moves the pump up one level, and the kit is used up. A kit that does not fit the pump is refused with a message, and you keep the kit. Only the owner of a pump, or a friend of the owner, can use its kits. Anyone can add fuel to a level I pump, and anyone can break a pump or a pipe.
+
+### Tall pumps: levels IV and V
+
+A pump at level IV or V stands two blocks tall. Its lower block is the one you placed it on, and its upper block is the block above. The model of the pump continues onto the upper block, and the pump's hologram floats above that upper block. Levels I, II and III are one block tall.
+
+- **Room for the top.** The block above must be free when you place a pump, and when a kit takes it to level IV or V. Free means that no device, machine or water part stands there, and that the block is not solid, such as stone. If it is not free, the game refuses it. A new pump says "A level 4 pump stands two blocks tall, and the block above this spot is in the way." A kit says "A level 5 pump stands two blocks tall, and the block above it is in the way." and you keep the kit.
+- **Clicking the top.** The pump takes clicks on both blocks, so right-clicking the upper block works as right-clicking the pump: it adds fuel, takes a kit, or shows the status lines in chat.
+
+### Fuel and power for a pump
+
+- **Level I** burns coal or charcoal. One item lasts 60 seconds.
+- **Level II** draws diesel from the oil network, a litre a minute, while it runs. It takes no fuel items. Without diesel in its network it stops.
+- **Levels III, IV and V** draw electricity. They need a pylon, and they use no fuel.
+
+To add fuel to a level I pump, hold coal or charcoal and right-click it. It takes up to 16 items. Level II takes no items.
+
+A powered pump gives its full flow at any power share above zero. It stops only when its share is zero.
+
+The fuel count includes the item that is burning now. A pump with one coal left and that coal burning shows "Fuel: 1 coal or charcoal, burning", not "empty".
+
+### The pump hologram
+
+The pump's hologram has three lines.
+
+1. **The level and the flow.** Such as "Pump L2  4 /s delivered". The flow is what the pump is giving to machines right now. It shows 0 when no machine draws water, even if the pump is running.
+2. **The source.** "Water source: infinite" when the water the pump's network reaches is 100 blocks or more. "Source low: N blocks, needs 100" when it is less, where N is the count, and the pump has stopped. The source is checked every 10 seconds, so a change, such as a new pipe into a lake, can take up to 200 ticks (10 seconds) to show on the hologram.
+3. **The fuel or the power.** For level I and II, the fuel line reads "Fuel: 3 coal or charcoal, burning", or "waiting", or "Fuel: empty, stopped". For levels III to V, the power line reads "Power: 80% of 60 kW", or "Power: none needed" when no power is asked for.
+
+To read the status lines in chat, right-click the pump with an empty hand, or with any item that is not fuel or a kit.
+
+A tall pump's hologram sits above its upper block, not above the lower one.
+
+### The pump sound
+
+A pump that is running hums: a turbine rumble with a motor hum and a soft swish of the vanes. It sounds once every 2 seconds, at the pump's own block, so you hear it from nearby. A stopped pump is silent. Each level sounds a little higher than the level below, so a level V pump has a higher note than a level I pump.
+
+### Water pipes
+
+<img src="images/components/water_pipe.png" width="24" height="24" align="absmiddle"> **Water pipe**
+
+The water pipe is made in the component assembly, two at a time. It is unlocked at Materials Purification.
+
+- **Where it goes.** A pipe goes on air or water, and not on a solid block. It cannot take a spot that already holds a machine, a device or another water part.
+- **What it connects to.** A pipe connects on any of its six faces, to pumps, splitters, lab machines, nuclear generators and other pipes.
+- **How it looks.** A pipe draws itself from the faces it joins. Two joins on faces that are not opposite make a bend. Otherwise the pipe is straight, along the axis with the most joins. See [Bends and vertical pipes](#bends-and-vertical-pipes).
+- **Where it goes, in water.** A pipe may stand in a lake, so it can join a pump and take water from the lake. See [Source tubes](#source-tubes-a-pump-on-land).
+
+### Bends and vertical pipes
+
+A pipe bend is a smooth quarter curve, not a sharp corner. Each end meets its face square, so the tube lines up with the neighbour on that face, and the curve bulges toward the middle of the block.
+
+- **Sideways bends** join two side faces that are not opposite, such as east and south.
+- **Up and down bends** join a side face and the top or the bottom of the block, such as east and up. The pipe climbs or drops, as an elbow.
+- **Vertical pipes** join only the top, or only the bottom, or both. A pipe with one vertical join stands on end.
+- **Straight pipes** join two opposite faces, such as east and west, or up and down.
+
+If a pipe joins three or more faces, it is straight along the axis with the most joins. When two axes tie, east-west wins over north-south, and north-south over up-down. So a pipe that joins east, west and up is drawn straight east-west.
+
+### Water splitters
+
+Two water splitters divide one water line.
+
+- <img src="images/components/water_splitter_t.png" width="24" height="24" align="absmiddle"> **Water splitter T** has one input and two outputs, on the faces to the left and right of the input.
+- <img src="images/components/water_splitter_x.png" width="24" height="24" align="absmiddle"> **Water splitter X** takes one water line in and sends it out three ways.
+
+Both splitters are unlocked at Materials Purification.
+
+- **On the side of a block.** Stand on the ground and right-click a side face. The input faces you, so the water comes from your side. The outputs go to the sides of the splitter, across from the input, and an X also sends water straight on.
+- **On the top or the bottom of a block.** Right-click the top or the bottom face of a block, and the splitter stands vertically. Its input points down into the block you clicked (or up, for the bottom), and its outputs run across your view, to the left and to the right of the way you look. A vertical X has its arms up and down, and across.
+
+A splitter is placed on air or water, like a pipe.
+
+### Water for lab processes
+
+Some lab processes need a water bucket. A process like that can take water from a pipe attached to its machine instead, one unit per run, in place of the bucket. Without a pipe, the bucket is still needed.
+
+While the machine waits for water, its hologram can show "Water: x of y /s", which is the water delivered against the water requested. This line shows only when the bucket is the only missing input and a pipe joins the machine.
+
+### The nuclear generator and pipes
+
+With a water pipe attached to any face, the nuclear generator runs while water flows through the pipe network, without standing in water. Without a pipe, the underwater rule still applies, and the generator must stand in water. See [Electricity](#electricity) for the rules and the status words.
+
+### Tutorial: a pump on a lake
+
+1. **Get the parts.** Make a water pump and some water pipes in the component assembly. You need Materials Purification first.
+2. **Find a lake.** Pick a lake with at least 100 water blocks connected to each other, six ways. Hold the pump, and right-click a spot on the shore, or a water block in the lake. The pump is placed; it is never refused for its source. If the lake is too small, its hologram says "Source low" and the pump stops.
+3. **Add fuel.** Hold coal or charcoal, and right-click the pump. It takes up to 16 items. The pump is level I, so it burns one item every 60 seconds.
+4. **Run pipes to a machine.** Hold the water pipes. Place them on air next to the pump, one after the other, until the line reaches a lab machine. Each pipe joins the one before it, and the line draws itself.
+5. **Check the pump.** Look at its hologram. The source should read infinite within 10 seconds, and the flow should show a number once the machine draws water.
+
+### Tutorial: a pump on land with a source tube
+
+This one puts the pump on dry land, and runs a pipe into the water to reach the lake.
+
+1. **Get the parts.** You need a water pump and some water pipes, from the component assembly, after Materials Purification.
+2. **Find a lake, and a dry spot beside it.** The lake needs at least 100 water blocks connected to each other, six ways.
+3. **Put a pipe in the water.** Hold a pipe, and right-click the water at the edge of the lake. The pipe stands in the water.
+4. **Stand the pump on land, next to the pipe.** Hold the pump, and right-click the air on the land beside the pipe, so that the pump and the pipe share a face. The pump needs no water under it. The two are joined, and the pipe is now the pump's source tube.
+5. **Add fuel.** Hold coal or charcoal, and right-click the pump.
+6. **Check the source.** The hologram first says "Source low", because the pump checks its source every 10 seconds. Within 10 seconds it should read "Water source: infinite", and then the pump runs.
+
+If the hologram stays low, look at the pipe. It must stand in water or touch it, and a chain of pipes, joined face to face, must run from the pump to that pipe.
 
 ## Belts and automation
 
@@ -1399,7 +1680,7 @@ Belts, pickers and splitters need power from a grid that covers them. Without po
 
 - **Capacity.** A block holds up to four items.
 - **The arrows.** The top of each belt shows arrows. Their tips point toward the bottom edge of the belt's top texture, and they scroll the same way. Belt II has yellow arrows, and Belt III has red-orange arrows. Whether the arrows agree with the way the items move on a belt is still being checked in game (see [COMPATIBILITY.md](COMPATIBILITY.md#pending-in-game-checks)).
-- **Where items go.** A belt passes items to the next belt, to a lab tool that takes them (as an input, or as fuel where the lab tool burns it), to a generator's fuel slot, or into a chest. A chest is a container: a chest, trapped chest, barrel, shulker box or copper chest of any copper kind. The container fills until it is full, and then the belt waits. A belt holds items at its end when nothing takes them. See [Belts and chests: the claim rule](#belts-and-chests-the-claim-rule) for the claim rule.
+- **Where items go.** A belt passes items to the next belt, to a lab tool that takes them (as an input, or as fuel where the lab tool burns it), to a generator's fuel slot, into a crafter (see [Crafters](#crafters)), or into a chest. A chest is a container: a chest, trapped chest, barrel, shulker box or copper chest of any copper kind. The container fills until it is full, and then the belt waits. A belt holds items at its end when nothing takes them. See [Belts and chests: the claim rule](#belts-and-chests-the-claim-rule) for the claim rule.
 - **Taking it back.** Left-click a belt with nothing in your hand to break it. Its items come back to you, and so does the belt. A left-click with a belt, picker or splitter in your hand does nothing to the device, so you do not break one by mistake.
 
 ### Placing a belt
@@ -1476,13 +1757,35 @@ A picker is a claw. It takes one item from its input and drops it on its output.
 
 - **Placing.** Hold the picker and right-click the side of a block. You can use the north, south, east or west face. The top and the bottom do not work. The picker goes on the air beside that face.
 - **The input is the face you click.** The block you clicked is where the picker takes from. Its output is on the far side. Its input side faces the machine and its output side faces away, so its arrows always point outward. You do not need to turn it.
-- **What it takes.** It takes from a belt that points into it, from the output slots of a lab tool, from the products of a drill, or from a chest on its input side. A picker placed beside a drill takes the drill's products.
+- **What it takes.** It takes from a belt that points into it, from the output slots of a lab tool, from the products of a drill, from the grid of a crafter, or from a chest on its input side. A picker placed beside a drill takes the drill's products.
 - **From a chest.** On its input side, a picker takes from a chest, a trapped chest, a barrel, a shulker box or a copper chest. A double chest counts as one chest, and the picker takes from the whole of it. It takes one item at a time, at its speed, from the first plain stack. A named or enchanted item is skipped.
 - **Chests and claims.** A picker takes from a chest only where its owner may use it. See [Belts and chests: the claim rule](#belts-and-chests-the-claim-rule). A chest that a stranger's picker may not use keeps its items, and the picker waits.
 - **Sideways from a belt.** A picker placed beside a straight belt, with the belt running past it, takes items off that belt. It takes only what its speed allows, and the items it leaves keep moving on the belt. A belt that turns a corner gives nothing sideways.
-- **What it gives.** It gives to a belt that starts on its output side, to a lab tool that takes the item as an input (or as fuel, where the lab tool burns it), to the fuel slot of a generator that burns the item, or into a chest, subject to the claim rule above.
+- **What it gives.** It gives to a belt that starts on its output side, to a lab tool that takes the item as an input (or as fuel, where the lab tool burns it), to the fuel slot of a generator that burns the item, into a crafter's grid, or into a chest, subject to the claim rule above.
 - **Only what fits.** The picker moves an item only when the output accepts it. Otherwise the item waits at the input. A belt that carries an item nothing takes is stopped, so the items behind it wait too.
 - **The start.** When a picker starts moving after it has been idle or blocked, it waits half a second before its first move. Its moves after that come at its speed.
+
+### Crafters
+
+A crafter is the vanilla crafting block: a 3 by 3 grid of nine slots. Its own setting can switch some of the slots off. A picker and a
+belt can work with it, so a line of machines can feed a recipe and collect what it makes.
+
+- **A picker takes from it.** A picker beside a crafter takes the items in its grid, one at a time. It takes from the first slot that
+  holds an item, reading the top row first and then each row from left to right. A slot the crafter has switched off is never taken
+  from, and its items stay in it. The claim rule applies as it does for a chest (see [Belts and chests: the claim rule](#belts-and-chests-the-claim-rule)).
+- **A belt or a picker fills it.** A belt that ends in front of the crafter, or a picker that gives to it, puts an item into the first
+  switched-on slot that already holds the same item and has room, or else into the first empty switched-on slot. When no slot takes the
+  item, the belt or picker waits. A crafter takes any item its slots take, so it is up to the recipe, not the line, to use what it gets.
+- **A redstone pulse makes it craft.** Vanilla crafts only when the crafter gets a redstone pulse, from a lever, a clock or any other
+  redstone source. The line fills the grid, and the grid waits for the pulse. Without a pulse, nothing is crafted.
+- **Its product goes to the block it faces.** When the crafter crafts, vanilla pushes the product into the block the crafter faces, such
+  as a chest or a barrel. The crafter has no output slot of the line's own, so a picker takes the product from that block. This is the
+  vanilla behaviour; the in-game check of it is still pending.
+
+**A chain that works end to end.** Put a belt so that it ends in front of a picker, and put the picker so that its output faces the
+crafter. Make the crafter face a chest, so that the product lands there, and put a picker on the far side of the chest, with a belt
+on its output side. The items then go: belt, picker, crafter, chest, picker, belt. The line does not need a second output slot: the chest
+is the output. A redstone pulse on the crafter sets the crafting going. This chain is not yet checked in game.
 
 ### Splitters
 
@@ -1511,13 +1814,13 @@ The splitter's hologram has three lines: the name, the number of kinds on each l
 
 ### Where a picker or splitter can go
 
-A picker needs a machine, a generator, a chest or other storage, or a belt on the face you click. A splitter needs a machine, a generator or a belt there, and it does not take from a chest. If the face is empty, the game refuses. These messages are the ones you may see:
+A picker needs a machine, a generator, a chest, a crafter or other storage, or a belt on the face you click. A splitter needs a machine, a generator or a belt there, and it does not take from a chest. If the face is empty, the game refuses. These messages are the ones you may see:
 
 | Message | Why |
 |---|---|
 | Place it on a side face of the machine: north, south, east or west, not its top or bottom. | You aimed at the top or the bottom. |
 | Research 'NAME' is needed. | The research for the item is not finished. |
-| A picker takes from a machine, a generator, a chest or other storage, or a straight belt that flows into it or past its side. A splitter takes from a machine, a generator, or a belt that flows into it. | Nothing on the face you clicked gives items. |
+| A picker takes from a machine, a generator, a chest, a crafter or other storage, or a straight belt that flows into it or past its side. A splitter takes from a machine, a generator, or a belt that flows into it. | Nothing on the face you clicked gives items. |
 | That side is blocked: the block beside the face you aim at must be air. | A solid block is where the device would go. |
 | Something stands in the spot where it would go. | A player, an item or a mob is there. |
 | Another device already stands there. | Another logistics device or machine is there. |
@@ -1543,6 +1846,61 @@ This example sends raw ores one way and everything else the other way. Mixed ite
 4. **Put a lab tool on the straight output.** It must take the other items. An item that nothing can take waits at the splitter, and the line stops until it can go on.
 
 Check the splitter's hologram. Its status changes to blocked when an output refuses an item.
+
+## Vertical transport belts
+
+<img src="images/components/vertical_belt_2.png" width="48" height="48" align="absmiddle">
+
+Vertical transport belts carry items up or down. You stack them against each other to make a **tower**, a vertical run of belts. Items go in at the side of the tower, travel along it, and come out at the end in the direction the tower carries.
+
+### The three levels
+
+| Belt | Carries, blocks per second | Holds per block | Made in | Research |
+|---|---|---|---|---|
+| <img src="images/components/vertical_belt_1.png" width="24" height="24" align="absmiddle"> Vertical transport belt I | 1.875 | 4 items | Component assembly | Unlocked at Materials Purification |
+| <img src="images/components/vertical_belt_2.png" width="24" height="24" align="absmiddle"> Vertical transport belt II | 3.75 | 8 items | Component assembly | Unlocked at Materials Purification |
+| <img src="images/components/vertical_belt_3.png" width="24" height="24" align="absmiddle"> Vertical transport belt III | 7.5 | 12 items | Component assembly | Unlocked at Tesseract Geometry |
+
+### Building a tower
+
+- **Place the belts against each other.** A tower is a vertical run of vertical belts, one block after another.
+- **The level is set by the output end.** The tower's level is the level of its output-end belt, the belt at the end in the direction the tower carries. A tower may mix levels.
+
+### Direction
+
+A tower carries items UP or DOWN. To set the direction, hold nothing and right-click a vertical belt. Its menu has an UP button, a DOWN button and an info item.
+
+- **Only the owner and friends change the direction.** The player who placed the belt, or a friend of that player, can change it. Anyone else can open the menu and look, and the game says "Only the owner or a friend of the owner can change this vertical belt's direction." Placing and breaking belts is not limited to the owner.
+- **One belt sets the whole tower.** Setting one belt sets the belts above and below it as well, so the whole tower carries the same way. The game says "The tower now carries up." when you choose UP.
+
+### Input and output
+
+**Input.** Items enter from the side only.
+
+- A regular belt that flows into the side of any belt of a tower puts its items into the tower.
+- A picker whose output is a tower belt does the same. A picker can fill a tower, but it cannot take items from one.
+- Input comes only from a horizontal face of a tower belt. A belt cannot feed a tower from above or below.
+
+**Output.** The end of the tower in its direction gives items to the block beyond it: the top for UP, the bottom for DOWN. That block can be a regular belt, a machine or a chest.
+
+- The tower gives out one item at a time, at most one per tower each tick.
+- If the block beyond the end is missing or full, the items wait at the output end. Nothing is lost.
+
+### Items on a tower
+
+The items show as small displays along the tower. Up to 600 items show at once. Past that, the items still move along the tower, but they are not shown. A vertical belt has no hologram, only these item displays.
+
+### Known limitation
+
+An explosion does not remove vertical belts. Keep that in mind when you place a tower near a blast.
+
+### Tutorial: a three-block tower
+
+1. **Make three belts.** Make three vertical transport belts I in the component assembly.
+2. **Stack them.** Place them in a column, each one against the one below it.
+3. **Set the direction.** Right-click a belt with an empty hand, and click UP. The whole tower now carries items up.
+4. **Feed it.** Run a regular belt into the side of one of the tower's belts. Its items go into the tower.
+5. **Put a chest on top.** Place a chest on the block above the top belt. Items come out of the top of the tower into the chest.
 
 ## Ammunition and the machine gun turret
 
@@ -1570,7 +1928,7 @@ The turret is a placeable defence. Hold it and right-click the side of a block, 
 
 - **It needs power.** A turret with rounds asks the energy network for 24 kW at level 1, and more at each level, up to 60 kW at level 5, but only while a cannon holds a target. Otherwise it asks for 1 W of standby. Without its share of that power it does not fire. With less than its full share, it fires more slowly.
 - **Loading.** Hold rounds and right-click the turret. It takes up to 128 rounds at level 1, and up to 768 at level 5, one kind at a time: a different kind is refused until the turret is empty.
-- **Its menu.** Right-click the turret with no rounds in your hand, or sneak-click it, to open its menu. It has three rows. The first row holds the info item (the level, range, damage per hit, cannons, fire interval, power, and the rounds and their status), a load button that takes one stack from your inventory, an eject button that gives the rounds back, the friendly-fire switch, the team switch, and four category buttons. The two rows below hold the wool toggles for each mob. The hologram above the turret shows its name and level, such as `L3`. Anyone may open a turret's menu and look at it, but only the turret's owner can change anything in it. The buttons of anyone else refuse, with a message.
+- **Its menu.** Right-click the turret with no rounds in your hand, or sneak-click it, to open its menu. It has three rows. The first row holds the info item (the level, range, damage per hit, cannons, fire interval, power, and the rounds and their status), a load button that takes one stack from your inventory, an eject button that gives the rounds back, the friendly-fire switch, the team switch, and four category buttons. The two rows below hold the wool toggles for each mob. The hologram above the turret shows its name and level, such as `L3`. Anyone may open a turret's menu and look at it. The owner and the owner's friends may load, eject and switch the rail gun's power. Only the owner can change the targeting switches. The buttons of anyone else refuse, with a message.
 - **Targeting in the menu.** Four category buttons (monsters, phantoms, slimes and ghasts) and one wool toggle for each of 18 mobs: Zombie, Husk, Drowned, Skeleton, Stray, Wither Skeleton, Creeper, Spider, Enderman, Witch, Blaze, Pillager, Vindicator, Ravager, Phantom, Slime, Magma Cube and Ghast. Green wool means the turret fires at that kind, and red means it spares it. A single mob's wool overrides its category, and a category overrides the config. These choices are for this turret only.
 - **What it shoots.** Every hostile monster within 24 blocks at level 1 (32 at level 5), by default, in every direction. Its arc is the whole turn by default, so it reaches a mob behind it as well as in front, and its tilt is 90 degrees, so a mob straight above or below it is in reach. It turns toward a target at 6 degrees a tick. The arc is centred on the way it faced when you placed it, and a smaller arc in the config restricts the turret to a sector. It looks for targets once a second (`search-interval-ticks`, 20 by default). Once a cannon has a mob, it keeps it while the mob lives, stays in range and stays in the arc. Phantoms, slimes and ghasts are spared by default. Turn them on in the menu, or add them to `targets` in the `turrets` section of `config.yml`. Reach is a sphere measured to the nearest part of the mob, so a big mob at the edge of the range is hit.
 - **Turrets share the targets.** The turrets in one area do not all fire at the nearest mob. Each cannon takes the nearest mob that no other turret has claimed, so several turrets spread over several mobs. A cannon keeps its mob while the mob is alive and stays in its reach, and the other turrets leave that mob alone. When there are more turrets than mobs, the extra turrets share the mobs. The turrets look again once a second, and again on the tick after a mob they were firing at dies, so a free turret moves to the next mob at once. Lasers take part too. A turret takes a mob that a turret of the other kind holds only when no other mob is free for its cannon, so a laser and a machine gun usually fire at different mobs.
@@ -1579,7 +1937,8 @@ The turret is a placeable defence. Hold it and right-click the side of a block, 
 - **Red flash.** A mob flashes red when it takes any hit, so a turret's hit makes it flash red. A mob that burns from an incendiary round flashes red from the fire, which is not a turret hit.
 - **Sounds.** The idle sweep is silent. The rotation sound plays only while the turret turns onto a target it has detected. The fire sound plays on each shot, and the reload sound on each load.
 - **What it never shoots.** Its owner. Its friends. Players who are not its friends, unless friendly fire is on. A player set to spare. Villagers, golems, animals, tamed mobs, named mobs, and any mob in a protected region. Claim protection spares players as well as mobs.
-- **Friends.** Your friends are the players you add with `/cf friends add <player>`, and players trusted in the claim where the turret stands: WorldGuard members and owners of the region there, and GriefPrevention players with Access or Manage. A turret never fires at a friend, unless you set that player to target with `/cf turret player`. See [Turret commands](#turret-commands) and [COMMANDS_AND_PERMISSIONS.md](COMMANDS_AND_PERMISSIONS.md).
+- **Friends.** Your friends are the players you add with `/cf friends add <player>`, and players trusted in the claim where the turret stands: WorldGuard members and owners of the region there, and GriefPrevention players with Access or Manage. A turret never fires at a friend, unless you set that player to target with `/cf turret player`. A friend of yours may also use the turret: load it, eject it, upgrade it and break it. See [Friends](#friends), [Turret commands](#turret-commands) and [COMMANDS_AND_PERMISSIONS.md](COMMANDS_AND_PERMISSIONS.md).
+- **The friend list.** `/cf friends list` shows your friends. Clicking a name types its remove command, and hovering over it shows that hint.
 - **Your team.** Your scoreboard team is treated by the team switch in the menu, or `/cf turret team`. `spare` (the default) treats teammates as friends. `target` treats them as strangers, so they are fired at only while friendly fire is on. `ignore` leaves the team out, and they are decided like any other player.
 - **Friendly fire.** A switch in the turret's menu, off by default. Switched on, the turret fires at players who are not its friends. Switched off, it fires at no player at all. The owner can also set it with `/cf turret friendlyfire on` or `off`, while looking at the turret within 6 blocks. If you look at no turret, it uses your nearest turret within 8 blocks.
 - **The four rounds.**
@@ -1595,7 +1954,7 @@ Every round hits for the turret's damage at its level: 6 at level 1, and more wi
 
 - **Two cannons.** At levels 4 and 5 a machine gun has two cannons, each with its own target, and both fire at the same time. The second cannon prefers a mob within 6 blocks of the first cannon's mob (`turrets.dual-spacing-blocks`), so the two shots hit one area. When no free mob is that close, it takes the nearest free mob in range instead, so it still fires. A free mob is one that no other turret has claimed.
 - **Feeding it by machine.** A belt or a picker can carry rounds into a turret. A hopper cannot.
-- **Only the owner.** Only the owner, with the `corefactory.turret` permission, can load, eject, upgrade, change the targeting of, or break a turret. Anyone else can look at it, but a right-click with rounds, a kit, a menu button or a left-click is refused, and the game says who may change it.
+- **The owner and friends.** The owner of a turret, or a friend of the owner, with the `corefactory.turret` permission, can load, eject, upgrade or break it. Only the owner can change its targeting. Anyone else can look at it, but a right-click with rounds, a kit, a menu button or a left-click is refused, and the game says who may change it.
 - **Breaking it.** A left-click breaks it. The turret and the rounds in it drop, and the turret comes back at its level. A tall turret is broken from either of its two blocks, and it drops once.
 - **Tall turrets and protection.** A turret at level 3 or higher is two blocks tall. Protection plugins are asked about both blocks. A claim or region that refuses the upper block refuses the placement, the upgrade that grows into it, and the break as well.
 - **Blasts.** An explosion does not destroy a turret yet. Keep it out of the blast radius.
@@ -1616,12 +1975,29 @@ The laser turret is the second defence. It fires a beam instead of rounds, so it
   - <img src="images/components/optical_lens.png" width="24" height="24" align="absmiddle"> **Optical lens**: made on the metal lathe from an amethyst shard and high-purity graphite, two to a pass. It is researched at Materials Purification.
   - <img src="images/components/laser_emitter.png" width="24" height="24" align="absmiddle"> **Laser emitter**: made in the component assembly from two circuit boards, glowstone dust and a brass ingot. It is researched at Materials Purification.
   - <img src="images/components/laser_turret.png" width="24" height="24" align="absmiddle"> **Laser turret**: made in the heavy weapons assembly from a steel frame, a targeting unit, a turret mechanism, four optical lenses and two laser emitters. It takes 70 seconds at full power.
-- **Breaking it.** A left-click breaks it, and the turret item drops. Only the owner can break it, and a tall laser turret is broken from either block.
+- **Breaking it.** A left-click breaks it, and the turret item drops. The owner or a friend of the owner can break it, and a tall laser turret is broken from either block.
 - **Blasts.** An explosion does not destroy it yet either. Keep it out of the blast radius.
+
+### The rail gun turret
+
+The rail gun turret is the third defence, and the strongest. It charges before each shot, then fires one heavy beam that flies to its target. Like the laser, it holds no rounds, so nothing loads it and every right-click on it opens its menu. Hold it and right-click the side of a block, on air, like the laser turret. It starts at level 1, and an upgrade kit makes it one level better. Its third level is two blocks tall.
+
+- **It charges, then fires.** Once a mob is in reach, the rail gun draws its power and charges. Its light rises as it charges, and it is at full brightness when the charge is done. When it is charged and its barrel is on the mob, it fires, its light goes out, and it reloads without drawing any power. At level 1 the charge takes 6 seconds and the reload 10, so it fires about every 16 seconds. At level 2 the charge is 5 seconds and the reload 9, and at level 3 they are 4 and 8.
+- **It needs power.** While it charges it asks the energy network for 2,000,000 W (2 MW) at level 1, 4 MW at level 2 and 8 MW at level 3. It asks for nothing while it reloads. With less than its full share, it charges more slowly, and its screen shows the share.
+- **Its power switch.** The second item in the top row of its menu, right of the info item, is green dye when the rail gun is on and red dye when it is off. Off, it stays idle and draws no power. Switching it off during a charge drops that charge. A reload still runs down while the rail gun is off, so switching it off and on again does not skip the reload.
+- **Its screen.** A black screen on the front of the body turns with the rail gun. It shows five lines: RAIL GUN, then Power (the watts it uses now, of the watts it asks for), Satisfied (the share of the grid it gets, green when whole, yellow below that, or "no grid"), Charge (a bar of ten cells with a percentage, or "off") and Switch (ON while it is idle, charging or reloading, or OFF).
+- **What it shoots.** The same mobs as the laser turret, from 60 blocks away at level 1, 80 at level 2 and 110 at level 3. Its arc, its friends and its friendly-fire switch work as the laser's do, and its menu has the same targeting toggles. Only the owner can change them.
+- **The shot.** The shot is not instant. A flame with a red helix of strands flies from the barrel toward the mob at about 2 blocks a second at level 1, and 9 blocks a second at level 3. A blue spiral follows it a moment later. When the flame reaches the mob, the mob takes the hit: 400 damage at level 1, 1,200 at level 2 and 3,500 at level 3. Armour counts for a quarter of its value, so the shot gets through most of it. A blue burst marks the hit. If the mob dies or is removed before the flame reaches it, the shot ends and does no damage.
+- **Breaking it.** A left-click breaks it, and the item drops at its current level. The owner or a friend of the owner can break it, and a level 3 rail gun is broken from either of its two blocks.
+- **Blasts.** An explosion does not destroy it yet, as with the other turrets. Keep it out of the blast radius.
+- **How to get it.** Research Rail Coils after Tesseract Geometry, then Railgun Turret after that. Its parts come from the chain above:
+  - **Rail barrel**: turned on the metal lathe from 2 precision barrels and 2 high-purity graphite. It takes 40 seconds at full power.
+  - **Rail coil**: made in the heavy weapons assembly from 2 superconducting magnets, 2 pulse capacitors, an antiproton capsule and 8 copper ingots. One pass makes 2 coils, and it takes 60 seconds at full power.
+  - **Rail gun turret**: made in the heavy weapons assembly from 2 rail barrels, 4 rail coils, 2 enriched uranium, a tesseract lattice, a targeting unit and a turret mechanism. It takes 120 seconds at full power.
 
 ### Upgrading a turret
 
-A turret has five levels, and each upgrade kit makes it one level better. Hold a kit and right-click a turret you own.
+A machine gun turret and a laser turret have five levels, and a rail gun turret has three. Each upgrade kit makes a turret one level better. Hold a kit and right-click a turret you own.
 
 - <img src="images/components/turret_upgrade_2.png" width="24" height="24" align="absmiddle"> **Upgrade Kit II** makes a level 1 turret level 2. It is made in the component assembly from 2 circuit boards, 2 iron gears, a precision barrel and a brass ingot. It is researched at Materials Purification.
 - <img src="images/components/turret_upgrade_3.png" width="24" height="24" align="absmiddle"> **Upgrade Kit III** makes a level 2 turret level 3, and the turret grows two blocks high. The block above it must be free. It is made in the component assembly from a steel frame, a turret mechanism, an ammunition feed and an optical lens. It is researched at Materials Purification.
@@ -1635,7 +2011,7 @@ The rules:
 - **Rounds stay.** A machine gun keeps the rounds it holds, and its belt grows to the new level's capacity.
 - **Tall levels need room.** Levels 3 to 5 are two blocks high. The first move into a tall level is from level 2 to level 3, and it needs the block above the turret to be free. If it is not, the game says "Nothing can grow above this turret: the block above it must be free.", and the kit stays in your hand. A turret that is already tall owns the block above it, so the moves from level 3 to 4 and from 4 to 5 work with nothing free above.
 - **The messages.** A kit that works says "The turret is now level N.", and adds ", two blocks tall." when the turret grows to level 3 or higher. A kit of the wrong level says "This kit makes level N. The turret is at level X, so it takes a level X+1 kit." A level 5 turret says it is already at its highest level.
-- **Only the owner.** Someone else's turret refuses the kit with "Only the owner of this turret can upgrade it."
+- **The owner and friends.** The owner of a turret, or a friend of the owner, can upgrade it. Someone else's turret refuses the kit with "Only the owner or a friend of the owner can change this turret."
 - **Breaking keeps the level.** A broken turret gives back its item at its current level, so placing it again gives the same level.
 
 The table of each level's numbers is in [MECHANICS.md](MECHANICS.md#upgrading-a-turret).
@@ -1662,6 +2038,310 @@ You are never a target of your own turret. Tab completion offers the subcommands
 | <img src="images/ores/coal_ore.png" width="24" height="24" align="absmiddle"> Coal ore | Patches of coal ore in stone | <img src="images/components/charcoal.png" width="24" height="24" align="absmiddle"> Charcoal, one per unit | <img src="images/components/charcoal.png" width="24" height="24" align="absmiddle"> Charcoal is also the <img src="images/components/powder_mill.png" width="24" height="24" align="absmiddle"> powder mill's charcoal. |
 
 Coal is one of the ores that the ore drills mine at every level, so a drill that mines coal gives you charcoal.
+
+## Artillery
+
+Artillery fires a shell at a point on the ground. The longest shot is 14 400 blocks, from a level VII piece with a tier III charge. You place a piece and load it with a shell and a charge, place a Command Center in the same power grid, pick the target on its map and launch. The shell flies in an arc and lands near the point. How near depends on the piece's level and on the charge.
+
+The line has seven piece levels, three charge tiers and nine shells. The pieces need the Artillery research, and each shell has its own research node (see [Research and recipes](#research-and-recipes)).
+
+### What the artillery is
+
+An artillery piece is a placed machine, like a turret. It stands on air, and it needs free air above its spot for its height. It fires one shell at a time and reloads before the next. It draws power from its grid only while it reloads or while a shell is in the air. It holds a magazine of shells and charges, which you load into it from your inventory (see [Loading and unloading](#loading-and-unloading)). The shell and the charge tier are chosen on the Command Center.
+
+Its level sets its height, its power, its range, its reload time and how far its shells land from the aim.
+
+The piece has a body and a barrel, and you can see both move. When a target is set on the Command Center, the body turns to face it and the barrel tilts up to the elevation of the shot. The barrel lies flat again once the piece has fired and finished reloading; the body keeps the way it last faced.
+
+**The seven levels.** The table shows each level with a Tier I charge. The range, reload and scatter come from the formulas in the game's artillery table with the shipped settings, rounded. The power is the shipped setting at full power.
+
+| Level | Model height (blocks) | Power | Range (blocks) | Reload | Scatter at 1000 blocks (blocks) |
+|---|---|---|---|---|---|
+| I | 1.5 | 100 kW | 1 500 | 20 s (400 ticks) | 60.0 |
+| II | 1.5 | 150 kW | 2 022 | 26.65 s (533 ticks) | 42.9 |
+| III | 2.5 | 230 kW | 2 726 | 33.35 s (667 ticks) | 30.7 |
+| IV | 2.5 | 350 kW | 3 674 | 40 s (800 ticks) | 21.9 |
+| V | 2.5 | 540 kW | 4 953 | 46.65 s (933 ticks) | 15.7 |
+| VI | 3.0 | 830 kW | 6 677 | 53.35 s (1067 ticks) | 11.2 |
+| VII | 3.75 | 1.27 MW | 9 000 | 60 s (1200 ticks) | 8.0 |
+
+The range grows by about 1.35 times a level. The scatter falls to about 0.71 times a level, so a level VII piece lands about 7.5 times closer to its aim than a level I piece at the same range. The reload grows in equal steps of about 6.7 seconds.
+
+**Air above a piece.** The spot must be air, and the air above it must be free for the piece's height. Levels I and II need 2 blocks in all. Levels III to V need 3. Level VI needs 3, and level VII needs 4. A piece that is too tall for its spot is refused, and the message says so.
+
+### Charge tiers
+
+A charge is the propellant of a shell. Each load takes the tier the Command Center is set to, and the magazine fires that tier. A higher tier can fire any shell that needs a lower one. Each tier multiplies the piece's range, reload and scatter:
+
+| Tier | Range | Reload | Scatter | Shells that need it |
+|---|---|---|---|---|
+| I | x 1.00 | x 1.00 | x 1.00 | Explosive, high explosive, white phosphorus, napalm |
+| II | x 1.25 | x 1.25 | x 1.20 | Cluster, enriched uranium |
+| III | x 1.60 | x 1.50 | x 1.50 | Hydrogen thermonuclear, cluster enriched uranium, condensed antimatter |
+
+A tier II charge goes further and reloads more slowly. A tier III charge goes furthest, reloads slowest, and spreads its shells the most. The charge recipes are in the [catalogue](#catalogue-recipes-and-achievements).
+
+### The shells
+
+Each shell needs a charge tier and a lowest piece level. A piece of a higher level fires a shell of a lower minimum level too.
+
+| Shell | Charge tier | Lowest level | What it does | Yield | Reach (blocks) |
+|---|---|---|---|---|---|
+| Explosive | I | I | Explodes where it lands. Blast radius 15 blocks, centre damage 12 HP. | About 1 ton of TNT | 15 |
+| High explosive | I | I | Ten blocks of TNT for filler. Explodes where it lands and digs its own crater. | About 10 tons | 15 |
+| White phosphorus | I | I | Bursts 25 to 35 blocks up and leaves a toxic cloud on the ground. No blast. | None | 8 (cloud radius) |
+| Napalm | I | I | Bursts on impact and sets a strip of ground on fire. The terrain is not damaged. | None | 15 (half the burst length) |
+| Cluster | II | II | Bursts 30 to 50 blocks up and scatters 40 submunitions. | 40 x 3 tons | 45 |
+| Enriched uranium (Little Boy) | II | VI | Bursts 8 blocks up. A nuclear blast. | 15 kilotons | 28.4 |
+| Hydrogen thermonuclear | III | VI | Bursts 20 to 30 blocks up. A nuclear blast. | 1 megaton | 115 |
+| Cluster enriched uranium | III | VII | Five small uranium bombs, each 8 blocks up. The shot must be at least 25 degrees. | 5 x 15 tons | 65 |
+| Condensed antimatter | III | VII | Half a gigaton, bursts 50 blocks up. Once per player every 12 hours. | 500 million tons | 913 |
+
+The reach is the distance from the aim point at which the shell's effect stops. The safety check uses it (see [Safety rules](#safety-rules)).
+
+**The cluster shell.** The shell bursts 30 to 50 blocks up. Its 40 submunitions land in a disc of radius 30 blocks around the burst point. Each one is a small blast of radius 3 blocks, with a centre damage of about 17 HP. Two submunitions are at least 4 blocks apart, so they do not pile up. For the safety check, each submunition counts as a 15-block blast, so the reach is 30 + 15 = 45 blocks.
+
+**The phosphorus cloud.** The shell bursts in the air and its cloud settles on the ground. The cloud has these numbers:
+
+| Setting | Value |
+|---|---|
+| Radius on the ground | 8 blocks |
+| Damage per tick at full strength | 0.05 HP, which is 1 HP a second, one heart every 2 seconds |
+| Half-life of the strength | 20 seconds |
+| Time the cloud stands | 60 seconds |
+| Total damage for a creature that stands in it 10 seconds from the burst | About 8.5 HP, about 4 hearts |
+| Total damage for a creature that stands in it the full 60 seconds | About 25 HP, more than a full health bar of 20 HP |
+
+The damage is dealt every half second. It halves every 20 seconds, so a cloud that has hung for a while hurts less. The totals above leave out regeneration. Step out of a fresh cloud quickly.
+
+**The napalm burst.** The shell sets fire over an ellipse on the ground. The ellipse is 30 blocks long along the shot and 12 blocks wide. The fire is put out after 20 seconds, and the blocks under it are not damaged.
+
+**The nuclear shells.** Enriched uranium, hydrogen thermonuclear, cluster enriched uranium and condensed antimatter are nuclear. Their blast is the nuclear blast of the TNT system, with the yield set in `tnts.yml` (see [Nuclear weapons](#nuclear-weapons)). The nuclear shells have these rules:
+
+- **Minimum distance.** The target must be at least 200 blocks from the piece. The antimatter shell needs 2000 blocks.
+- **The fallout zone.** The aim point must be farther from every player in the world than the zone. The zone is 3 times the reach, plus 3 scatter sigmas. This covers the player who fires, and every other player too.
+- **The antimatter cooldown.** Only the antimatter shell has it. A player may fire one antimatter shell every 12 hours. The time is kept for each player, and it is saved.
+
+The fallout zone depends on the piece and on the range, because the scatter does. This table gives the zone at a range of 2000 blocks, for the lowest piece that fires each shell:
+
+| Shell | Reach (blocks) | Piece | Fallout zone at 2000 blocks (blocks) |
+|---|---|---|---|
+| Enriched uranium | 28.4 | Level VI, tier II | 166 |
+| Hydrogen thermonuclear | 115 | Level VII, tier III | 417 |
+| Cluster enriched uranium | 65 | Level VII, tier III | 267 |
+| Condensed antimatter | 913 | Level VII, tier III | 2 810 |
+
+For the antimatter shell at its longest range, 14 400 blocks, the zone is about 3 260 blocks.
+
+### Range and scatter charts
+
+**Range against level.** The range in blocks, for each level and each tier:
+
+| Level | Tier I | Tier II | Tier III |
+|---|---|---|---|
+| I | 1 500 | 1 875 | 2 400 |
+| II | 2 022 | 2 528 | 3 235 |
+| III | 2 726 | 3 407 | 4 361 |
+| IV | 3 674 | 4 593 | 5 879 |
+| V | 4 953 | 6 191 | 7 925 |
+| VI | 6 677 | 8 346 | 10 682 |
+| VII | 9 000 | 11 250 | 14 400 |
+
+**Scatter against range.** The standard deviation of the landing points, in blocks, on each axis, for a shot at each range. A dash means the piece cannot reach that range with that tier. The scatter grows in proportion to the range.
+
+| Range (blocks) | Level I, tier I | Level IV, tier I | Level VII, tier I | Level VII, tier III |
+|---|---|---|---|---|
+| 1 000 | 60.0 | 21.9 | 8.0 | 12.0 |
+| 2 000 | - | 43.8 | 16.0 | 24.0 |
+| 3 000 | - | 65.7 | 24.0 | 36.0 |
+| 4 000 | - | - | 32.0 | 48.0 |
+| 5 000 | - | - | 40.0 | 60.0 |
+| 6 000 | - | - | 48.0 | 72.0 |
+| 7 000 | - | - | 56.0 | 84.0 |
+| 8 000 | - | - | 64.0 | 96.0 |
+| 9 000 | - | - | 72.0 | 108.0 |
+| 10 000 | - | - | - | 120.0 |
+| 11 000 | - | - | - | 132.0 |
+| 12 000 | - | - | - | 144.0 |
+| 13 000 | - | - | - | 156.0 |
+| 14 000 | - | - | - | 168.0 |
+
+About 99.7 per cent of the shots land within 3 sigma of the aim on each axis. The safety check allows for 3 sigma.
+
+**The ballistic arc.** A shell flies on an arc that is close to a parabola. Gravity is 9.8 metres a second squared, with one block to a metre. The air drag is small: the shell loses 0.2 per cent of its speed each second. Drag shortens the range a little.
+
+Each shot picks its own speed, so that the shell lands on the aim at the chosen elevation. The elevation alone does not set the range. For the same speed, the range is largest at 45 degrees with no drag. The table shows one speed: the speed that reaches 9000 blocks at 45 degrees with no drag, about 14.85 blocks a tick, or about 297 blocks a second.
+
+| Elevation (degrees) | Range without drag (blocks) | Range with drag (blocks) | Loss from drag | Apex with drag (blocks) | Flight time with drag |
+|---|---|---|---|---|---|
+| 5 | 1 563 | 1 552 | 0.7 % | 34 | 5.3 s |
+| 15 | 4 500 | 4 408 | 2.1 % | 298 | 15.6 s |
+| 30 | 7 794 | 7 490 | 3.9 % | 1 103 | 30.0 s |
+| 45 | 9 000 | 8 510 | 5.4 % | 2 188 | 42.3 s |
+| 60 | 7 794 | 7 280 | 6.6 % | 3 261 | 51.6 s |
+| 75 | 4 500 | 4 171 | 7.3 % | 4 042 | 57.4 s |
+| 85 | 1 563 | 1 445 | 7.5 % | 4 294 | 59.2 s |
+
+The drag costs about 5 per cent of the range at 9000 blocks and 45 degrees, as the config says. The loss is smallest for flat shots and largest for steep ones, because steep shots stay in the air longer.
+
+A shot at 45 degrees that lands 9000 blocks away needs 15.28 blocks a tick. That is about 3 per cent more speed than the table's 14.85. Its flight takes about 43 seconds, and its apex is about 2 300 blocks up. A shot at 1500 blocks and 45 degrees flies for about 18 seconds. The apex of a long shot is far above the build height. The shell still lands on the aim.
+
+### Loading and unloading
+
+A piece holds a magazine of shells and charges. Each shot uses one shell and one charge, so a piece with an empty magazine cannot fire.
+
+**Loading.** Open the piece's dialog from the Command Center (View Artillery Machines, then the piece) and press Load. The load takes one shell and one charge out of your inventory and puts them in the magazine. The shell is the one the Command Center has chosen in Choose Shell, and the charge is of the tier it has chosen. You must carry both. A load you cannot make is refused, and the reason is written in chat. Each press loads one shell and one charge.
+
+**The capacity.** A magazine holds up to 16 shells and 16 charges. The server sets this with `magazine-capacity` in `config.yml`. A load is refused with `The magazine is full` when either count has reached the capacity.
+
+**One kind at a time.** A magazine holds one kind of shell and one charge tier. While it holds anything, a load of another shell or another tier is refused, and so is a launch whose shell or tier differs from the magazine's. Unload the magazine to change the kind.
+
+**Unloading.** Press Unload to give the whole magazine back: its shells and charges go into your inventory, and what does not fit is dropped at your feet. Breaking the piece gives its magazine back too, with the piece's own item.
+
+**Firing.** An accepted shot uses one shell and one charge from the magazine, and the magazine is saved with the piece. A piece with no shell in its magazine is refused with `The magazine has no shell: load a shell and a charge.` A piece with no charge is refused with `The magazine has no charge: load a shell and a charge.` A piece with neither is refused with `The magazine is empty: load a shell and a charge.` A launch lists each refused piece in its summary.
+
+**Where the ammunition comes from.** The shells and charges are the items of the [catalogue](#catalogue-recipes-and-achievements), such as the explosive shell and the tier I explosive charge. You craft them by hand, as the recipes say.
+
+### The Command Center
+
+The Command Center is the screen of the artillery. It picks the shell and the charge, sets the target and launches the strike to every piece connected to it.
+
+**Connected pieces.** A piece is connected to a center when it has the same owner, stands in the same world and stands in the same power grid as the center. A piece of another player, or a piece on another grid, is not connected. So a friend who runs a center fires the pieces of the center's owner. The center's grid is the grid that covers its block. A center in no grid connects no piece.
+
+**Placing it.** The Artillery Command Center Unit is an item. It needs the Artillery research. Hold it in your main hand and right-click a block. The center goes on the air beside the face you click. The spot must be air, and no other device may stand there. It takes one block. The center draws no power itself. Its screen shows the satisfaction of its grid.
+
+The recipe is a shaped craft in three rows:
+
+| Top row | Middle row | Bottom row |
+|---|---|---|
+| Circuit board, optical lens, circuit board | Targeting unit, diamond, targeting unit | Circuit board, optical lens, circuit board |
+
+**Breaking it.** The owner, or a friend of the owner, left-clicks the screen. The center breaks and gives its item back, dropped on the ground, unless you are in creative mode. Other players are told that only the owner or a friend of the owner can break it.
+
+**The screen.** The screen shows eight lines, top to bottom. It is redrawn every half second.
+
+| Line | What it shows |
+|---|---|
+| ARTILLERY COMMAND | The heading. |
+| Impact | The target's X and Z, or `not set`. |
+| Shell | The shell and its charge tier, or `none chosen`. |
+| Elevation | The barrel's elevation in degrees. |
+| Artillery | The number of connected pieces, or `none connected`. |
+| Needs | The full power of the connected pieces together, such as `1.27 MW`. |
+| Satisfied | The percent of its demand that the grid gives, or `no grid`. Green at full power, amber below it. |
+| Safety | `OK`, or the reason the first connected piece would refuse the strike, such as `out of range`. |
+
+**Clicking the screen.** A right-click by the owner, or by a friend of the owner, opens the main menu. A right-click by anyone else says that only the owner or a friend of the owner can use it.
+
+**The main menu.** The main menu shows the same eight lines. Its buttons are:
+
+| Button | What it does |
+|---|---|
+| View Artillery Machines | Lists the connected pieces. See below. |
+| Set Target | Starts the map. See [Set Target](#set-target). |
+| Clear target | Removes the target. Shown only when a target is set. |
+| Launch | Fires the strike. Shown only when a target is set. See [Launch](#launch). |
+| Perform Safety Check | Checks the strike and prints the result in chat. See [Perform Safety Check](#perform-safety-check). |
+| Choose Shell | Opens the shell menu. |
+| Close | Closes the menu. |
+
+**View Artillery Machines.** The list shows the connected pieces, six to a page. Each button shows the piece's name, its level and its block. Next page and Back page turn the pages, and Back returns to the main menu. A piece's button opens its machine dialog.
+
+**The machine dialog.** It has a Name box, of up to 32 characters, and five buttons:
+
+- **Turn ON or Turn OFF** switches the piece. A switched-off piece does not fire.
+- **Load** takes one shell and one charge, of the shell and tier the center has chosen, out of your inventory into the magazine. See [Loading and unloading](#loading-and-unloading).
+- **Unload** gives the magazine back to you.
+- **Info** shows the power the piece draws at full power, the shell and the tier it carries, its magazine, and its target and elevation.
+- **Back** returns to the list.
+
+The dialog also shows the magazine: how many shells and charges it holds, and the most of each a load brings. Pressing Turn ON, Turn OFF, Load, Unload or Back saves a new name.
+
+**Choose Shell.** The menu lists the nine shells, from the lowest level that fires them to the highest, and then the three charge tiers. A row is marked in amber when the connected pieces cannot fire it, with the reason. A shell needs a higher level than the highest connected piece. A tier is marked when no connected piece has that charge loaded. A marked row can still be chosen. The firing rules refuse the shot when it is fired.
+
+#### Set Target
+
+The map is how you choose the target.
+
+1. Press Set Target. You are given nothing: no item goes into your inventory.
+2. Close the menu and look at the wall above the center. The map is drawn on a wall of item frames, 5 by 5 by default, or 3 by 3 when `map-wall-size` is 3. The wall stands one block in front of the screen, above it, with its lowest row one block above the center, so it never reaches the ground. Every player near it sees the map while the mode is open.
+3. The map opens on the current target, or on your own position when no target is set. It starts at the closest zoom. The map shows 128 blocks across at zoom 1, one block to a pixel, however large the wall is.
+4. Click the buttons on the map. Look at a button and click. The buttons are:
+
+| Button | What it does |
+|---|---|
+| + and - | Zoom in and out. The zoom levels are 1, 2 and 4 blocks a pixel. |
+| N, S, E and W | Move the centre a quarter of the view. |
+| COORDS | Opens a dialog with X and Z boxes. Press Go to to move the centre. The boxes stay inside the world border. |
+| Green tick | Confirms. The centre becomes the aim, and the wall comes down at once. The target is kept on the center and its screen. |
+| X | Cancels. Nothing is stored. |
+
+5. The mode closes after 20 seconds with no click, and says that targeting timed out. Nothing is stored. Each click starts the 20 seconds again. The time is set by `listen-timeout-seconds`.
+6. The mode also closes when you quit, die, change world, or when the center's chunk unloads. Nothing is stored in these cases. The wall is up only while the mode is open, so it comes down when the target is confirmed, cancelled or timed out.
+
+**The terrain on the map.** The map shows the ground of every chunk it covers, not only the chunks near you. A chunk that has been explored before shows its ground even when no player is near it. A chunk nobody has explored yet shows as a dark tile with a light band sweeping across it. The server then generates that chunk, which can take a while, and the tile shows the real ground when it is ready. Only a few chunks are generated at a time, so a wide view of new land fills in over several seconds.
+
+The elevation of the center is 45 degrees by default. The Set Target mode keeps the elevation the center already has. No control in the game changes it.
+
+**The target area.** While a target is set, the chunks around the aim are kept loaded: the chunk the aim is in and the eight chunks next to it. The place you aimed at keeps loading when no player is near. The area is let go when you clear the target, when you set a new one, and when the center is removed. Right after you confirm a target, its chunks may still be loading. A launch then says that the target area is loading, and you should try again in a few seconds. If the server does not keep chunks loaded (`chunks.keep-loaded` is off), the area is not held, and the launch asks you to walk near the target.
+
+#### Perform Safety Check
+
+The check runs the firing rules on the first connected piece, with the center's shell, tier, target and elevation. It stops at the first missing thing: no shell, no target, no connected piece, or a piece or target that is not loaded. Otherwise it runs the rules in the order listed in [Safety rules](#safety-rules). The result is printed in chat and shown on the screen. The line `The strike is safe` means the first piece may fire the strike. The check does not look at magazines: a strike can read safe and still be refused at launch because a magazine is empty.
+
+#### Clear target
+
+Removes the target from the center. The screen's readout shows that no target is set. The pieces keep the target they last had. Launch needs a target on the center, so nothing fires until you set a new one.
+
+#### Launch
+
+Needs a shell, a target and at least one connected piece. For a nuclear shell, the strike is checked first, and it is refused as a whole when the check fails. Then each connected piece asks to fire the center's shell and tier at the target, from its magazine. A piece refuses when it is switched off, still reloading, not loaded, when its magazine is empty or holds other ammunition, or when a rule fails for it. The chat shows one line with the number of pieces that fired and the number refused. Each refused piece has a line of its own with its reason.
+
+A launch whose target area is not loaded is refused before any piece is tried, with one line: the area is loading and you should try again in a few seconds, or, when the area is not held, you should walk near the target. A piece in an unloaded chunk is refused with its coordinates, for example "The artillery piece at 12, 70, -40 is in an unloaded chunk; it loads again in a few seconds, or walk near it." The pieces and the Command Centers hold the chunks they stand in, so a piece's chunk normally loads again by itself, whatever other machines the server keeps loaded.
+
+The launch takes nothing from your inventory: the shells and charges come from the magazines, which you load beforehand (see [Loading and unloading](#loading-and-unloading)).
+
+### Safety rules
+
+A shot first needs its magazine: a shell and a charge of the kind the piece holds (see [Loading and unloading](#loading-and-unloading)). Then it must pass these rules. The first rule that fails refuses the shot, and the message says why. They run in this order.
+
+1. **Charge.** The tier loaded must be at least the tier the shell needs.
+2. **Level.** The piece must be at least the shell's lowest level.
+3. **Elevation.** The barrel must be between 5 and 85 degrees. The cluster enriched uranium shell needs at least 25 degrees, so its bombs fall from above.
+4. **Range.** The target must be within the range of the piece's level and tier.
+5. **Minimum distance.** The target must be at least 50 blocks from the piece for conventional shells, 200 for nuclear shells and 2000 for the antimatter shell.
+6. **Blast clearance.** The blast must not reach the piece or you. The aim point must be farther from each of them than the reach, plus 20 blocks, plus 3 sigma of the scatter at that range. For most shells the minimum distance is the stricter rule. For a cluster shot close in, this rule can refuse a shot the minimum distance allows.
+7. **Nuclear distance from players.** No player in the world may be inside the fallout zone of a nuclear shell (see [The nuclear shells](#the-shells)).
+8. **Antimatter cooldown.** You may fire one antimatter shell every 12 hours.
+9. **Power.** The piece must have its full power from its grid. A piece short of power does not fire.
+
+The piece must also be switched on, not reloading and not still firing a shell, and the chunk under the aim must be loaded. While the target is set, its area is held, so the chunk loads again by itself after a short wait.
+
+### Research and recipes
+
+The artillery nodes of the [research line](#the-research-line) are:
+
+| Node | Cost | Unlocks |
+|---|---|---|
+| Artillery | 8 chemical, 6 nuclear packs | The seven pieces and the Command Center. Needs Materials Purification. |
+| Tier I Charge | 4 chemical | The Tier I charge and the shell stock. |
+| Explosive Shells | 4 chemical | Explosive, high explosive and napalm shells. |
+| Tier II Charge | 6 chemical, 4 nuclear | The Tier II charge. |
+| White Phosphorus and Cluster Shells | 4 chemical, 4 nuclear | White phosphorus and cluster shells. |
+| Tier III Charge | 6 plasma, 6 nuclear | The Tier III charge. |
+| Enriched Uranium Shells | 10 nuclear, 4 plasma | The enriched uranium shell. |
+| Thermonuclear Shells | 10 plasma, 8 nuclear | The hydrogen and cluster enriched uranium shells. |
+| Condensed Antimatter Shell | 10 exotic, 10 plasma | The antimatter shell and its containment. Needs Thermonuclear Shells and Antimatter Physics. |
+
+The recipes of the pieces, the charges and the shells are in the [catalogue](#catalogue-recipes-and-achievements). The Command Center's recipe is above.
+
+### Not yet verified in game
+
+- The map's look: its colours, its centre mark and the strike area have not been checked in game.
+- Whether the item frames of the wall line up with the screen, and whether the view's ray picks the button you look at, have not been checked in game.
+- Whether every player sees the maps of the wall, including one who comes near it after it is drawn, has not been checked in game.
+- Whether the screen's text fits its frame at every text size has not been checked in game.
+- The look of the Command Center's menus and dialogs has not been checked in game.
 
 ## Crafting
 
@@ -3003,7 +3683,6 @@ Some items cannot be crafted. You get them from the world or from a machine. The
 | <img src="images/components/neutronium_slug.png" width="24" height="24" align="absmiddle"> Neutronium slug | Particle accelerator | 4-Dimensional Bomb |
 | <img src="images/components/antimatter_condensate.png" width="24" height="24" align="absmiddle"> Antimatter condensate | Antimatter condenser | Antimatter Bomb, 4-Dimensional Bomb |
 | <img src="images/components/research_pack_basic.png" width="24" height="24" align="absmiddle"> Basic pack, <img src="images/components/research_pack_chemical.png" width="24" height="24" align="absmiddle"> Chemical pack, <img src="images/components/research_pack_nuclear.png" width="24" height="24" align="absmiddle"> Nuclear pack, <img src="images/components/research_pack_plasma.png" width="24" height="24" align="absmiddle"> Plasma pack, <img src="images/components/research_pack_exotic.png" width="24" height="24" align="absmiddle"> Exotic pack | Spectrometer | Research console |
-| <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> Petroleum | A petroleum drill working a crude petroleum deposit | Fuel for the ore drills |
 
 **Two things to keep in mind:**
 
@@ -3036,7 +3715,7 @@ Read this part to learn how bombs are placed and lit, how fuses are linked, and 
 
 Two more rules apply to every bomb.
 
-- **The standard blast.** Most bombs share the same basic blast. It is a sphere. Blocks inside it are destroyed, except the very hard ones. Living things inside take damage, and the damage falls to nothing at the edge. Placed TNT caught in the blast is set off too, a moment later, so chains look right. Whatever the bomb, the machines and devices of the mod within its radius are destroyed too: lab tools, drills, pylons, generators, belts, pickers and splitters.
+- **The standard blast.** Most bombs share the same basic blast. It is a sphere. Blocks inside it are destroyed, except the very hard ones. Living things inside take damage, and the damage falls to nothing at the edge. Placed TNT caught in the blast is set off too, a moment later, so chains look right. Whatever the bomb, the machines and devices of the mod within its radius are destroyed too: lab tools, drills, pylons, generators, belts, pickers and splitters, water pumps, pipes and splitters, and vertical transport belts.
 - **Protected ground.** If the land is claimed by a land-protection plugin, blasts leave it alone. The same goes for blocks that are marked as unbreakable.
 
 ### Fuse links and chains
@@ -3228,7 +3907,7 @@ A nuclear weapon does not go off in silence.
   - "YOU ARE IN THE FIREBALL RADIUS - INSTANT DEATH"
   - "YOU ARE IN THE BLAST AREA - HIGH DAMAGE"
   - "YOU ARE IN THE RADIATION FALLOUT AREA; LEAVE IMMEDIATELY"
-- **The sky.** Within 3 R, your own view of the sky changes. The rain stops, and the clock holds at noon for five seconds. Then it slides back to the real time over 20 seconds. This is only on your screen, and other players are not affected. It lasts for the weapon's beam time, which is 30 seconds for most tiers and 60 seconds for the antimatter and the 4-dimensional bombs.
+- **The sky.** Within 3 R, your own view of the sky changes. The rain stops, and the clock holds at noon for five seconds. Thunder is not changed for you. Then it slides back to the real time over 20 seconds. This is only on your screen, and other players are not affected. It lasts for the weapon's beam time, which is 30 seconds for most tiers and 60 seconds for the antimatter and the 4-dimensional bombs.
 - **The blast fire.** The blast area burns for a time after the blast: 30 seconds for the nuclear tiers, 60 seconds for the antimatter and 4-dimensional bombs, and 10 seconds for the exotic neutron bomb.
 
 ### The mushroom cloud
@@ -3319,6 +3998,24 @@ Every nuclear TNT is unlocked when you place it. If you want to keep it safe, lo
 - Sneak-right-click a locked TNT and enter the PIN to change the PIN or remove the lock. A TNT that is unlocked but has a PIN can have its lock removed without asking for it.
 
 The lock is saved with the TNT, so it still works after a restart. The PIN is never written down, but a 4-digit PIN is short, so the lock only stops players from setting off a TNT by accident or on a whim. It does not stop someone with access to the server's files.
+
+## Friends
+
+Friends let the players you trust use the machines you placed, as you can. Add a friend with `/cf friends add <player>`, and remove one with `/cf friends remove <player>`. `/cf friends list` shows your list, and `/cf friends` does the same. The player must have joined this server before. You cannot add yourself. Only you manage your list: a friend cannot change it.
+
+A friend of yours may use these devices, for each device you placed:
+
+- **Turrets.** The menu, loading rounds, ejecting them, the rail gun's power, upgrades and breaking. A friend cannot change the targeting of your turret: its friendly-fire switch, its team mode and its stances stay yours. Your turret never fires at a friend, unless you set that player to target.
+- **Artillery.** The pieces' switches, loading and unloading, and breaking them. The Command Center's menus, its safety check, its launch and its breaking. A launch fires the pieces of the center's owner that are connected to it.
+- **Water pumps and the pipes.** The pump kits that move a pump up a level. Anyone may add fuel to a pump, and anyone may break one, as before.
+- **Vertical belts.** The UP and DOWN buttons of the belt's menu, which set the direction of the tower.
+- **Lab machines.** The lab modules that move a machine up a level.
+
+A friend does not get the owner's protection. A claim or a region that refuses a player still refuses a friend, and a friend's break fires the same block break event as anyone's, so the protection plugins decide it. When a friend breaks your device, the device's item drops at its block, as it does for you.
+
+The friend rule does not cover the PIN locks of nuclear TNT. Only the owner of a locked or unlocked nuclear TNT can set or change its PIN, and an admin can remove a lock.
+
+A friend does not change whose claim a device uses. A container that a belt or a picker feeds still follows the claim rules for the device's owner.
 
 ## Protection
 
@@ -3429,14 +4126,15 @@ Type `/cf gui` to open the catalogue. It is one menu with every TNT type, every 
 - **Tabs.** The top row has one tab for each category. The open tab is lit up. See [The tabs](#the-tabs).
 - **Pages.** Each tab shows 36 entries a page. The arrows at the bottom turn the pages.
 - **Research.** An entry that is still locked says which node it needs. An entry that you have unlocked says which node opened it.
-- **Left-click an entry** to get one copy, if the server lets you take items from the catalogue.
+- **Left-click an entry** to get one copy. Only administrators can take items from the catalogue. If you are not one, a left click says so, and the entry's lore reads "Left click is for administrators. Right click shows the recipe."
 - **Right-click an entry** to open its recipe. Ore blocks have no recipe, so right-clicking one only shows a message.
+- A click that does something plays a short sound, which only you hear.
 
 If the catalogue will not open for you, and you see a message to say so, use the recipe viewer, the guide book and the achievements instead. They work for everyone.
 
 ### The tabs
 
-The catalogue has seventeen categories, in this order. Each one is a tab of its own.
+The catalogue has eighteen categories, in this order. Each one is a tab of its own.
 
 | Tab | What it holds |
 |---|---|
@@ -3445,15 +4143,17 @@ The catalogue has seventeen categories, in this order. Each one is a tab of its 
 | Other TNT | The rest of the TNT types, grouped by what they do. |
 | Crafting parts | The components you craft, such as the fuse linker and the nuclear casing. |
 | Radiation gear | The four Radioactive Suit pieces and the Geiger counter. |
-| Science materials | The materials of the process chain, and petroleum. |
+| Science materials | The materials of the process chain. |
 | Research packs | The five research packs. |
-| Lab machines | The twenty process machines, including the research console, the crude oil refinery, the induction furnace, the powder mill and the other machines of the ammunition chain, and the Ore Density Scanner. |
+| Lab machines | The twenty process machines, including the research console, the crude oil refinery, the induction furnace, the powder mill and the other machines of the ammunition chain, and the Ore Density Scanner. It also holds Upgrade Modules II and III. |
 | Drills | The ten drills: petroleum drills I to V and ore drills I to V. |
-| Electricity | Pylons I to III, accumulators I to III and the energy wire. |
-| Generators | The wind, solar, charcoal, petroleum, diesel and nuclear generators, and the diesel and the nuclear fuel rod. |
-| Belts | Transport belts I to III. |
+| Oil system | The oil tube, the oil T splitter and the oil cross splitter. These carry fluid, not items. |
+| Electricity | Pylons I to V, accumulators I to V and the energy wire. |
+| Generators | The wind, solar, charcoal, petroleum, diesel and nuclear generators, and the nuclear fuel rod. |
+| Belts | Transport belts I to III, and the vertical transport belts I to III. |
 | Pickers | Pickers I to III. |
-| Splitters | Splitters I to III. |
+| Splitters | Splitters I to III. These carry items. |
+| Water | The water pump, and the Pump Upgrade kits II to V. The water pipe, and the water splitters T and X. These carry water, not items. |
 | Ammunition | The empty shell, the high-grade gunpowder, and the bullets and rounds of the four kinds. |
 | Defences | The machine gun turret and the laser turret, and the parts they are built from: the precision barrel, the steel frame, the turret mechanism, the ammunition feed, the targeting unit, the optical lens and the laser emitter. |
 | Ores | The twelve ore blocks: uraninite, pitchblende, monazite, thorite, galena, cinnabar, fluorite, the crude petroleum deposit, saltpeter, sulfur, zinc and coal. |
@@ -3469,6 +4169,8 @@ Type `/cf recipe` followed by the id of an item, for example:
 - `/cf recipe chain_reaction_tnt`
 
 Each item's id is written in its recipe section in this guide, in brackets after its name. Use the id exactly as it is written, with underscores.
+
+An item that a machine makes, such as the railgun turret, has no crafting recipe. Its view shows the inputs of the process, and the info button names the machine that makes it. The Tab key after `/cf recipe` lists these ids too. If you type an id that is not found, the game lists up to five close ids and says to press Tab to see every id.
 
 The recipe viewer shows a 3 by 3 grid. The ingredients sit in their places in the grid, and the result is on the right of an arrow.
 
@@ -3492,7 +4194,7 @@ The book is a short guide. This guide is longer, and it is the place to look for
 
 ### Achievements
 
-Type `/cf achievements` to open your achievements. The menu shows 45 achievements a page, and the arrows at the bottom turn the pages. This version has 364 achievements in all.
+Type `/cf achievements` to open your achievements. Hover over an achievement's title to read its description. The menu shows 45 achievements a page, and the arrows at the bottom turn the pages. This version has 364 achievements in all.
 
 - **Unlocked** achievements glow, and they show the date you earned them.
 - **Locked** achievements show your progress toward them, so you can see how far you have to go.
@@ -3745,16 +4447,17 @@ A tick is a twentieth of a second. So 20 ticks make one second, and 200 ticks ma
 Open the drill and read the status line in its info item. The status tells you what to fix:
 
 - **No power.** Put a redstone block next to a petroleum drill, or put charcoal in its fuel slot. A drill also runs on the grid: place it inside a pylon's square, with a generator wired to that pylon.
-- **No petroleum.** An ore drill needs petroleum in its fuel slot.
+- **No petroleum.** An ore drill needs petroleum in the oil network it touches. Connect it, with oil tubes, to a petroleum drill's network.
+- **Network full.** A petroleum drill's oil network has no room for its petroleum. Draw petroleum off the network with a generator or a refinery.
 - **Output full.** Take the products out, by hand or with a hopper.
 - **No deposit in range.** No deposit that this kind of drill can mine touches its square. Move the drill over a deposit. A petroleum drill looks only for crude petroleum deposits, from y -64 to y 0, and an ore drill for the other ores.
 - **Deposit exhausted.** The deposits in its square are all empty. Move the drill to a new spot.
 
-The hologram goes when a drill has no power or its outputs are full, so check the info item for those two. See [Drill status](#drill-status).
+The hologram goes when a drill has no power, or its outputs or its network are full, so check the info item for those. See [Drill status](#drill-status).
 
 **Where do I find petroleum?**
 
-In crude petroleum deposits. Their patch blocks lie from y -64 to y 0, in stone and deepslate. Place a petroleum drill over a deposit, and it draws out one petroleum for each unit. Digging a patch block by hand gives you one petroleum from the deposit, as a drill does, one unit at a time. See [Petroleum](#petroleum).
+In crude petroleum deposits. Their patch blocks lie from y -64 to y 0, in stone and deepslate. Place a petroleum drill over a deposit, and it pumps the petroleum into the oil network, in litres. Digging a patch block by hand gives nothing. See [Petroleum and diesel](#petroleum-and-diesel).
 
 **Why does my petroleum drill stop at night?**
 
@@ -3800,7 +4503,7 @@ The line shows only while the machine runs or has something it can start. Some s
 
 **Component.** A custom item that a bomb or machine needs as an ingredient. Components are made by crafting or by machines.
 
-**Crude petroleum deposit.** A deposit of crude oil. A petroleum drill draws petroleum from it, one unit at a time. Digging its patch block by hand gives one petroleum, from the deposit.
+**Crude petroleum deposit.** A deposit of crude oil. A petroleum drill pumps its petroleum into the oil network, in litres. Digging its patch block by hand gives nothing.
 
 **Crushed ore.** Raw ore after the crusher. It is a fine powder, and two crushed pieces come from each raw piece.
 
@@ -3808,9 +4511,11 @@ The line shows only while the machine runs or has something it can start. Some s
 
 **Deuterium.** Heavy hydrogen. A deuterium cell is made from water in the purification still.
 
+**Diesel.** A fluid made from petroleum by the crude oil refinery. It runs the diesel generator and the level II water pump.
+
 **Dose.** The total radiation you have taken. It is measured in sieverts. The dose builds in fallout, and it clears slowly outside.
 
-**Drill.** A machine that works a square of the world below it. Petroleum drills draw petroleum from crude petroleum deposits, and ore drills mine the other ores from their deposits.
+**Drill.** A machine that works a square of the world below it. Petroleum drills pump petroleum from crude petroleum deposits into the oil network, and ore drills mine the other ores from their deposits.
 
 **Enrichment.** Raising the share of U-235 in uranium. The enrichment cascade does it.
 
@@ -3821,6 +4526,8 @@ The line shows only while the machine runs or has something it can start. Some s
 **Fireball.** The inner zone of a nuclear blast, out to 0.3 R. Everything inside it is killed at once.
 
 **Fissile.** A material that can split in a chain reaction. U-235, U-233 and plutonium are fissile.
+
+**Fluid.** A liquid that flows in oil tubes. Fluids are measured in litres, and they are not items.
 
 **Flux cell.** A neutron flux cell. It gives off free neutrons, and the transmuter uses it.
 
@@ -3860,13 +4567,15 @@ The line shows only while the machine runs or has something it can start. Some s
 
 **Node.** A research step, on the line of 15 nodes. You finish a node by feeding it packs.
 
+**Oil tube.** A pipe that carries petroleum or diesel between drills, the refinery, generators and pumps. It holds fluid, not items.
+
 **Ore density scanner.** A held item that finds the deposits near you. Right-click it to scan, sneak and right-click to change its filter, and sneak and left-click to survey. It shows the nearest deposits in a map with `/cf deposits`.
 
 **Output slot.** A slot in a machine that holds its products. You can take items out, but not put them in.
 
 **Pack.** A research pack, made by the spectrometer. Packs are fed into the research console.
 
-**Petroleum.** Crude oil. It is the fuel of the ore drills.
+**Petroleum.** Crude oil, a fluid measured in litres. It runs the ore drills and the generators. See [Petroleum and diesel](#petroleum-and-diesel).
 
 **Picker.** A claw that moves one item from its input to its output. See [Pickers](#pickers).
 

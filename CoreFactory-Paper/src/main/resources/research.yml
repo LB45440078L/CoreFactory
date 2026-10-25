@@ -1,0 +1,250 @@
+# =====================================================================================================
+#  CoreFactory research
+#
+#  The research tree is one line. Each node requires the node before it, so there are no shortcuts.
+#  A node is finished by feeding its "cost" packs into a Research Console. Progress is kept in the database
+#  (SQLite or PostgreSQL, see config.yml), so every server that shares it sees the same research.
+#
+#  "unlocks" lists the machines, components and TNT types this node gates. A gated id cannot be crafted, placed
+#  or ignited until its node is finished. An id that no node lists is free.
+#
+#  cost: pack id -> count. Packs come from the spectrometer (see processes.yml).
+# =====================================================================================================
+
+nodes:
+
+  laboratory_basics:
+    name: "&bLaboratory Basics"
+    description: "Set up the first bench and learn to read a sample."
+    requires: []
+    cost: {}
+    unlocks: [research_console, spectrometer, crusher, ore_density_scanner]
+
+  radiation_safety:
+    name: "&eRadiation Safety"
+    description: "Shielding and detection. Nothing else is safe to do without it."
+    requires: [laboratory_basics]
+    cost: {research_pack_basic: 5}
+    unlocks: [hazmat_fabric, radioactive_helmet, radioactive_chestplate, radioactive_leggings, radioactive_boots, geiger_counter]
+
+  metallurgy:
+    name: "&6Metallurgy"
+    description: "Roast ore to free its metal and learn what the heat does."
+    requires: [radiation_safety]
+    cost: {research_pack_basic: 10}
+    unlocks: [roaster, solar_panel, energy_wire, pylon_1, wind_generator, induction_furnace, bullet_swaging_machine,
+              ammunition_assembly, bullet_regular, bullet_armor_piercing, bullet_incendiary, bullet_depleted_uranium,
+              round_regular, round_armor_piercing, round_incendiary, round_depleted_uranium]
+
+  chemical_separation:
+    name: "&aChemical Separation"
+    description: "Density and chemistry. Split product from waste."
+    requires: [metallurgy]
+    cost: {research_pack_basic: 12, research_pack_chemical: 4}
+    unlocks: [separator, purifier, petroleum_drill_1, petroleum_drill_2, pylon_2, accumulator_1, charcoal_generator, belt_1, picker_1]
+
+  fluorine_chemistry:
+    name: "&bFluorine Chemistry"
+    description: "Convert yellowcake into the gas that can be enriched."
+    requires: [chemical_separation]
+    cost: {research_pack_chemical: 10}
+    unlocks: [converter, ore_drill_1, accumulator_2, petroleum_generator, crude_oil_refinery, belt_2, picker_2, splitter_1,
+              powder_mill, cartridge_press, high_grade_gunpowder, empty_shell]
+
+  nuclear_fission:
+    name: "&eNuclear Fission"
+    description: "Enrich uranium, breed fissile isotopes, and build the first warheads."
+    requires: [fluorine_chemistry]
+    cost: {research_pack_chemical: 8, research_pack_nuclear: 8}
+    unlocks: [enrichment_cascade, transmuter, nuke_davy_crockett, nuke_little_boy, nuke_fat_man, nuke_joe_1, ore_drill_2, diesel_generator, belt_3, picker_3, splitter_2]
+
+  hydrogen_processes:
+    name: "&3Hydrogen Processes"
+    description: "Heavy water, tritium, and the fuel of a boosted fission."
+    requires: [nuclear_fission]
+    cost: {research_pack_nuclear: 12, research_pack_plasma: 4}
+    unlocks: [tritium_booster, nuke_ivy_king, petroleum_drill_3, petroleum_drill_4, nuclear_fuel_rod, splitter_3]
+
+  materials_purification:
+    name: "&fMaterials Purification"
+    description: "Zone refining and graphite purity. The neutron flux cell needs both."
+    requires: [hydrogen_processes]
+    cost: {research_pack_chemical: 12, research_pack_nuclear: 6}
+    unlocks: [neutron_flux_cell, ore_drill_3, petroleum_drill_5, metal_lathe, component_assembly, optical_lens, laser_emitter,
+              turret_upgrade_2, turret_upgrade_3, machine_upgrade_2, water_pump, water_pipe, water_pump_upgrade_2,
+              water_pump_upgrade_3, water_splitter_t, water_splitter_x, oil_pipe, oil_splitter_t, oil_splitter_x,
+              vertical_belt_1, vertical_belt_2]
+
+  plasma_physics:
+    name: "&bPlasma Physics"
+    description: "Confine a plasma long enough to fuse it."
+    requires: [materials_purification]
+    cost: {research_pack_plasma: 14}
+    unlocks: [nuke_ivy_mike, nuke_castle_bravo, ore_drill_4]
+
+  thermonuclear_engineering:
+    name: "&cThermonuclear Engineering"
+    description: "Staged fusion secondaries. Only the largest warheads need this."
+    requires: [plasma_physics]
+    cost: {research_pack_plasma: 18, research_pack_nuclear: 10}
+    unlocks: [thermonuclear_core, nuke_mk17, nuke_tsar_bomba, ore_drill_5]
+
+  isotope_transmutation:
+    name: "&dIsotope Transmutation"
+    description: "Breed plutonium and fissile isotopes in quantity, and build gravity bombs."
+    requires: [thermonuclear_engineering]
+    cost: {research_pack_nuclear: 16, research_pack_plasma: 8}
+    unlocks: [plutonium_pit, nuke_b83, nuclear_generator]
+
+  particle_physics:
+    name: "&9Particle Physics"
+    description: "Accelerate charged particles to the energies where new matter appears."
+    requires: [isotope_transmutation]
+    cost: {research_pack_plasma: 16, research_pack_chemical: 12}
+    unlocks: [particle_accelerator, superconducting_magnet, pylon_3, accumulator_3]
+
+  antimatter_physics:
+    name: "&5Antimatter Physics"
+    description: "Trap antiprotons until they condense. A few atoms of it are very valuable."
+    requires: [particle_physics]
+    cost: {research_pack_exotic: 6, research_pack_plasma: 10}
+    unlocks: [antimatter_condenser, exotic_antimatter_bomb]
+
+  exotic_matter:
+    name: "&fExotic Matter"
+    description: "Neutron-rich matter, and the weapons that use it."
+    requires: [antimatter_physics]
+    cost: {research_pack_exotic: 10}
+    unlocks: [exotic_neutron_bomb]
+
+  tesseract_geometry:
+    name: "&dTesseract Geometry"
+    description: "Fold a lattice into a fourth direction. The last thing that is ever researched."
+    requires: [exotic_matter]
+    cost: {research_pack_exotic: 16, research_pack_plasma: 10}
+    unlocks: [tesseract_lattice, four_dimensional_tnt, heavy_weapons_assembly, machine_gun_turret, laser_turret,
+              turret_upgrade_4, turret_upgrade_5, machine_upgrade_3, water_pump_upgrade_4, water_pump_upgrade_5,
+              vertical_belt_3]
+
+  # The belt duplexes are free: each is finished as soon as its requirement is, so they unlock with the belt tiers they follow.
+  duplex_belts_1_2:
+    name: "&bBelt Duplexes I and II"
+    description: "Split one belt into two, out of both cells of a block two wide."
+    requires: [materials_purification]
+    cost: {}
+    unlocks: [belt_duplex_1, belt_duplex_2]
+
+  duplex_belts_3:
+    name: "&eBelt Duplex III"
+    description: "The fastest duplex: twenty-two and a half items a second, out of two cells."
+    requires: [tesseract_geometry]
+    cost: {}
+    unlocks: [belt_duplex_3]
+
+  # The artillery line. Each charge tier comes before the shells that need it, and the last node is the antimatter shell.
+  artillery:
+    name: "&7Artillery"
+    description: "Pieces that fire shells at a point on the ground, and the command center that aims them."
+    requires: [materials_purification]
+    cost: {research_pack_chemical: 8, research_pack_nuclear: 6}
+    unlocks: [artillery_1, artillery_2, artillery_3, artillery_4, artillery_5, artillery_6, artillery_7, command_center]
+
+  charge_tier_1:
+    name: "&7Tier I Charge"
+    description: "The first propellant charge, and the bulk stock that every shell is built from."
+    requires: [artillery]
+    cost: {research_pack_chemical: 4}
+    unlocks: [tier1_explosive_charge, shell_casing_stock, shell_powder_stock]
+
+  explosive_shells:
+    name: "&6Explosive Shells"
+    description: "Explosive, high explosive and napalm shells, fired with a Tier I charge."
+    requires: [charge_tier_1]
+    cost: {research_pack_chemical: 4}
+    unlocks: [explosive_shell, high_explosive_shell, napalm_shell]
+
+  charge_tier_2:
+    name: "&eTier II Charge"
+    description: "A bigger propellant load, with longer range and a slower reload."
+    requires: [explosive_shells]
+    cost: {research_pack_chemical: 6, research_pack_nuclear: 4}
+    unlocks: [tier2_explosive_charge]
+
+  phosphorus_cluster_shells:
+    name: "&fWhite Phosphorus and Cluster Shells"
+    description: "Smoke that poisons a whole area, and shells that scatter submunitions. Both need the Tier II charge."
+    requires: [charge_tier_2]
+    cost: {research_pack_chemical: 4, research_pack_nuclear: 4}
+    unlocks: [white_phosphorus_shell, cluster_shell]
+
+  charge_tier_3:
+    name: "&cTier III Charge"
+    description: "The charge the heaviest shells need: enriched uranium drives it."
+    requires: [phosphorus_cluster_shells]
+    cost: {research_pack_plasma: 6, research_pack_nuclear: 6}
+    unlocks: [tier3_explosive_charge]
+
+  enriched_uranium_shells:
+    name: "&aEnriched Uranium Shell"
+    description: "A Little Boy class warhead, fired from a piece as a shell."
+    requires: [charge_tier_3]
+    cost: {research_pack_nuclear: 10, research_pack_plasma: 4}
+    unlocks: [enriched_uranium_shell]
+
+  thermonuclear_shells:
+    name: "&cThermonuclear Shells"
+    description: "The hydrogen warhead and the cluster of uranium bombs, both fired from the far end of the range."
+    requires: [enriched_uranium_shells]
+    cost: {research_pack_plasma: 10, research_pack_nuclear: 8}
+    unlocks: [hydrogen_thermonuclear_shell, cluster_enriched_uranium_shell]
+
+  antimatter_shell:
+    name: "&5Condensed Antimatter Shell"
+    description: "The last shell of the line. It is fired from far away, and once per cooldown per player."
+    requires: [thermonuclear_shells, antimatter_physics]
+    cost: {research_pack_exotic: 10, research_pack_plasma: 10}
+    unlocks: [antimatter_containment, condensed_antimatter_shell]
+
+  # The last two tiers of the grid and their accumulators. The fourth-tier pylon needs the tesseract, the fifth needs the containment.
+  pylon_iv:
+    name: "&cPylon IV"
+    description: "A tower for a whole district: a 51 by 51 square, and nearly a megawatt down the line."
+    requires: [particle_physics, tesseract_geometry]
+    cost: {research_pack_exotic: 12, research_pack_plasma: 12}
+    unlocks: [pylon_4]
+
+  accumulator_iv:
+    name: "&bAccumulator IV"
+    description: "A reserve that holds a city block's worth of power, and gives it back at a high rate."
+    requires: [particle_physics]
+    cost: {research_pack_plasma: 10, research_pack_chemical: 8}
+    unlocks: [accumulator_4]
+
+  pylon_v:
+    name: "&4Pylon V"
+    description: "The widest tower: an 81 by 81 square and 2.3 MW. Its build needs the containment of the antimatter shell."
+    requires: [pylon_iv, antimatter_shell]
+    cost: {research_pack_exotic: 14, research_pack_plasma: 14, research_pack_nuclear: 10}
+    unlocks: [pylon_5]
+
+  accumulator_v:
+    name: "&dAccumulator V"
+    description: "The largest reserve a grid can hold, 1.28 MWh, that charges and discharges at up to 800 kW."
+    requires: [accumulator_iv, antimatter_shell]
+    cost: {research_pack_exotic: 12, research_pack_plasma: 12, research_pack_nuclear: 10}
+    unlocks: [accumulator_5]
+
+  # The railgun line, the last turret: its coils and barrel first, then the turret that they make.
+  railgun_coils:
+    name: "&9Rail Coils"
+    description: "Superconducting windings that accelerate a slug along a rail, and the barrel that guides it."
+    requires: [tesseract_geometry]
+    cost: {research_pack_plasma: 14, research_pack_exotic: 8}
+    unlocks: [rail_coil, rail_barrel]
+
+  railgun_turret:
+    name: "&cRailgun Turret"
+    description: "A turret that charges for a long time, then hits armoured targets and heavy bosses with massive damage."
+    requires: [railgun_coils]
+    cost: {research_pack_exotic: 12, research_pack_plasma: 12, research_pack_nuclear: 8}
+    unlocks: [railgun_turret]

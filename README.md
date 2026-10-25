@@ -2,13 +2,13 @@
 
 **Research. Refine. Rule.**
 
-New TNT for Spigot: 42 TNT types with their own mechanics, 24 crafting components that make the strong ones
+New TNT for Paper: 42 TNT types with their own mechanics, 24 crafting components that make the strong ones
 hard to build, a configurable recipe for every item, a generated resource pack with a unique texture for each one,
 and optional respect for WorldGuard regions and GriefPrevention claims.
 
-- **Targets:** Spigot-API 26.1 (default), 26.2, 26.3 and 1.21.11. One source tree, one Maven profile per target.
-- **Runtime:** Java 25. Required: **PacketEvents**, and **WorldEdit or FastAsyncWorldEdit** (either one).
-- **Optional:** WorldGuard, GriefPrevention. Used only when installed.
+- **Platform:** Paper or Purpur, Paper API 26.3 (the default Maven profile). Folia is not supported. The other `api-*` profiles still exist but are not supported.
+- **Runtime:** Java 25. Required: **WorldEdit or FastAsyncWorldEdit** (either one).
+- **Optional:** WorldGuard, GriefPrevention, ResourcePackManager. Used only when installed.
 - **Build:** Maven 3.9+, JDK 25.
 
 > The repository is named CoreFactory; the plugin, its jar and its commands are `CoreFactory` and `/cf`.
@@ -20,17 +20,24 @@ and [docs/COMMANDS_AND_PERMISSIONS.md](docs/COMMANDS_AND_PERMISSIONS.md).
 
 - **Science chain:** seven ores, and five ores that the roasting kiln roasts (uraninite, pitchblende, galena, cinnabar and, for
   zinc, sphalerite). The chain separates, converts, enriches and transmutes them to U-233 and plutonium, in twenty machines. Each lab tool keeps its items in a barrel that hoppers can feed and empty.
-- **Progress holograms:** a three-line hologram over each running lab tool (process, bar, time left), and a five-line one over each running drill (name, power, rate or status, the deposit it works on, storage and fuel). Set by `holograms` in `config.yml`.
+- **Progress holograms:** a three-line hologram over each running lab tool (process, bar, time left), and a five-line one over each running drill (name, power, rate or status, the deposit it works on, storage and fuel). Each hologram is one text display, with a faint green background while its device works and a faint red one while it is stuck. Set by `holograms` in `config.yml`.
+- **Device screens:** each generator, drill and lab machine has a small black screen on its front face, with four lines of status.
 - **Ore Density Scanner:** a held item that crafts after Laboratory Basics. Right-click it to find the nearest deposits and their richness, sneak and right-click to filter by ore, sneak and left-click to survey them, and `/cf deposits` for a map with waypoints.
-- **Drills:** petroleum drills (five levels) pump petroleum from crude deposits, on the strongest of a solar panel, redstone or charcoal.
-  Ore drills (five levels) mine ore deposits, and run on petroleum. Every machine and drill keeps its items in a barrel, which is
-  hidden from nearby players (`concealment` in `config.yml`).
+- **Oil and fluids:** petroleum and diesel are fluids, measured in litres and carried by oil tubes. A network holds one fluid at a
+  time, and the refinery turns petroleum into diesel. Generators, pumps and ore drills draw what they burn from the network.
+  Petroleum and diesel are not items.
+- **Drills:** petroleum drills (five levels) pump petroleum from crude deposits into the oil network, on the strongest of a solar panel,
+  redstone or charcoal. Ore drills (five levels) mine ore deposits, and draw petroleum from the network as fuel. Every machine and drill
+  keeps its items in a barrel, which is hidden from nearby players (`concealment` in `config.yml`).
 - **Solar panel:** a generator placed on air. Panels placed before the electrical system are daylight detectors that still power a petroleum drill next to them.
 - **Electricity and belts:** pylons carry power to the machines in their range, wires join pylons and generators into grids, grids have
   outlines and charts, and accumulators store power. Belts, pickers and splitters move items between machines. See the [player guide](docs/PLAYER_GUIDE.md#electricity).
+- **Water:** a water pump on air or water (five levels, burning fuel or drawing power; levels IV and V stand two blocks tall) draws from the water its pipes reach, so a pipe in a lake or beside one is its source. Pipes bend up or down as well as sideways, splitters can stand vertically, and the water goes to lab machines and nuclear generators, which can use it in place of a water bucket. See [docs/MECHANICS.md](docs/MECHANICS.md#water).
+- **Vertical belts:** towers of vertical transport belts (three levels) carry items up or down, with the direction set from the belt's menu. See [docs/MECHANICS.md](docs/MECHANICS.md#vertical-transport-belts).
+- **Lab machine levels:** every lab machine has three levels. An upgrade module takes a machine up one level, and the higher levels work faster. See [the player guide](docs/PLAYER_GUIDE.md#lab-machine-levels).
 - **Protection and claims:** belts, pickers and splitters respect the chests in WorldGuard regions and GriefPrevention claims, so a device delivers, and a picker takes, only where its placer may use the container. Only an owner can change a turret. See [Claims and integrations](docs/MECHANICS.md#claims-and-integrations).
-- **Ore blocks:** each special ore is a placeable block, and its deposits are patches of one ore in the stone, with a remaining amount, dug by hand for one raw item each, and drilled by ore and petroleum drills. Silk touch keeps a placed ore block item when it is mined.
-- **Catalogue:** `/cf gui` browses everything in seventeen categories, each its own tab. Right-click an entry for its recipe; in the recipe view,
+- **Ore blocks:** each special ore is a placeable block, and its deposits are patches of one ore in the stone, with a remaining amount, dug by hand for one raw item each, and drilled by ore drills. Silk touch keeps a placed ore block item when it is mined.
+- **Catalogue:** `/cf gui` browses everything in eighteen categories, each its own tab. Right-click an entry for its recipe; in the recipe view,
   click an ingredient that has a recipe of its own to open it.
 - **Research:** a line of fifteen nodes, finished at a Research Console. Admins can finish it with `/cf research`.
 - **Particle effects:** sprite effects for blasts, machines, research and ore breaks (`effects` in `config.yml`).
@@ -50,7 +57,7 @@ and [docs/COMMANDS_AND_PERMISSIONS.md](docs/COMMANDS_AND_PERMISSIONS.md).
 | Exotic matter series | 2 | <img src="docs/images/tnt/exotic_neutron_bomb.png" width="24" height="24" align="absmiddle"> Exotic neutron bomb, a 5 kt blast whose radiation reaches far beyond it; <img src="docs/images/tnt/exotic_antimatter_bomb.png" width="24" height="24" align="absmiddle"> antimatter bomb, 180 megatons |
 | Nuclear | 10 | <img src="docs/images/tnt/nuke_davy_crockett.png" width="24" height="24" align="absmiddle"> Davy Crockett to <img src="docs/images/tnt/nuke_tsar_bomba.png" width="24" height="24" align="absmiddle"> Tsar Bomba: countdowns, a saucer crater from surface bursts or a deep hemisphere from thermonuclear ones, flattened ground, debris, and a beacon array in the sky |
 
-Every type is a row in [`tnts.yml`](CoreFactory-Spigot/src/main/resources/tnts.yml): its mechanic, radius, fuse,
+Every type is a row in [`tnts.yml`](CoreFactory-Paper/src/main/resources/tnts.yml): its mechanic, radius, fuse,
 settings and recipe can be changed without touching code. The full list is in
 [docs/MECHANICS.md](docs/MECHANICS.md). Textures are painted by code, see [docs/TEXTURES.md](docs/TEXTURES.md).
 
@@ -64,10 +71,10 @@ settings and recipe can be changed without touching code. The full list is in
 
 The nuclear tiers draw a 5 × 5 array of beacons, three blocks apart, around the blast. Each beacon sits on a small iron
 platform, because a client draws a beam only from a beacon with a pyramid. The beacons, platforms and light blocks are
-sent to each player within 3 × the radius with PacketEvents and are never written to the world, so the server's
-terrain does not change. Each beacon draws its own beam up to the sky. Those players also see the rain stop, and their
-clock hold at noon for 5 seconds and slide back to the real time over 20 more. When their view is restored, the real
-blocks, weather and clock are sent back. See [docs/MECHANICS.md](docs/MECHANICS.md#nuclear) for the details.
+sent to each player within 3 × the radius with the Paper per-player block change call and are never written to the world, so the
+server's terrain does not change. Each beacon draws its own beam up to the sky. Those players also see the rain stop, and their
+clock hold at noon for 5 seconds and slide back to the real time over 20 more. Thunder is not changed for them, because the
+Paper per-player API has no per-player thunder. When their view is restored, the real blocks, weather and clock are sent back. See [docs/MECHANICS.md](docs/MECHANICS.md#nuclear) for the details.
 
 ### Claims and integrations
 
@@ -83,23 +90,20 @@ be switched off under `integrations:` in `config.yml`.
 ## Quick start
 
 ```bash
-# Build for the default target (Spigot-API 26.1). Produces the plugin jar and the resource pack zip.
+# Build for the default target (Paper API 26.3). Produces the plugin jar and the resource pack zip.
 mvn clean package
-
-# Other targets
-mvn clean package -Papi-26.2
-mvn clean package -Papi-26.3
-mvn clean package -Papi-1.21.11
 ```
+
+The other `api-*` profiles (`-Papi-26.1`, `-Papi-26.2`, `-Papi-1.21.11`) still exist but are not supported.
 
 Outputs:
 
-- `CoreFactory-Spigot/target/CoreFactory-Spigot-1.0.0.jar`: the plugin, with the resource pack inside. Put it in `plugins/`.
+- `CoreFactory-Paper/target/CoreFactory-Paper-1.0.0.jar`: the plugin, with the resource pack inside. Put it in `plugins/`.
   On start it copies the pack to `plugins/CoreFactory/pack/pack.zip`, where ResourcePackManager (RPMS) reads it.
 - `CoreFactory-ResourcePack/target/CoreFactory-ResourcePack.zip`: the textures, also inside the plugin jar. Host it and set
   `resource-pack` in `server.properties` (see [docs/RESOURCE_PACK.md](docs/RESOURCE_PACK.md)).
 
-Install `PacketEvents` and `WorldEdit` (or `FastAsyncWorldEdit`) alongside it, start the server, and run
+Install `WorldEdit` (or `FastAsyncWorldEdit`) alongside it, start the server, and run
 `/cf gui` to see the catalogue. Then `/cf give chain_reaction_tnt` to get one. WorldGuard and GriefPrevention
 are optional; install them and the blasts will respect their protection automatically.
 
@@ -107,10 +111,9 @@ are optional; install them and the blasts will respect their protection automati
 
 | Area | State |
 |---|---|
-| Compilation, all four targets | Passes |
-| Unit tests | 16 passed in the 1.0.0 run. The tree has 195 test classes now; they have not been run since the labs, drills and storage were added |
-| Enable on Paper 26.1.2, 26.2, 26.3 and 1.21.11, with WorldEdit and PacketEvents | Passed in the 1.0.0 run; every server registered 58 recipes |
-| GriefPrevention integration, enable on Paper 1.21.11 | Attaches; no warnings |
+| Compilation and unit tests on Paper 26.3 | Unverified: not built since the move to the Paper-only build |
+| Enable on Paper 26.3 with WorldEdit | Unverified in game |
+| GriefPrevention integration | Attached on Paper 1.21.11 in an earlier run, before the Paper-only build; not re-run |
 | WorldGuard integration | Compiles against the WorldGuard 7.0.20 API; not run on a server yet |
 | Gameplay in a client (placing, lighting, blasts, beacon beams, resource pack) | A headless client (mineflayer) on Paper 26.1 has placed, lit and detonated TNT, and read back the nuclear clock, rain and beacon blocks. No graphical client has been used yet. |
 
@@ -129,7 +132,7 @@ The full account, including known limitations, is in [docs/COMPATIBILITY.md](doc
 | [docs/ACHIEVEMENTS.md](docs/ACHIEVEMENTS.md) | Every achievement, what counts toward it, and where progress is stored |
 | [docs/RESOURCE_PACK.md](docs/RESOURCE_PACK.md) | Textures, hosting the pack, pack format, changing the look |
 | [docs/TEXTURES.md](docs/TEXTURES.md) | Texture specification, tools and processes for every TNT and component, and a table of all of them |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Modules, the Api/Core/Spigot split, ignition and detonation, the block pipeline |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Modules, the Api/Core/Paper split, ignition and detonation, the block pipeline |
 | [docs/API.md](docs/API.md) | Writing your own mechanic or addon against the Api module |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Building, profiles, tests, the module layout, contributing |
 | [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) | Supported versions, what was verified, known limitations |
@@ -140,9 +143,9 @@ The full account, including known limitations, is in [docs/COMPATIBILITY.md](doc
 | Module | Role |
 |---|---|
 | `CoreFactory-Api` | Public contracts: `Mechanic`, `TntDefinition`, `CoreFactoryApi`, the events. No implementation. |
-| `CoreFactory-Core` | Every mechanic, the item and recipe builders, the placed-TNT registry, the block pipeline, config parsing. Depends on Spigot-API only. |
+| `CoreFactory-Core` | Every mechanic, the item and recipe builders, the placed-TNT registry, the block pipeline, the oil and fluid rules, config parsing. Depends on the Paper API only. |
 | `CoreFactory-Storage` | Research storage: a HikariCP pool, schema migrations, SQLite or PostgreSQL. Downloads the JDBC driver it needs. No Bukkit types. |
-| `CoreFactory-Spigot` | The plugin jar. Wires the core to WorldEdit (block writes), PacketEvents (client effects), WorldGuard and GriefPrevention (claims), listeners, `/cf`, the catalogue GUI. Shades Api and Core. |
+| `CoreFactory-Paper` | The plugin jar (`paper-plugin.yml`). Wires the core to WorldEdit (block writes), the Paper per-player API (client effects), WorldGuard and GriefPrevention (claims), listeners, the `/cf` Brigadier tree, the catalogue GUI. Shades Api, Core, Storage and HikariCP. |
 | `CoreFactory-ResourcePack` | Build-time tool. Draws the textures and writes the resource pack zip from `tnts.yml` and `items.yml`. |
 
 ## Credits

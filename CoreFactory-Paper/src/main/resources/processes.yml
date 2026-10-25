@@ -1,0 +1,897 @@
+# data-version: 10
+# =====================================================================================================
+#  CoreFactory processes and machines
+#
+#  A machine takes items in its input slots and, after its process's ticks, puts the products in its output
+#  slots. A process names its machine, its time, its inputs and its outputs.
+#
+#  Item references:
+#    item:<id>        a component from materials.yml or items.yml, e.g. item:yellowcake
+#    material:<NAME>  a vanilla item, e.g. material:WATER_BUCKET
+#  Inputs are "<reference>:<amount>". Outputs are {item: <reference>, amount: N, chance: 0..1}, chance defaults to 1.
+#  A process runs only when every input is present in full and the outputs fit in the output slots.
+#
+#  Machines with fuel: "fuel: true" means the machine burns one coal or charcoal per pass.
+#  The research console is a machine with no processes: it has its own UI, and its six input slots take research packs.
+#  The packs are made by the spectrometer, and the nodes they finish are described in research.yml.
+# =====================================================================================================
+
+machines:
+
+  crusher:
+    name: "&7Crusher"
+    host: BARREL
+    slots: {input: 1, output: 3, fuel: 0}
+
+  roaster:
+    name: "&6Roasting Kiln"
+    host: BARREL
+    slots: {input: 2, output: 3, fuel: 1}
+
+  separator:
+    name: "&bCentrifugal Separator"
+    host: BARREL
+    slots: {input: 2, output: 3, fuel: 0}
+
+  purifier:
+    name: "&3Purification Still"
+    host: BARREL
+    slots: {input: 2, output: 2, fuel: 0}
+
+  converter:
+    name: "&bFluorination Converter"
+    host: BARREL
+    slots: {input: 2, output: 1, fuel: 1}
+
+  enrichment_cascade:
+    name: "&aEnrichment Cascade"
+    host: BARREL
+    slots: {input: 8, output: 4, fuel: 0}
+
+  transmuter:
+    name: "&dNeutron Transmuter"
+    host: BARREL
+    slots: {input: 2, output: 3, fuel: 0}
+
+  spectrometer:
+    name: "&aSpectrometer"
+    host: BARREL
+    slots: {input: 2, output: 2, fuel: 0}
+
+  particle_accelerator:
+    name: "&9Particle Accelerator"
+    host: BARREL
+    slots: {input: 2, output: 2, fuel: 0}
+
+  antimatter_condenser:
+    name: "&5Antimatter Condenser"
+    host: BARREL
+    slots: {input: 2, output: 1, fuel: 0}
+
+  research_console:
+    name: "&bResearch Console"
+    host: BARREL
+    slots: {input: 6, output: 0, fuel: 0}
+
+  crude_oil_refinery:
+    name: "&8Crude Oil Refinery"
+    host: BARREL
+    slots: {input: 0, output: 0, fuel: 0}
+
+  # power: the watts the machine draws while it runs. It is a contract for the machine code; a machine with none
+  # takes the lab default from config.yml (energy.consumers.lab-demand).
+
+  induction_furnace:
+    name: "&6Induction Furnace"
+    host: BARREL
+    slots: {input: 2, output: 1, fuel: 0}
+    power: 12000
+
+  powder_mill:
+    name: "&8Powder Mill"
+    host: BARREL
+    slots: {input: 3, output: 1, fuel: 0}
+    power: 20000
+
+  cartridge_press:
+    name: "&7Cartridge Press"
+    host: BARREL
+    slots: {input: 2, output: 1, fuel: 0}
+    power: 80000
+
+  bullet_swaging_machine:
+    name: "&7Bullet Swaging Machine"
+    host: BARREL
+    slots: {input: 2, output: 1, fuel: 0}
+    power: 15000
+
+  ammunition_assembly:
+    name: "&7Ammunition Assembly"
+    host: BARREL
+    slots: {input: 3, output: 1, fuel: 0}
+    power: 12000
+
+  metal_lathe:
+    name: "&7Precision Machining Station"
+    host: BARREL
+    slots: {input: 2, output: 1, fuel: 0}
+    power: 25000
+
+  component_assembly:
+    name: "&7Mechanical Component Assembly Machine"
+    host: BARREL
+    slots: {input: 4, output: 1, fuel: 0}
+    power: 40000
+
+  heavy_weapons_assembly:
+    name: "&4Heavy Weapons Assembly"
+    host: BARREL
+    slots: {input: 6, output: 1, fuel: 0}
+    power: 250000
+
+processes:
+
+  # ----------------------------------------------------------------- Crushing
+
+  crush_uraninite:
+    machine: crusher
+    ticks: 100
+    inputs: ["item:raw_uraninite:1"]
+    outputs:
+      - {item: item:crushed_uraninite, amount: 2}
+
+  crush_pitchblende:
+    machine: crusher
+    ticks: 100
+    inputs: ["item:raw_pitchblende:1"]
+    outputs:
+      - {item: item:crushed_pitchblende, amount: 2}
+
+  crush_monazite:
+    machine: crusher
+    ticks: 100
+    inputs: ["item:raw_monazite:1"]
+    outputs:
+      - {item: item:crushed_monazite, amount: 2}
+
+  crush_thorite:
+    machine: crusher
+    ticks: 100
+    inputs: ["item:raw_thorite:1"]
+    outputs:
+      - {item: item:crushed_thorite, amount: 2}
+
+  crush_galena:
+    machine: crusher
+    ticks: 100
+    inputs: ["item:raw_galena:1"]
+    outputs:
+      - {item: item:crushed_galena, amount: 2}
+
+  crush_cinnabar:
+    machine: crusher
+    ticks: 100
+    inputs: ["item:raw_cinnabar:1"]
+    outputs:
+      - {item: item:crushed_cinnabar, amount: 2}
+
+  crush_fluorite:
+    machine: crusher
+    ticks: 100
+    inputs: ["item:raw_fluorite:1"]
+    outputs:
+      - {item: item:crushed_fluorite, amount: 2}
+
+  crush_saltpeter:
+    machine: crusher
+    ticks: 100
+    inputs: ["item:raw_saltpeter:1"]
+    outputs:
+      - {item: item:crude_saltpeter, amount: 2}
+
+  crush_sulfur:
+    machine: crusher
+    ticks: 100
+    inputs: ["item:raw_sulfur:1"]
+    outputs:
+      - {item: item:sulfur, amount: 2}
+
+  crush_sphalerite:
+    machine: crusher
+    ticks: 120
+    inputs: ["item:raw_sphalerite:1"]
+    outputs:
+      - {item: item:zinc_ore_dust, amount: 2}
+
+  # ----------------------------------------------------------------- Roasting (smelting, fuel burns)
+
+  roast_uraninite:
+    machine: roaster
+    ticks: 200
+    fuel: true
+    inputs: ["item:crushed_uraninite:2"]
+    outputs:
+      - {item: item:uranium_calcine, amount: 1}
+      - {item: item:slag, amount: 1, chance: 0.4}
+
+  roast_pitchblende:
+    machine: roaster
+    ticks: 200
+    fuel: true
+    inputs: ["item:crushed_pitchblende:2"]
+    outputs:
+      - {item: item:uranium_calcine, amount: 1}
+      - {item: item:slag, amount: 1, chance: 0.5}
+
+  roast_galena:
+    machine: roaster
+    ticks: 240
+    fuel: true
+    inputs: ["item:crushed_galena:2"]
+    outputs:
+      - {item: item:refined_lead, amount: 1}
+      - {item: item:slag, amount: 1, chance: 0.6}
+
+  roast_cinnabar:
+    machine: roaster
+    ticks: 200
+    fuel: true
+    inputs: ["item:crushed_cinnabar:2"]
+    outputs:
+      - {item: item:mercury_flask, amount: 1}
+      - {item: item:slag, amount: 1, chance: 0.3}
+
+  roast_sphalerite:
+    machine: roaster
+    ticks: 240
+    fuel: true
+    inputs: ["item:zinc_ore_dust:2"]
+    outputs:
+      - {item: item:zinc_ingot, amount: 1}
+      - {item: item:slag, amount: 1, chance: 0.3}
+
+  # ----------------------------------------------------------------- Separation (density and chemistry)
+
+  separate_uranium:
+    machine: separator
+    ticks: 240
+    inputs: ["item:uranium_calcine:2"]
+    outputs:
+      - {item: item:yellowcake, amount: 1}
+      - {item: item:tailings, amount: 1}
+
+  separate_monazite:
+    machine: separator
+    ticks: 200
+    inputs: ["item:crushed_monazite:2"]
+    outputs:
+      - {item: item:rare_earth_concentrate, amount: 1}
+      - {item: item:phosphate_tailings, amount: 1}
+
+  separate_thorite:
+    machine: separator
+    ticks: 200
+    inputs: ["item:crushed_thorite:2"]
+    outputs:
+      - {item: item:thorium_concentrate, amount: 1}
+      - {item: item:silicate_tailings, amount: 1}
+
+  # ----------------------------------------------------------------- Purification
+
+  electrolyse_heavy_water:
+    machine: purifier
+    ticks: 400
+    # Water buckets do not stack, so two of them fill the two input slots.
+    inputs: ["material:WATER_BUCKET:2"]
+    outputs:
+      - {item: item:deuterium_cell, amount: 1}
+      - {item: material:BUCKET, amount: 2}
+
+  zone_refine_iron:
+    machine: purifier
+    ticks: 300
+    inputs: ["material:IRON_INGOT:4"]
+    outputs:
+      - {item: item:purified_iron, amount: 1}
+
+  zone_refine_graphite:
+    machine: purifier
+    ticks: 240
+    inputs: ["material:COAL_BLOCK:2"]
+    outputs:
+      - {item: item:high_purity_graphite, amount: 1}
+
+  # Recrystallisation: a water bucket and the crude salt. Each pass takes a bucket and gives an empty one back.
+
+  recrystallise_saltpeter:
+    machine: purifier
+    ticks: 300
+    inputs: ["material:WATER_BUCKET:1", "item:crude_saltpeter:2"]
+    outputs:
+      - {item: item:potassium_nitrate, amount: 1}
+      - {item: material:BUCKET, amount: 1}
+
+  recrystallise_potassium_nitrate:
+    machine: purifier
+    ticks: 400
+    inputs: ["material:WATER_BUCKET:1", "item:potassium_nitrate:2"]
+    outputs:
+      - {item: item:high_purity_potassium_nitrate, amount: 1}
+      - {item: material:BUCKET, amount: 1}
+
+  # ----------------------------------------------------------------- Conversion
+
+  fluorinate_yellowcake:
+    machine: converter
+    ticks: 300
+    fuel: true
+    inputs: ["item:yellowcake:1", "item:crushed_fluorite:2"]
+    outputs:
+      - {item: item:uf6_cylinder, amount: 1}
+
+  # ----------------------------------------------------------------- Enrichment
+
+  enrich_uranium:
+    machine: enrichment_cascade
+    ticks: 1200
+    inputs: ["item:uf6_cylinder:8"]
+    outputs:
+      - {item: item:enriched_uranium, amount: 1}
+      - {item: item:depleted_uranium, amount: 2}
+
+  # ----------------------------------------------------------------- Transmutation (neutron flux)
+
+  transmute_thorium:
+    machine: transmuter
+    ticks: 1200
+    inputs: ["item:thorium_concentrate:2", "item:neutron_flux_cell:1"]
+    outputs:
+      - {item: item:u233_oxide, amount: 1}
+      - {item: item:fission_waste, amount: 1}
+
+  transmute_monazite:
+    machine: transmuter
+    ticks: 1400
+    inputs: ["item:rare_earth_concentrate:2", "item:neutron_flux_cell:1"]
+    outputs:
+      - {item: item:u233_oxide, amount: 1, chance: 0.5}
+      - {item: item:fission_waste, amount: 1}
+
+  transmute_plutonium:
+    machine: transmuter
+    ticks: 1600
+    inputs: ["item:yellowcake:2", "item:neutron_flux_cell:1"]
+    outputs:
+      - {item: item:plutonium_oxide, amount: 1}
+      - {item: item:fission_waste, amount: 1}
+
+  # ----------------------------------------------------------------- Analysis (research packs)
+
+  analyse_galena:
+    machine: spectrometer
+    ticks: 200
+    inputs: ["item:crushed_galena:1"]
+    outputs:
+      - {item: item:research_pack_basic, amount: 1}
+
+  analyse_cinnabar:
+    machine: spectrometer
+    ticks: 200
+    inputs: ["item:crushed_cinnabar:1"]
+    outputs:
+      - {item: item:research_pack_basic, amount: 1}
+
+  analyse_chemical:
+    machine: spectrometer
+    ticks: 400
+    inputs: ["item:purified_iron:1", "item:mercury_flask:1"]
+    outputs:
+      - {item: item:research_pack_chemical, amount: 2}
+
+  analyse_nuclear:
+    machine: spectrometer
+    ticks: 400
+    inputs: ["item:yellowcake:1"]
+    outputs:
+      - {item: item:research_pack_nuclear, amount: 1}
+
+  analyse_plasma:
+    machine: spectrometer
+    ticks: 600
+    inputs: ["item:deuterium_cell:1", "item:tritium_booster:1"]
+    outputs:
+      - {item: item:research_pack_plasma, amount: 2}
+
+  analyse_exotic:
+    machine: spectrometer
+    ticks: 800
+    inputs: ["item:antiproton_capsule:1"]
+    outputs:
+      - {item: item:research_pack_exotic, amount: 2}
+
+  # ----------------------------------------------------------------- Particle physics
+
+  accelerate_antiprotons:
+    machine: particle_accelerator
+    ticks: 1200
+    # A deuterium cell and a magnet fill the two input slots. The magnet is consumed in each pass.
+    inputs: ["item:deuterium_cell:1", "item:superconducting_magnet:1"]
+    outputs:
+      - {item: item:antiproton_capsule, amount: 2}
+
+  accelerate_neutronium:
+    machine: particle_accelerator
+    ticks: 1600
+    inputs: ["item:neutron_flux_cell:2", "item:superconducting_magnet:1"]
+    outputs:
+      - {item: item:neutronium_slug, amount: 1}
+
+  condense_antimatter:
+    machine: antimatter_condenser
+    ticks: 2400
+    inputs: ["item:antiproton_capsule:2", "item:neutron_flux_cell:1"]
+    outputs:
+      - {item: item:antimatter_condensate, amount: 1}
+
+  # ----------------------------------------------------------------- Refining
+
+  # The crude oil refinery takes petroleum from the oil network and pushes diesel back into it. Petroleum and diesel
+  # are fluids now, so this conversion is done in the code and has no process here.
+
+  # ----------------------------------------------------------------- Induction (alloys)
+  #
+  # The induction furnace reads its recipes from this section like every other machine: add a process with
+  # "machine: induction_furnace", its inputs (at most as many distinct items as its input slots) and its outputs.
+
+  induction_brass:
+    machine: induction_furnace
+    ticks: 400
+    inputs: ["material:COPPER_INGOT:2", "item:zinc_ingot:1"]
+    outputs:
+      - {item: item:brass_ingot, amount: 3}
+
+  # ----------------------------------------------------------------- Gunpowder and cartridges
+
+  mill_gunpowder:
+    machine: powder_mill
+    ticks: 300
+    inputs: ["material:CHARCOAL:1", "item:sulfur:1", "item:high_purity_potassium_nitrate:1"]
+    outputs:
+      - {item: item:high_grade_gunpowder, amount: 3}
+
+  press_empty_shell:
+    machine: cartridge_press
+    ticks: 300
+    inputs: ["item:brass_ingot:2"]
+    outputs:
+      - {item: item:empty_shell, amount: 4}
+
+  # ----------------------------------------------------------------- Bullets (swaged cores)
+
+  swage_bullet_regular:
+    machine: bullet_swaging_machine
+    ticks: 100
+    inputs: ["item:refined_lead:1"]
+    outputs:
+      - {item: item:bullet_regular, amount: 2}
+
+  swage_bullet_armor_piercing:
+    machine: bullet_swaging_machine
+    ticks: 160
+    inputs: ["item:refined_lead:1", "material:IRON_INGOT:1"]
+    outputs:
+      - {item: item:bullet_armor_piercing, amount: 2}
+
+  swage_bullet_incendiary:
+    machine: bullet_swaging_machine
+    ticks: 160
+    inputs: ["item:refined_lead:1", "material:BLAZE_POWDER:1"]
+    outputs:
+      - {item: item:bullet_incendiary, amount: 2}
+
+  swage_bullet_depleted_uranium:
+    machine: bullet_swaging_machine
+    ticks: 200
+    inputs: ["item:depleted_uranium:1", "item:refined_lead:1"]
+    outputs:
+      - {item: item:bullet_depleted_uranium, amount: 2}
+
+  # ----------------------------------------------------------------- Rounds (shell, bullet and powder)
+
+  assemble_round_regular:
+    machine: ammunition_assembly
+    ticks: 100
+    inputs: ["item:empty_shell:1", "item:bullet_regular:1", "item:high_grade_gunpowder:1"]
+    outputs:
+      - {item: item:round_regular, amount: 1}
+
+  assemble_round_armor_piercing:
+    machine: ammunition_assembly
+    ticks: 120
+    inputs: ["item:empty_shell:1", "item:bullet_armor_piercing:1", "item:high_grade_gunpowder:1"]
+    outputs:
+      - {item: item:round_armor_piercing, amount: 1}
+
+  assemble_round_incendiary:
+    machine: ammunition_assembly
+    ticks: 120
+    inputs: ["item:empty_shell:1", "item:bullet_incendiary:1", "item:high_grade_gunpowder:1"]
+    outputs:
+      - {item: item:round_incendiary, amount: 1}
+
+  assemble_round_depleted_uranium:
+    machine: ammunition_assembly
+    ticks: 140
+    inputs: ["item:empty_shell:1", "item:bullet_depleted_uranium:1", "item:high_grade_gunpowder:1"]
+    outputs:
+      - {item: item:round_depleted_uranium, amount: 1}
+
+  # ----------------------------------------------------------------- Turret parts
+
+  # The precision barrel uses the zone-refined iron from zone_refine_iron as its steel-grade input.
+  turn_precision_barrel:
+    machine: metal_lathe
+    ticks: 400
+    inputs: ["material:IRON_INGOT:4", "item:purified_iron:1"]
+    outputs:
+      - {item: item:precision_barrel, amount: 1}
+
+  # The optical lens is ground from amethyst and zone-refined graphite on the same station.
+  turn_optical_lens:
+    machine: metal_lathe
+    ticks: 300
+    inputs: ["material:AMETHYST_SHARD:1", "item:high_purity_graphite:1"]
+    outputs:
+      - {item: item:optical_lens, amount: 2}
+
+  assemble_steel_frame:
+    machine: component_assembly
+    ticks: 300
+    inputs: ["material:IRON_INGOT:6", "item:iron_plate:2"]
+    outputs:
+      - {item: item:steel_frame, amount: 1}
+
+  assemble_turret_mechanism:
+    machine: component_assembly
+    ticks: 300
+    inputs: ["item:iron_gear:3", "item:iron_plate:1"]
+    outputs:
+      - {item: item:turret_mechanism, amount: 1}
+
+  assemble_ammunition_feed:
+    machine: component_assembly
+    ticks: 300
+    inputs: ["item:iron_gear:2", "item:brass_ingot:2"]
+    outputs:
+      - {item: item:ammunition_feed, amount: 1}
+
+  assemble_targeting_unit:
+    machine: component_assembly
+    ticks: 500
+    inputs: ["item:circuit_board:2", "item:pulse_capacitor:1", "item:iron_plate:1"]
+    outputs:
+      - {item: item:targeting_unit, amount: 1}
+
+  # The laser emitter is built from two circuit boards, a graphite crystal and a brass ingot.
+  assemble_laser_emitter:
+    machine: component_assembly
+    ticks: 400
+    inputs: ["item:circuit_board:2", "material:GLOWSTONE_DUST:1", "item:brass_ingot:1"]
+    outputs:
+      - {item: item:laser_emitter, amount: 1}
+
+  # ----------------------------------------------------------------- Turret upgrade kits (levels 2 and 3)
+
+  # Each kit steps a turret of either kind up one level; the id names the level it makes. Never hand-made.
+  assemble_turret_upgrade_2:
+    machine: component_assembly
+    ticks: 600
+    inputs: ["item:circuit_board:2", "item:iron_gear:2", "item:precision_barrel:1", "item:brass_ingot:1"]
+    outputs:
+      - {item: item:turret_upgrade_2, amount: 1}
+
+  assemble_turret_upgrade_3:
+    machine: component_assembly
+    ticks: 900
+    inputs: ["item:steel_frame:1", "item:turret_mechanism:1", "item:ammunition_feed:1", "item:optical_lens:1"]
+    outputs:
+      - {item: item:turret_upgrade_3, amount: 1}
+
+  # ----------------------------------------------------------------- Heavy weapons (endgame)
+
+  assemble_machine_gun_turret:
+    machine: heavy_weapons_assembly
+    ticks: 1200
+    inputs: ["item:steel_frame:1", "item:brass_ingot:8", "item:precision_barrel:1", "item:targeting_unit:1",
+             "item:turret_mechanism:1", "item:ammunition_feed:1"]
+    outputs:
+      - {item: item:machine_gun_turret, amount: 1}
+
+  # The laser turret takes no precision barrel and no ammunition feed: four optical lenses and two laser emitters
+  # replace them. It has five distinct inputs, which fits the six input slots.
+  assemble_laser_turret:
+    machine: heavy_weapons_assembly
+    ticks: 1400
+    inputs: ["item:steel_frame:1", "item:targeting_unit:1", "item:turret_mechanism:1", "item:optical_lens:4",
+             "item:laser_emitter:2"]
+    outputs:
+      - {item: item:laser_turret, amount: 1}
+
+  # Upgrade kits for levels 4 and 5. Each names six or fewer distinct inputs, the heavy assembly's six slots.
+  assemble_turret_upgrade_4:
+    machine: heavy_weapons_assembly
+    ticks: 1200
+    inputs: ["item:targeting_unit:1", "item:precision_barrel:2", "item:turret_mechanism:1", "item:steel_frame:1",
+             "item:optical_lens:2"]
+    outputs:
+      - {item: item:turret_upgrade_4, amount: 1}
+
+  # The last kit takes one of each late part. Six distinct parts fill the six slots, so the high-purity potassium
+  # nitrate is not an input here.
+  assemble_turret_upgrade_5:
+    machine: heavy_weapons_assembly
+    ticks: 1800
+    inputs: ["item:targeting_unit:1", "item:turret_mechanism:1", "item:ammunition_feed:1", "item:precision_barrel:1",
+             "item:optical_lens:2", "item:laser_emitter:2"]
+    outputs:
+      - {item: item:turret_upgrade_5, amount: 1}
+
+  # ----------------------------------------------------------------- Railgun turret (endgame)
+
+  # The rail barrel is turned from two precision barrels and two graphite liners on the machining station.
+  turn_rail_barrel:
+    machine: metal_lathe
+    ticks: 800
+    inputs: ["item:precision_barrel:2", "item:high_purity_graphite:2"]
+    outputs:
+      - {item: item:rail_barrel, amount: 1}
+
+  # The rail coil is wound on the heavy weapons assembly, the process machine with the largest draw (250 kW). Two magnets, two
+  # pulse capacitors, an antiproton capsule and eight copper ingots make two coils.
+  assemble_rail_coil:
+    machine: heavy_weapons_assembly
+    ticks: 1200
+    inputs: ["item:superconducting_magnet:2", "item:pulse_capacitor:2", "item:antiproton_capsule:1", "material:COPPER_INGOT:8"]
+    outputs:
+      - {item: item:rail_coil, amount: 2}
+
+  # The turret takes six distinct parts, which fill the six slots of the heavy assembly: two rail barrels, four rail coils, two
+  # enriched uranium, a tesseract lattice, a targeting unit and a turret mechanism.
+  assemble_railgun_turret:
+    machine: heavy_weapons_assembly
+    ticks: 2400
+    inputs: ["item:rail_barrel:2", "item:rail_coil:4", "item:enriched_uranium:2", "item:tesseract_lattice:1",
+             "item:targeting_unit:1", "item:turret_mechanism:1"]
+    outputs:
+      - {item: item:railgun_turret, amount: 1}
+
+  # ----------------------------------------------------------------- Pylons and accumulators IV and V (endgame)
+
+  # The grid pieces of the last two tiers. Each is made only here, on the heavy weapons assembly, and never by hand: a pylon IV
+  # takes a pylon III and a tesseract lattice, a pylon V takes a pylon IV and a containment. Each names five distinct inputs.
+  assemble_pylon_4:
+    machine: heavy_weapons_assembly
+    ticks: 2400
+    inputs: ["item:pylon_3:1", "item:tesseract_lattice:1", "item:superconducting_magnet:4", "item:antiproton_capsule:2",
+             "item:enriched_uranium:2"]
+    outputs:
+      - {item: item:pylon_4, amount: 1}
+
+  assemble_pylon_5:
+    machine: heavy_weapons_assembly
+    ticks: 4800
+    inputs: ["item:pylon_4:1", "item:tesseract_lattice:2", "item:antimatter_containment:1", "item:antiproton_capsule:4",
+             "item:superconducting_magnet:8"]
+    outputs:
+      - {item: item:pylon_5, amount: 1}
+
+  assemble_accumulator_4:
+    machine: heavy_weapons_assembly
+    ticks: 2000
+    inputs: ["item:accumulator_3:1", "item:pulse_capacitor:4", "item:superconducting_magnet:2", "item:tesseract_lattice:1"]
+    outputs:
+      - {item: item:accumulator_4, amount: 1}
+
+  assemble_accumulator_5:
+    machine: heavy_weapons_assembly
+    ticks: 4000
+    inputs: ["item:accumulator_4:1", "item:pulse_capacitor:8", "item:antiproton_capsule:2", "item:enriched_uranium:4",
+             "item:tesseract_lattice:1"]
+    outputs:
+      - {item: item:accumulator_5, amount: 1}
+
+  # ----------------------------------------------------------------- Lab machine upgrade modules (levels 2 and 3)
+
+  # Each module takes a lab machine up one level; the id names the level it makes. Never hand-made.
+  assemble_machine_upgrade_2:
+    machine: component_assembly
+    ticks: 600
+    inputs: ["item:circuit_board:2", "item:iron_gear:2", "item:brass_ingot:1", "item:precision_barrel:1"]
+    outputs:
+      - {item: item:machine_upgrade_2, amount: 1}
+
+  assemble_machine_upgrade_3:
+    machine: heavy_weapons_assembly
+    ticks: 1200
+    inputs: ["item:targeting_unit:1", "item:optical_lens:2", "item:laser_emitter:1", "item:brass_ingot:2"]
+    outputs:
+      - {item: item:machine_upgrade_3, amount: 1}
+
+  # ----------------------------------------------------------------- Water system and vertical belts (processed)
+
+  # The pump and its kits, the pipes and splitters, and the vertical belts. The last pump kits and the third belt
+  # take the late parts. Each entry names six or fewer distinct inputs for its assembly machine.
+  assemble_water_pump:
+    machine: component_assembly
+    ticks: 500
+    inputs: ["item:steel_frame:1", "item:circuit_board:2", "item:iron_gear:2", "item:brass_ingot:1"]
+    outputs:
+      - {item: item:water_pump, amount: 1}
+
+  assemble_water_pump_upgrade_2:
+    machine: component_assembly
+    ticks: 600
+    inputs: ["item:circuit_board:2", "item:iron_gear:2", "item:brass_ingot:2"]
+    outputs:
+      - {item: item:water_pump_upgrade_2, amount: 1}
+
+  assemble_water_pump_upgrade_3:
+    machine: component_assembly
+    ticks: 900
+    inputs: ["item:steel_frame:1", "item:iron_gear:3", "item:circuit_board:2", "item:precision_barrel:1"]
+    outputs:
+      - {item: item:water_pump_upgrade_3, amount: 1}
+
+  assemble_water_pump_upgrade_4:
+    machine: heavy_weapons_assembly
+    ticks: 1200
+    inputs: ["item:targeting_unit:1", "item:optical_lens:2", "item:precision_barrel:1", "item:steel_frame:1"]
+    outputs:
+      - {item: item:water_pump_upgrade_4, amount: 1}
+
+  assemble_water_pump_upgrade_5:
+    machine: heavy_weapons_assembly
+    ticks: 1800
+    inputs: ["item:targeting_unit:1", "item:laser_emitter:2", "item:optical_lens:2", "item:superconducting_magnet:1"]
+    outputs:
+      - {item: item:water_pump_upgrade_5, amount: 1}
+
+  # The pipe is made two at a time: a copper ingot, two iron plates and a circuit board.
+  assemble_water_pipe:
+    machine: component_assembly
+    ticks: 200
+    inputs: ["item:iron_plate:2", "material:COPPER_INGOT:1", "item:circuit_board:1"]
+    outputs:
+      - {item: item:water_pipe, amount: 2}
+
+  assemble_water_splitter_t:
+    machine: component_assembly
+    ticks: 300
+    inputs: ["item:water_pipe:2", "item:iron_plate:1"]
+    outputs:
+      - {item: item:water_splitter_t, amount: 1}
+
+  assemble_water_splitter_x:
+    machine: component_assembly
+    ticks: 400
+    inputs: ["item:water_pipe:3", "item:iron_plate:1"]
+    outputs:
+      - {item: item:water_splitter_x, amount: 1}
+
+  # The oil tube is made two at a time: two iron plates, graphite, and a circuit board. The splitters take tubes and iron plates.
+  assemble_oil_pipe:
+    machine: component_assembly
+    ticks: 200
+    inputs: ["item:iron_plate:2", "item:high_purity_graphite:1", "item:circuit_board:1"]
+    outputs:
+      - {item: item:oil_pipe, amount: 2}
+
+  assemble_oil_splitter_t:
+    machine: component_assembly
+    ticks: 300
+    inputs: ["item:oil_pipe:2", "item:iron_plate:1"]
+    outputs:
+      - {item: item:oil_splitter_t, amount: 1}
+
+  assemble_oil_splitter_x:
+    machine: component_assembly
+    ticks: 400
+    inputs: ["item:oil_pipe:4", "item:iron_plate:2"]
+    outputs:
+      - {item: item:oil_splitter_x, amount: 1}
+
+  assemble_vertical_belt_1:
+    machine: component_assembly
+    ticks: 300
+    inputs: ["item:iron_gear:2", "item:iron_plate:2", "item:circuit_board:1"]
+    outputs:
+      - {item: item:vertical_belt_1, amount: 1}
+
+  assemble_vertical_belt_2:
+    machine: component_assembly
+    ticks: 400
+    inputs: ["item:vertical_belt_1:1", "item:brass_ingot:1"]
+    outputs:
+      - {item: item:vertical_belt_2, amount: 1}
+
+  assemble_vertical_belt_3:
+    machine: component_assembly
+    ticks: 600
+    inputs: ["item:vertical_belt_2:1", "item:optical_lens:1", "item:circuit_board:2"]
+    outputs:
+      - {item: item:vertical_belt_3, amount: 1}
+
+  # The belt duplexes: level II takes the first, level III takes the second.
+  assemble_belt_duplex_1:
+    machine: component_assembly
+    ticks: 300
+    inputs: ["item:iron_gear:2", "item:iron_plate:2", "item:circuit_board:1"]
+    outputs:
+      - {item: item:belt_duplex_1, amount: 1}
+
+  assemble_belt_duplex_2:
+    machine: component_assembly
+    ticks: 400
+    inputs: ["item:belt_duplex_1:1", "item:brass_ingot:1"]
+    outputs:
+      - {item: item:belt_duplex_2, amount: 1}
+
+  assemble_belt_duplex_3:
+    machine: component_assembly
+    ticks: 600
+    inputs: ["item:belt_duplex_2:1", "item:optical_lens:1", "item:circuit_board:2"]
+    outputs:
+      - {item: item:belt_duplex_3, amount: 1}
+
+# =====================================================================================================
+#  Drills
+#
+#  A drill is a placeable component (materials.yml) that works a square below it, in the world. Its level,
+#  area, depth and cycle length are in the code (DrillTable), so this section names only the kind and level
+#  of each drill. The name and the block it stands on come from materials.yml.
+#
+#    kind     petroleum (pumps deposits into the oil network as litres, fuel: charcoal or solar) or ore (mines special ores, fuel: petroleum from the oil network)
+#    level    1 to 5
+# =====================================================================================================
+
+drills:
+
+  petroleum_drill_1:
+    kind: petroleum
+    level: 1
+
+  petroleum_drill_2:
+    kind: petroleum
+    level: 2
+
+  petroleum_drill_3:
+    kind: petroleum
+    level: 3
+
+  petroleum_drill_4:
+    kind: petroleum
+    level: 4
+
+  petroleum_drill_5:
+    kind: petroleum
+    level: 5
+
+  ore_drill_1:
+    kind: ore
+    level: 1
+
+  ore_drill_2:
+    kind: ore
+    level: 2
+
+  ore_drill_3:
+    kind: ore
+    level: 3
+
+  ore_drill_4:
+    kind: ore
+    level: 4
+
+  ore_drill_5:
+    kind: ore
+    level: 5

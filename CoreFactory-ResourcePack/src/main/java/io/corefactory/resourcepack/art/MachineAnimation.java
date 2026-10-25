@@ -6,9 +6,10 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * The animated faces of the machines. A machine listed here has one face that is a vertical strip of {@link #FRAMES}
- * square frames, {@link #FRAME} pixels wide, and the resource pack builder writes an animation of the clip's frame time
- * beside it, as it does for the belt tops. The other faces of the machine stay static.
+ * The animated faces of the machines. A machine listed here has one face that is a vertical strip of square frames,
+ * {@link #FRAME} pixels wide, and the resource pack builder writes an animation of the clip's frame time beside it, as it
+ * does for the belt tops. A clip has {@link #FRAMES} frames unless it gives its own count. The other faces of the machine
+ * stay static.
  *
  * <p>Each frame is painted on a canvas over the same casing as the static face, and then halved, so an animated face has
  * half the resolution of the static ones. Frame {@code k} is the animation's state at {@code k / FRAMES} of its cycle, so
@@ -30,24 +31,34 @@ public final class MachineAnimation {
      * @param id        the machine id, such as {@code pylon_1}
      * @param face      the side that is animated
      * @param frametime the ticks each frame is shown, from 1 to 4
+     * @param frames    the number of frames in the strip, from 4 to 8
      */
-    public record Clip(String id, MachineArt.Face face, int frametime) {
+    public record Clip(String id, MachineArt.Face face, int frametime, int frames) {
+
+        /** A clip of the standard {@link MachineAnimation#FRAMES} frames. */
+        public Clip(String id, MachineArt.Face face, int frametime) {
+            this(id, face, frametime, FRAMES);
+        }
     }
 
     /**
      * Every animated face: the beacons and the charge meters, which are painted here, and the generators, drills, lab
-     * tools, turrets, pumps and vertical belts, which their own classes list and paint.
+     * tools, turrets, pumps, vertical belts, artillery pieces and the command center, which their own classes list and paint.
      */
     public static final List<Clip> ALL = Stream.of(
                     List.of(
                             new Clip("pylon_1", MachineArt.Face.UP, 3),
                             new Clip("pylon_2", MachineArt.Face.UP, 3),
                             new Clip("pylon_3", MachineArt.Face.UP, 3),
+                            new Clip("pylon_4", MachineArt.Face.UP, 3),
+                            new Clip("pylon_5", MachineArt.Face.UP, 3),
                             new Clip("accumulator_1", MachineArt.Face.NORTH, 3),
                             new Clip("accumulator_2", MachineArt.Face.NORTH, 3),
-                            new Clip("accumulator_3", MachineArt.Face.NORTH, 3)),
+                            new Clip("accumulator_3", MachineArt.Face.NORTH, 3),
+                            new Clip("accumulator_4", MachineArt.Face.NORTH, 3),
+                            new Clip("accumulator_5", MachineArt.Face.NORTH, 3)),
                     GeneratorArt.CLIPS, DrillArt.CLIPS, BigLabArt.CLIPS, TurretArt.CLIPS, TurretLevelArt.CLIPS,
-                    WaterArt.CLIPS, VerticalBeltArt.CLIPS)
+                    WaterVariants.CLIPS, VerticalBeltArt.CLIPS, DuplexArt.CLIPS, ArtilleryArt.CLIPS, RailgunArt.CLIPS)
             .flatMap(List::stream).toList();
 
     private MachineAnimation() {
@@ -64,12 +75,13 @@ public final class MachineAnimation {
     }
 
     /**
-     * An animated face: {@link #FRAMES} frames of {@link #FRAME} pixels, stacked top to bottom, so the image is
-     * {@code FRAME} wide and {@code FRAME * FRAMES} tall.
+     * An animated face: the clip's frames of {@link #FRAME} pixels, stacked top to bottom, so the image is {@code FRAME} wide
+     * and {@code FRAME * frames} tall.
      */
     public static BufferedImage strip(MachineArt.Spec spec, MachineArt.Face face) {
-        BufferedImage strip = new BufferedImage(FRAME, FRAME * FRAMES, BufferedImage.TYPE_INT_ARGB);
-        for (int frame = 0; frame < FRAMES; frame++) {
+        int frames = clip(spec.id()).map(Clip::frames).orElse(FRAMES);
+        BufferedImage strip = new BufferedImage(FRAME, FRAME * frames, BufferedImage.TYPE_INT_ARGB);
+        for (int frame = 0; frame < frames; frame++) {
             Canvas canvas = new Canvas();
             MachineArt.paintCasing(canvas, spec, face);
             paintFrame(canvas, spec, frame);
@@ -83,9 +95,9 @@ public final class MachineAnimation {
         int base = Color.hex(spec.base());
         int accent = Color.hex(spec.accent());
         switch (spec.id()) {
-            case "pylon_1", "pylon_2", "pylon_3" -> beacon(c, accent, frame);
-            case "accumulator_1", "accumulator_2", "accumulator_3" ->
-                    meter(c, base, accent, spec.id().charAt(spec.id().length() - 1) - '0', frame);
+            case "pylon_1", "pylon_2", "pylon_3", "pylon_4", "pylon_5" -> beacon(c, accent, frame, level(spec.id()));
+            case "accumulator_1", "accumulator_2", "accumulator_3", "accumulator_4", "accumulator_5" ->
+                    meter(c, base, accent, level(spec.id()), frame);
             default -> {
                 if (GeneratorArt.owns(spec.id())) {
                     GeneratorArt.paintFrame(c, spec, frame);
@@ -95,10 +107,16 @@ public final class MachineAnimation {
                     TurretArt.paintFrame(c, spec, frame);
                 } else if (TurretLevelArt.owns(spec.id())) {
                     TurretLevelArt.paintFrame(c, spec, frame);
-                } else if (WaterArt.owns(spec.id())) {
+                } else if (WaterVariants.owns(spec.id())) {
                     WaterArt.paintFrame(c, spec, frame);
                 } else if (VerticalBeltArt.owns(spec.id())) {
                     VerticalBeltArt.paintFrame(c, spec, frame);
+                } else if (DuplexArt.owns(spec.id())) {
+                    DuplexArt.paintFrame(c, spec, frame);
+                } else if (ArtilleryArt.owns(spec.id())) {
+                    ArtilleryArt.paintFrame(c, spec, frame);
+                } else if (RailgunArt.owns(spec.id())) {
+                    RailgunArt.paintFrame(c, spec, frame);
                 } else {
                     BigLabArt.paintFrame(c, spec, frame);
                 }
@@ -130,31 +148,49 @@ public final class MachineAnimation {
         return pixels;
     }
 
+    /** The level of a pylon or accumulator, from the last digit of its id. */
+    private static int level(String id) {
+        return id.charAt(id.length() - 1) - '0';
+    }
+
     /** The pulse of a cycle: 0 at frame 0, 1 at the middle frame, and back to 0, so the strip loops. */
     static double pulse(int frame) {
         return 0.5 - 0.5 * Math.cos(2 * Math.PI * frame / FRAMES);
     }
 
-    /** A lamp in a ring, with a halo that brightens and dims: the ring is brighter at the middle of the cycle. */
-    private static void beacon(Canvas c, int accent, int frame) {
+    /**
+     * A lamp in a ring, with a halo that brightens and dims: the ring is brighter at the middle of the cycle. The fourth
+     * level adds a ring outside the halo, and the fifth adds a thin ring at the edge of the top, which brightens with the
+     * pulse.
+     */
+    private static void beacon(Canvas c, int accent, int frame, int level) {
         double p = pulse(frame);
         c.paint(Area.ring(16, 16, 10, 3), Color.withAlpha(accent, 0.5 * p));
         c.paint(Area.ring(16, 16, 7, 2.4), Color.mix(Color.scale(accent, 0.6), Color.mix(accent, Color.WHITE, 0.6), p));
         c.paint(Area.disc(16, 16, 3.5), Color.mix(accent, Color.WHITE, 0.4 + 0.4 * p));
+        if (level >= 4) {
+            c.paint(Area.ring(16, 16, 13, 2), Color.withAlpha(accent, 0.5 * p));
+        }
+        if (level == 5) {
+            c.paint(Area.ring(16, 16, 15.5, 1), Color.mix(accent, Color.WHITE, 0.5 * p));
+        }
     }
 
     /**
-     * The charge meter of an accumulator: a fill that rises from the bottom of the meter and falls back over the cycle, and
-     * the level's bars, the first {@code level} of them lit.
+     * The charge meter of an accumulator: a fill that rises from the bottom of the meter and falls back over the cycle,
+     * and the level's bars, the first {@code level} of them lit. The fourth and fifth levels have five bars, and the
+     * fifth's fill is brighter, lifted towards white by the pulse.
      */
     private static void meter(Canvas c, int base, int accent, int level, int frame) {
         c.paint(Area.rect(0, 14, Canvas.SIZE, 17), accent);
         c.paint(Area.rect(9, 6, 23, 26), Color.hex("#0E1A14"));
         double top = 26 - 20 * pulse(frame);
-        c.paint(Area.rect(11, top, 21, 26), Color.withAlpha(accent, 0.6));
-        for (int k = 0; k < 3; k++) {
-            double y = 21 - 5 * k;
-            c.paint(Area.rect(11, y, 21, y + 3), k < level ? GOLD : Color.scale(base, 0.4));
+        int fill = level == 5 ? Color.mix(accent, Color.WHITE, 0.3 + 0.4 * pulse(frame)) : Color.withAlpha(accent, 0.6);
+        c.paint(Area.rect(11, top, 21, 26), fill);
+        int bars = level >= 4 ? 5 : 3;
+        for (int k = 0; k < bars; k++) {
+            double y = level >= 4 ? 22 - 4 * k : 21 - 5 * k;
+            c.paint(Area.rect(11, y, 21, y + (level >= 4 ? 1 : 3)), k < level ? GOLD : Color.scale(base, 0.4));
         }
     }
 

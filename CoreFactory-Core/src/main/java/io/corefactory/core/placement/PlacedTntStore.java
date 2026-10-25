@@ -2,14 +2,12 @@ package io.corefactory.core.placement;
 
 import io.corefactory.api.PinLock;
 import io.corefactory.api.PlacedTnt;
+import io.corefactory.core.config.ConfigValues;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.util.Vector;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,17 +17,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * The registry of every placed custom TNT block, keyed by block position, with YAML persistence.
+ * The registry of every placed custom TNT block, keyed by block position. It reads and writes plain data, a map with a
+ * {@code placed} list, and leaves the file format to the platform.
  */
 public final class PlacedTntStore {
 
     private final Map<String, PlacedTnt> byKey = new HashMap<>();
     /** Entries read from disk whose world was not loaded yet. They are written back untouched, never dropped. */
-    private final List<Map<?, ?>> preserved = new ArrayList<>();
+    private final List<Map<String, Object>> preserved = new ArrayList<>();
 
     /** The position key of a block location: world UUID and integer block coordinates. */
     public static String key(Location location) {
@@ -71,8 +69,11 @@ public final class PlacedTntStore {
         return byKey.size();
     }
 
-    public void save(File file, Logger log) {
-        YamlConfiguration yaml = new YamlConfiguration();
+    /**
+     * The registry as plain data: a map whose {@code placed} key holds one map per block, the form the platform writes to disk.
+     * Entries whose world was not loaded are included unchanged.
+     */
+    public Map<String, Object> snapshot() {
         List<Object> entries = new ArrayList<>(byKey.size() + preserved.size());
         for (PlacedTnt placed : byKey.values()) {
             Map<String, Object> entry = new HashMap<>();
@@ -105,27 +106,20 @@ public final class PlacedTntStore {
             entries.add(entry);
         }
         entries.addAll(preserved);
-        yaml.set("placed", entries);
-        try {
-            File parent = file.getParentFile();
-            if (parent != null) {
-                parent.mkdirs();
-            }
-            yaml.save(file);
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "Could not save placed TNT to " + file.getName(), e);
-        }
+        return Map.of("placed", entries);
     }
 
-    public void load(File file, Logger log) {
+    /**
+     * Replaces the registry with the blocks in the data, as {@link #snapshot} wrote them. An empty map loads nothing.
+     *
+     * @param data the stored registry, with its {@code placed} list
+     * @param log  receives the warnings about skipped and preserved entries
+     */
+    public void load(Map<String, Object> data, Logger log) {
         byKey.clear();
         preserved.clear();
-        if (!file.exists()) {
-            return;
-        }
-        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
         int skipped = 0;
-        for (Map<?, ?> entry : yaml.getMapList("placed")) {
+        for (Map<String, Object> entry : ConfigValues.mapList(data, "placed")) {
             Location block = fromMap(asMap(entry.get("block")));
             String id = entry.get("id") instanceof String s ? s : null;
             if (id == null) {

@@ -1,7 +1,7 @@
 package io.corefactory.core.process;
 
 /**
- * One slot of a machine as the process engine sees it. The Spigot side implements it over an inventory slot, so the
+ * One slot of a machine as the process engine sees it. The Paper side implements it over an inventory slot, so the
  * engine never touches Bukkit types and can be tested with plain objects.
  */
 public interface Stack {

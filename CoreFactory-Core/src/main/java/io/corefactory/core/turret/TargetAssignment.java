@@ -17,7 +17,7 @@ import java.util.function.Function;
 /**
  * The coordinated choice of targets for the turrets of one world. Each turret offers the targets it can fire at now, nearest first, and the
  * targets its cannons hold; the rule answers with the targets each turret's cannons take, so that the turrets spread over the mobs before
- * any two of them share one. Pure: the Spigot side reads the entities into {@link TurretSlot}s and gives each turret its answer.
+ * any two of them share one. Pure: the Paper side reads the entities into {@link TurretSlot}s and gives each turret its answer.
  *
  * <p>The rule works over the turrets in turret id order, so the same input always gives the same answer, and a tie between turrets goes to
  * the lower id. It runs in three passes:

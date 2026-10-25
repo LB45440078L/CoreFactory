@@ -2,7 +2,8 @@ package io.corefactory.core.turret;
 
 import io.corefactory.core.turret.TargetRules.Candidate;
 import io.corefactory.core.turret.TargetRules.Verdict;
-import org.bukkit.configuration.MemoryConfiguration;
+import io.corefactory.core.config.TestConfig;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -37,10 +38,10 @@ class TargetRulesTest {
 
     @Test
     void aPlayerIsRefusedEvenWhenEveryOtherSettingWouldAllowIt() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("turrets.targets", List.of("monsters", "phantoms", "slimes", "ghasts"));
-        config.set("turrets.target-named", true);
-        config.set("turrets.target-tamed", true);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "turrets.targets", List.of("monsters", "phantoms", "slimes", "ghasts"));
+        TestConfig.set(config, "turrets.target-named", true);
+        TestConfig.set(config, "turrets.target-tamed", true);
         TurretSettings permissive = TurretSettings.from(config);
         Candidate player = new Candidate(TargetKind.MONSTER, true, false, false, false, true, true, false, 5.0, true);
 
@@ -91,9 +92,9 @@ class TargetRulesTest {
 
     @Test
     void taggedMobsBecomeTargetsOnlyWhenTheSettingsAllowThem() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("turrets.target-named", true);
-        config.set("turrets.target-tamed", true);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "turrets.target-named", true);
+        TestConfig.set(config, "turrets.target-tamed", true);
         TurretSettings allowing = TurretSettings.from(config);
         Candidate named = new Candidate(TargetKind.MONSTER, false, false, false, false, true, true, false, 5.0, true);
 
@@ -103,8 +104,8 @@ class TargetRulesTest {
     @Test
     void aPhantomIsATargetOnlyWhenTheListNamesPhantoms() {
         Candidate phantom = new Candidate(TargetKind.PHANTOM, false, false, false, false, false, false, false, 5.0, true);
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("turrets.targets", List.of("monsters", "phantoms"));
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "turrets.targets", List.of("monsters", "phantoms"));
 
         assertThat(TargetRules.verdict(phantom, SETTINGS)).isEqualTo(Verdict.NOT_A_TARGET_KIND);
         assertThat(TargetRules.verdict(phantom, TurretSettings.from(config))).isEqualTo(Verdict.VALID);
@@ -223,9 +224,9 @@ class TargetRulesTest {
         assertThat(TargetRules.verdict(slime, SETTINGS, noMonsters.withOverride("SLIME", true))).isEqualTo(Verdict.VALID);
     }
 
-    private static MemoryConfiguration configWithTargets(List<String> targets) {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("turrets.targets", targets);
+    private static Map<String, Object> configWithTargets(List<String> targets) {
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "turrets.targets", targets);
         return config;
     }
 }

@@ -3,22 +3,20 @@
 Every TNT and component has its own 32 × 32 texture. The textures are painted by Java code (see
 [TEXTURES.md](TEXTURES.md)), and the ResourcePack module packs them into a zip that the server hosts and players load.
 
-## Why the textures were missing
+## Pack format
 
-The pack declared `pack_format` 75, which is the number for Minecraft 1.21.11. A 26.x server expects a different
-number, and a client that sees a pack with the wrong number does not apply it. Every custom item then falls back to
-its vanilla look, so all the textures appeared to be missing, whatever their pixels.
+The plugin supports Paper 26.3 only. The pack format is the number that the server's version expects, and a client that
+sees a pack with another number does not apply it. Every custom item then falls back to its vanilla look.
 
-The number is now set per Maven profile, and each one matches its server:
+The number is set by the Maven profile `api-26.3`, which is the default, through the `pack.format` property of the root POM:
 
 | Profile | Server | `pack_format` | Where the number comes from |
 |---|---|---|---|
-| `api-26.1` (default) | Paper / Spigot 26.1.2 | **84** | The server jar's `version.json`: `pack_version.resource_major` is 84. |
-| `api-26.2` | Spigot 26.2 | **88** | A community pack template lists 88 for 26.2. Not checked against the server jar; see below. |
-| `api-26.3` | Spigot 26.3 | **97** | The server jar's `version.json`: `pack_version.resource_major` is 97. |
-| `api-1.21.11` | Spigot 1.21.11 | **75** | The number this project used before. Not checked against a 1.21.11 server jar here. |
+| `api-26.3` (default) | Paper 26.3 | **97** | The server jar's `version.json`: `pack_version.resource_major` is 97. |
 
-To check the number for any server, open its server jar (or the `META-INF/versions/*.jar` inside it) and read
+The other `api-*` profiles still build, but they are not supported, and no pack format is listed for them.
+
+To check the number for a server, open its server jar (or the `META-INF/versions/*.jar` inside it) and read
 `version.json`: the `resource_major` value under `pack_version` is the pack format.
 
 ## What is in the pack
@@ -35,13 +33,29 @@ To check the number for any server, open its server jar (or the `META-INF/versio
 | `assets/corefactory/textures/block/tnt/<id>.png` | The 32 × 32 TNT texture. |
 | `assets/corefactory/textures/block/machine/<id>/<face>.png` | The 32 × 32 texture of each of the six faces of a machine or drill. |
 | `assets/corefactory/textures/block/ore/<id>.png` | The 16 × 16 ore block texture. |
-| `assets/corefactory/textures/item/component/<id>.png` | The 32 × 32 component sprite. Lab tools and drills also have one, for the inventory. |
+| `assets/corefactory/textures/item/component/<id>.png` | The 32 × 32 component sprite. Lab tools and drills also have one, for the inventory. An animated sprite is a strip of square frames, with a `.mcmeta` beside it. |
 | `assets/corefactory/textures/item/particle/<name>.png` | The 32 × 32 effect sprite. |
 | `assets/corefactory/textures/gui/advancements/background.png` | The background of the achievements tab. |
 
 Each turret has a 3D model for each of its five levels, and the tall levels 3 to 5 have an upper model with `_top` added, such as
 `machine/machine_gun_turret_3_top`. The names are in `ModelKeys`, and they must match the pack. The four upgrade kits are flat sprites,
 `textures/item/component/turret_upgrade_2.png` to `turret_upgrade_5.png`. See [TEXTURES.md](TEXTURES.md#turret-models).
+
+Each of the seven artillery pieces is two models, a body and a barrel: `machine/artillery_1_body` and `machine/artillery_1_barrel`, up to
+`machine/artillery_7_body` and `machine/artillery_7_barrel`. The body is the carriage, the turret ring and the base, and the plugin turns it
+to the aim. The barrel is the barrel and its breech, and the plugin tilts it to the elevation about its trunnion
+(`ArtilleryArt.trunnionBlocks`). Each level is as tall as it was, up to 3.75 blocks. Every model keeps its elements between -16 and 32 units,
+so it is written from y -16 and the plugin lifts its display one block (`ArtilleryArt.displayLift`). Level VII also has a top model,
+`machine/artillery_7_top`, which turns with the body and does not tilt. Its barrel and its top are written in the upper frame, so the plugin
+places both three blocks above the body (`ArtilleryArt.displayOffset`). The command center is `machine/command_center`, a table with a screen
+the plugin fills with a hologram. The shells and the propellant charges are flat sprites, `component/<id>`, and so are the inventory sprites of
+the pieces, `component/artillery_1` to `component/artillery_7`. See [TEXTURES.md](TEXTURES.md#artillery-models).
+
+The water system has a model for every orientation, so the game draws each one with no display rotation. The ids are those of
+`WaterModels.all()` in CoreFactory-Core, such as `machine/water_pipe_bend_south_west`, `machine/water_splitter_t_north_up` and
+`machine/water_pump_3_east`. A pump of level IV or V is two blocks tall, so each of its fronts has an upper model with `_top` added,
+such as `machine/water_pump_4_north_top`. The inventory sprites are unchanged: `water_pump`, `water_pipe`, `water_splitter_t` and
+`water_splitter_x`, and the upgrade kits.
 
 The plugin sets the item model on each of its items: `corefactory:tnt/<id>`, `corefactory:component/<id>` or, for an ore
 block item, `corefactory:ore/<id>`. The definitions above resolve those names.
@@ -52,10 +66,11 @@ covers the vanilla texture. It is turned off with `display.custom-textures: fals
 
 ## Sounds
 
-The pack has 40 sounds under `assets/corefactory/sounds/`, and `sounds.json` names each one as an event
+The pack has 41 sounds under `assets/corefactory/sounds/`, and `sounds.json` names each one as an event
 `corefactory:<key>`. There is one sound for each generator kind, each drill kind and each process machine, plus the turret,
-laser, press and pylon sounds. Nine of the 40 are recordings from CC0 sources (OpenGameArt and Kenney), and the other 31 are
-procedural. `tools/sounds/make_sounds.py` builds the OGG files in `art/sounds`: it downloads the recordings listed in
+laser, press, pylon and pump sounds. Nine of the 41 are recordings from CC0 sources (OpenGameArt and Kenney), and the other 32 are
+procedural. The pump sound is `water_pump`: a two-second procedural loop (a turbine rumble, a motor hum and a soft vane swish), in
+`art/sounds/water_pump.ogg`. It is registered in `SoundPack`, and a running pump plays it every two seconds. `tools/sounds/make_sounds.py` builds the OGG files in `art/sounds`: it downloads the recordings listed in
 `tools/sounds/sources.json` (checking each file's SHA-256), edits them with ffmpeg, synthesises the procedural ones, and encodes
 OGG Vorbis. `SoundPack` copies them into the pack. The table of sources, licences and edits is in
 [`art/sounds/SOURCES.md`](../CoreFactory-ResourcePack/art/sounds/SOURCES.md), and the credits are in [CREDITS.md](CREDITS.md). Four keys are packed but not played yet, and two older ones are no longer played; the
@@ -96,13 +111,12 @@ layout and the builder's code, not on a graphical client.
 `mvn package` builds the zip. It uses the pack format of the active profile:
 
 ```bash
-mvn clean package                  # api-26.1 (default): pack_format 84
-mvn clean package -P api-26.3      # pack_format 97
+mvn clean package                  # api-26.3 (default): pack_format 97
 ```
 
 The zip is written to `CoreFactory-ResourcePack/target/CoreFactory-ResourcePack.zip`, and the plugin build bundles it into the plugin jar (see below). The build reads the
 generated art in `CoreFactory-ResourcePack/art/`. To regenerate that art after changing a painter, see
-[TEXTURES.md](TEXTURES.md#2-tools).
+[TEXTURES.md](TEXTURES.md#2-tools). The art output is generated and committed, so it must be regenerated with `ArtGenerator` after any art change, and the pack is built from it.
 
 The builder can also be run on its own, from the module's `target/classes`:
 
@@ -113,7 +127,7 @@ io.corefactory.resourcepack.ResourcePackBuilder <art-dir> <output.zip> <pack-for
 ## Bundled in the plugin, and RPMS
 
 The plugin jar already contains the pack. `mvn package` builds the ResourcePack module first (Maven orders the modules
-from the Spigot module's dependency on it), then copies `CoreFactory-ResourcePack.zip` into the jar under
+from the Paper module's dependency on it), then copies `CoreFactory-ResourcePack.zip` into the jar under
 `resource-pack/`.
 
 When the server loads the plugin, before any plugin is enabled, CoreFactory:
@@ -142,7 +156,7 @@ Each pack carries its version inside the zip, in `corefactory-pack.properties`:
 ```properties
 version=1.0.0
 build=20261019130456
-pack-format=84
+pack-format=97
 ```
 
 - `version` is the project version, compared number by number: `1.10.0` is newer than `1.9.0`.
@@ -175,14 +189,11 @@ require-resource-pack=false
 
 Compute the hash with `certutil -hashfile <zip> SHA1` on Windows or `sha1sum <zip>` elsewhere.
 
-## Pack format
+## Changing the pack format
 
 Build the pack for the server's own version. A pack for a different number is not applied, and the textures look
 missing. After changing `pack_format`, rebuild the zip, re-host it, update `resource-pack-sha1`, and have players
 reconnect to load it.
-
-The 1.21.11 and 26.2 numbers are the least certain in this table. Confirm them against the server jar as described
-above before you rely on them.
 
 ## Limits
 

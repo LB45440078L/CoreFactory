@@ -3,7 +3,7 @@ package io.corefactory.core.turret;
 import java.util.UUID;
 
 /**
- * The rule that decides whether a turret may fire at one entity. Pure: the Spigot side reads the entity into a {@link Candidate}, and
+ * The rule that decides whether a turret may fire at one entity. Pure: the Paper side reads the entity into a {@link Candidate}, and
  * this class answers. The checks run in a fixed order, and the first one that settles the candidate gives the verdict.
  *
  * <p>For a player the order is:
@@ -84,7 +84,7 @@ public final class TargetRules {
     }
 
     /**
-     * What the Spigot side knows about one entity.
+     * What the Paper side knows about one entity.
      *
      * @param kind          the kind the entity counts as: a monster, a phantom, a slime, a ghast or other
      * @param player        true for a player

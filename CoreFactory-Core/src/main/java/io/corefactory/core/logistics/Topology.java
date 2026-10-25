@@ -14,23 +14,25 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * The layout of a set of belts, pickers and splitters: who feeds whom, the rules that keep the layout valid, the shape of
+ * The layout of a set of belts, pickers, splitters and duplexes: who feeds whom, the rules that keep the layout valid, the shape of
  * every belt and the order its nodes are updated in. It is built from plain configuration and never changes after that.
  *
  * <p>A node feeds a belt when its output cell is the belt's cell. A feeder from the belt's front is refused (head-on).
  * A belt takes at most one feeder. A picker is fed only by a belt at its input cell, and a splitter only by a belt at
- * its back cell. Pickers and splitters give to belts and ports only.
+ * its back cell. A duplex is fed only by one belt at one of its two back cells, and a feeder from either side of its cells,
+ * or a second feeder, is refused. Pickers, splitters and duplexes give to belts and ports only.
  */
 final class Topology {
 
-    /** The three kinds of node that have an output. */
+    /** The kinds of node that have an output. */
     enum NodeKind {
         BELT,
         PICKER,
-        SPLITTER
+        SPLITTER,
+        DUPLEX
     }
 
-    /** A node with its kind, its id and its block. */
+    /** A node with its kind, its id and its block (a duplex's anchor). */
     record Node(NodeKind kind, String id, Pos pos) {
     }
 
@@ -41,8 +43,16 @@ final class Topology {
     private final Map<Pos, BeltUnit> belts = new HashMap<>();
     private final Map<Pos, Picker> pickers = new HashMap<>();
     private final Map<Pos, Splitter> splitters = new HashMap<>();
+    /** Each cell of a duplex maps to the duplex, so both cells are found. */
+    private final Map<Pos, Duplex> duplexCells = new HashMap<>();
+    private final List<Duplex> duplexes = new ArrayList<>();
 
     Topology(Collection<BeltUnit> belts, Collection<Picker> pickers, Collection<Splitter> splitters) {
+        this(belts, pickers, splitters, List.of());
+    }
+
+    Topology(Collection<BeltUnit> belts, Collection<Picker> pickers, Collection<Splitter> splitters,
+             Collection<Duplex> duplexes) {
         for (BeltUnit belt : belts) {
             claim(belt.pos());
             this.belts.put(belt.pos(), belt);
@@ -63,6 +73,17 @@ final class Topology {
             claim(splitter.pos());
             this.splitters.put(splitter.pos(), splitter);
         }
+        Set<String> duplexIds = new HashSet<>();
+        for (Duplex duplex : duplexes) {
+            if (!duplexIds.add(duplex.id())) {
+                throw new IllegalArgumentException("duplicate duplex id: " + duplex.id());
+            }
+            for (Pos cell : duplex.cells()) {
+                claim(cell);
+                this.duplexCells.put(cell, duplex);
+            }
+            this.duplexes.add(duplex);
+        }
     }
 
     private void claim(Pos pos) {
@@ -72,7 +93,7 @@ final class Topology {
     }
 
     boolean occupied(Pos pos) {
-        return belts.containsKey(pos) || pickers.containsKey(pos) || splitters.containsKey(pos);
+        return belts.containsKey(pos) || pickers.containsKey(pos) || splitters.containsKey(pos) || duplexCells.containsKey(pos);
     }
 
     BeltUnit belt(Pos pos) {
@@ -87,6 +108,11 @@ final class Topology {
         return splitters.get(pos);
     }
 
+    /** The duplex that occupies a cell, or null. Either of its two cells finds it. */
+    Duplex duplexAt(Pos cell) {
+        return duplexCells.get(cell);
+    }
+
     Collection<BeltUnit> belts() {
         return Collections.unmodifiableCollection(belts.values());
     }
@@ -97,6 +123,10 @@ final class Topology {
 
     Collection<Splitter> splitters() {
         return Collections.unmodifiableCollection(splitters.values());
+    }
+
+    Collection<Duplex> duplexes() {
+        return Collections.unmodifiableList(duplexes);
     }
 
     /** The nodes that output into {@code cell}, each with the side of the cell it sits on. */
@@ -116,14 +146,26 @@ final class Topology {
             if (splitter != null && splitter.outputCells().contains(cell)) {
                 feeders.add(new Feeder(side, NodeKind.SPLITTER));
             }
+            Duplex duplex = duplexCells.get(neighbour);
+            if (duplex != null && duplex.outputCells().contains(cell)) {
+                feeders.add(new Feeder(side, NodeKind.DUPLEX));
+            }
         }
         return feeders;
     }
 
-    /** Checks every node against its feeders. MERGE is reported before BLOCKED. */
+    /**
+     * Checks every node against its feeders. MERGE is reported before BLOCKED: a belt with two feeders, or a duplex with
+     * two input belts, is a merge. Then a feeder from the wrong side is blocked.
+     */
     PlacementReason validate() {
         for (BeltUnit belt : belts.values()) {
             if (feedersOf(belt.pos()).size() > 1) {
+                return PlacementReason.MERGE;
+            }
+        }
+        for (Duplex duplex : duplexes) {
+            if (inputsOf(duplex) > 1) {
                 return PlacementReason.MERGE;
             }
         }
@@ -148,7 +190,34 @@ final class Topology {
                 }
             }
         }
+        for (Duplex duplex : duplexes) {
+            for (Pos cell : duplex.cells()) {
+                for (Feeder feeder : feedersOf(cell)) {
+                    if (!isInputOf(duplex, feeder)) {
+                        return PlacementReason.BLOCKED;
+                    }
+                }
+            }
+        }
         return PlacementReason.OK;
+    }
+
+    /** The feeders of a duplex that are its input: a belt from behind one of its cells. */
+    private int inputsOf(Duplex duplex) {
+        int inputs = 0;
+        for (Pos cell : duplex.cells()) {
+            for (Feeder feeder : feedersOf(cell)) {
+                if (isInputOf(duplex, feeder)) {
+                    inputs++;
+                }
+            }
+        }
+        return inputs;
+    }
+
+    /** True when a feeder of a duplex's cell is a belt standing behind the cell, on the side the flow comes from. */
+    private static boolean isInputOf(Duplex duplex, Feeder feeder) {
+        return feeder.kind() == NodeKind.BELT && feeder.side() == duplex.flow().opposite();
     }
 
     /** The side items enter a belt from: its feeder's side, or behind it when nothing feeds it. */
@@ -181,10 +250,14 @@ final class Topology {
         if (splitter != null) {
             return new Node(NodeKind.SPLITTER, LogisticsNetwork.splitterId(splitter.id()), pos);
         }
+        Duplex duplex = duplexCells.get(pos);
+        if (duplex != null) {
+            return new Node(NodeKind.DUPLEX, LogisticsNetwork.duplexId(duplex.id()), duplex.anchor());
+        }
         return null;
     }
 
-    /** Every node, in id order. */
+    /** Every node, in id order. A duplex is one node, whichever of its two cells it is found by. */
     List<Node> nodes() {
         List<Node> nodes = new ArrayList<>();
         for (Pos pos : belts.keySet()) {
@@ -196,6 +269,9 @@ final class Topology {
         for (Pos pos : splitters.keySet()) {
             nodes.add(nodeAt(pos));
         }
+        for (Duplex duplex : duplexes) {
+            nodes.add(nodeAt(duplex.anchor()));
+        }
         nodes.sort(Comparator.comparing(Node::id));
         return nodes;
     }
@@ -205,6 +281,7 @@ final class Topology {
             case BELT -> List.of(belts.get(node.pos()).flow().step(node.pos()));
             case PICKER -> List.of(pickers.get(node.pos()).outputCell());
             case SPLITTER -> splitters.get(node.pos()).outputCells();
+            case DUPLEX -> duplexCells.get(node.pos()).outputCells();
         };
     }
 

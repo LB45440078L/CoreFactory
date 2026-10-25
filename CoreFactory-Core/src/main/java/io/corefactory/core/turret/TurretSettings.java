@@ -1,7 +1,6 @@
 package io.corefactory.core.turret;
 
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemoryConfiguration;
+import io.corefactory.core.config.ConfigValues;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -86,7 +85,7 @@ public record TurretSettings(
             copy.put(type, round == null ? defaultRound(type) : round);
         }
         rounds = Map.copyOf(copy);
-        range = clamp(range, 1.0, 64.0);
+        range = clamp(range, 1.0, 128.0);
         searchIntervalTicks = Math.max(1, Math.min(searchIntervalTicks, 1200));
         firingIntervalTicks = Math.max(1, Math.min(firingIntervalTicks, 1200));
         rotationSpeedDegrees = clamp(rotationSpeedDegrees, 0.5, 90.0);
@@ -100,42 +99,39 @@ public record TurretSettings(
 
     /** The settings with every default. */
     public static TurretSettings defaults() {
-        return from(new MemoryConfiguration());
+        return from(Map.of());
     }
 
     /**
      * Reads the {@code turrets} section of a configuration. A missing section gives the defaults. A target name that no kind has is
      * skipped; a round section that is missing keeps that round's defaults.
      *
-     * @param config the root configuration, or any section that holds a {@code turrets} section
+     * @param config the root configuration as plain data, or any section that holds a {@code turrets} section
      */
-    public static TurretSettings from(ConfigurationSection config) {
-        ConfigurationSection turrets = config == null ? null : config.getConfigurationSection(SECTION);
-        if (turrets == null) {
-            turrets = new MemoryConfiguration();
-        }
+    public static TurretSettings from(Map<String, Object> config) {
+        Map<String, Object> turrets = ConfigValues.section(config, SECTION);
         Set<TargetKind> targets = targetsOf(turrets);
         Map<RoundType, Round> rounds = new EnumMap<>(RoundType.class);
-        ConfigurationSection roundSection = turrets.getConfigurationSection("rounds");
+        Map<String, Object> roundSection = ConfigValues.optionalSection(turrets, "rounds");
         for (RoundType type : RoundType.values()) {
             rounds.put(type, roundOf(type, roundSection));
         }
         return new TurretSettings(
-                turrets.getBoolean("enabled", true),
+                ConfigValues.bool(turrets, "enabled", true),
                 DEFAULT_RANGE,
-                turrets.getInt("search-interval-ticks", DEFAULT_SEARCH_INTERVAL_TICKS),
+                ConfigValues.integer(turrets, "search-interval-ticks", DEFAULT_SEARCH_INTERVAL_TICKS),
                 DEFAULT_FIRING_INTERVAL_TICKS,
-                turrets.getDouble("rotation-speed-degrees", DEFAULT_ROTATION_SPEED_DEGREES),
-                turrets.getDouble("arc-degrees", DEFAULT_ARC_DEGREES),
-                turrets.getDouble("pitch-limit-degrees", DEFAULT_PITCH_LIMIT_DEGREES),
-                turrets.getBoolean("idle-sweep", true),
-                turrets.getDouble("accuracy-spread", DEFAULT_ACCURACY_SPREAD),
+                ConfigValues.number(turrets, "rotation-speed-degrees", DEFAULT_ROTATION_SPEED_DEGREES),
+                ConfigValues.number(turrets, "arc-degrees", DEFAULT_ARC_DEGREES),
+                ConfigValues.number(turrets, "pitch-limit-degrees", DEFAULT_PITCH_LIMIT_DEGREES),
+                ConfigValues.bool(turrets, "idle-sweep", true),
+                ConfigValues.number(turrets, "accuracy-spread", DEFAULT_ACCURACY_SPREAD),
                 DEFAULT_AMMO_CAPACITY,
-                turrets.getInt("ammo-per-shot", DEFAULT_AMMO_PER_SHOT),
+                ConfigValues.integer(turrets, "ammo-per-shot", DEFAULT_AMMO_PER_SHOT),
                 DEFAULT_POWER_DEMAND_W,
                 targets,
-                turrets.getBoolean("target-named", false),
-                turrets.getBoolean("target-tamed", false),
+                ConfigValues.bool(turrets, "target-named", false),
+                ConfigValues.bool(turrets, "target-tamed", false),
                 rounds);
     }
 
@@ -149,11 +145,11 @@ public record TurretSettings(
         return targets.contains(kind);
     }
 
-    private static Set<TargetKind> targetsOf(ConfigurationSection turrets) {
-        if (!turrets.contains("targets")) {
+    private static Set<TargetKind> targetsOf(Map<String, Object> turrets) {
+        if (!ConfigValues.contains(turrets, "targets")) {
             return EnumSet.of(TargetKind.MONSTER);
         }
-        List<String> names = turrets.getStringList("targets");
+        List<String> names = ConfigValues.stringList(turrets, "targets", List.of());
         Set<TargetKind> targets = EnumSet.noneOf(TargetKind.class);
         for (String name : names) {
             TargetKind.ofConfigName(name).ifPresent(targets::add);
@@ -161,19 +157,19 @@ public record TurretSettings(
         return targets;
     }
 
-    private static Round roundOf(RoundType type, ConfigurationSection roundSection) {
+    private static Round roundOf(RoundType type, Map<String, Object> roundSection) {
         Round fallback = defaultRound(type);
         if (roundSection == null) {
             return fallback;
         }
-        ConfigurationSection section = roundSection.getConfigurationSection(type.configKey());
+        Map<String, Object> section = ConfigValues.optionalSection(roundSection, type.configKey());
         if (section == null) {
             return fallback;
         }
-        return new Round(section.getDouble("damage", fallback.damage()),
-                section.getDouble("armour-bypass", fallback.armourBypass()),
-                section.getInt("fire-ticks", fallback.fireTicks()),
-                section.getDouble("spread-factor", fallback.spreadFactor()));
+        return new Round(ConfigValues.number(section, "damage", fallback.damage()),
+                ConfigValues.number(section, "armour-bypass", fallback.armourBypass()),
+                ConfigValues.integer(section, "fire-ticks", fallback.fireTicks()),
+                ConfigValues.number(section, "spread-factor", fallback.spreadFactor()));
     }
 
     /** The built-in values of a round type. */

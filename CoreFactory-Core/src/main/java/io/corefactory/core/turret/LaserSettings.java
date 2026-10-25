@@ -1,7 +1,8 @@
 package io.corefactory.core.turret;
 
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemoryConfiguration;
+import io.corefactory.core.config.ConfigValues;
+
+import java.util.Map;
 
 /**
  * The typed form of the {@code laser-turret} section of config.yml. The laser turret is electric and fires an instant beam, so it holds no
@@ -52,27 +53,24 @@ public record LaserSettings(
 
     /** The settings with every default. */
     public static LaserSettings defaults() {
-        return from(new MemoryConfiguration());
+        return from(Map.of());
     }
 
     /**
      * Reads the {@code laser-turret} section of a configuration. A missing section gives the defaults.
      *
-     * @param config the root configuration, or any section that holds a {@code laser-turret} section
+     * @param config the root configuration as plain data, or any section that holds a {@code laser-turret} section
      */
-    public static LaserSettings from(ConfigurationSection config) {
-        ConfigurationSection laser = config == null ? null : config.getConfigurationSection(SECTION);
-        if (laser == null) {
-            laser = new MemoryConfiguration();
-        }
+    public static LaserSettings from(Map<String, Object> config) {
+        Map<String, Object> laser = ConfigValues.section(config, SECTION);
         return new LaserSettings(
                 DEFAULT_RANGE,
                 DEFAULT_DAMAGE,
-                laser.getDouble("armour-bypass", DEFAULT_ARMOUR_BYPASS),
+                ConfigValues.number(laser, "armour-bypass", DEFAULT_ARMOUR_BYPASS),
                 DEFAULT_FIRING_INTERVAL_TICKS,
                 DEFAULT_POWER_DEMAND_W,
-                laser.getInt("beam-particles", DEFAULT_BEAM_PARTICLES),
-                laser.getInt("search-interval-ticks", DEFAULT_SEARCH_INTERVAL_TICKS));
+                ConfigValues.integer(laser, "beam-particles", DEFAULT_BEAM_PARTICLES),
+                ConfigValues.integer(laser, "search-interval-ticks", DEFAULT_SEARCH_INTERVAL_TICKS));
     }
 
     /**

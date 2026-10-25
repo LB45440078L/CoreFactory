@@ -120,6 +120,40 @@ class DrillRulesTest {
     }
 
     @Test
+    void anIdleOreDrillDrawsNoPetroleum() {
+        assertThat(DrillRules.drawsFuel(DrillKind.ORE, true, true, false)).isFalse();
+    }
+
+    @Test
+    void anOreDrillWithNoTargetDrawsNoPetroleum() {
+        assertThat(DrillRules.drawsFuel(DrillKind.ORE, true, false, false)).isFalse();
+        assertThat(DrillRules.drawsFuel(DrillKind.ORE, true, false, true)).isFalse();
+    }
+
+    @Test
+    void anOreDrillWithNoRoomInItsOutputsDrawsNoPetroleum() {
+        assertThat(DrillRules.drawsFuel(DrillKind.ORE, false, true, true)).isFalse();
+    }
+
+    @Test
+    void aRunningOreDrillDrawsItsPetroleum() {
+        assertThat(DrillRules.drawsFuel(DrillKind.ORE, true, true, true)).isTrue();
+    }
+
+    @Test
+    void aPetroleumDrillDrawsNoFluidFuelFromTheNetwork() {
+        assertThat(DrillRules.drawsFuel(DrillKind.PETROLEUM, true, true, true)).isFalse();
+    }
+
+    @Test
+    void aDrawTheNetworkRefusesLeavesTheOreDrillWithoutPowerAndNotRunning() {
+        // The draw is decided before the power is known. A refused draw gives the drill no petroleum power, so it does not run.
+        assertThat(DrillRules.drawsFuel(DrillKind.ORE, true, true, true)).isTrue();
+        boolean powered = DrillRules.orePower(false).powered();
+        assertThat(DrillRules.status(powered, true, true, true)).isEqualTo(DrillStatus.NO_POWER);
+    }
+
+    @Test
     void onlyHardBaseStoneCanCarryADrill() {
         for (String stone : List.of("STONE", "DEEPSLATE", "GRANITE", "DIORITE", "ANDESITE", "TUFF")) {
             assertThat(DrillRules.hardBase(stone)).as(stone).isTrue();

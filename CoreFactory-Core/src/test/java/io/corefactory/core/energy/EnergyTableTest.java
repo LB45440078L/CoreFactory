@@ -1,5 +1,6 @@
 package io.corefactory.core.energy;
 
+import io.corefactory.core.oil.Fluid;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -24,6 +25,10 @@ class EnergyTableTest {
         assertThat(PylonType.SMALL.maxCurrentA()).isEqualTo(100.0);
         assertThat(PylonType.MEDIUM.maxCurrentA()).isEqualTo(400.0);
         assertThat(PylonType.LARGE.maxCurrentA()).isEqualTo(1600.0);
+        assertThat(PylonType.HUGE.halfSide()).isEqualTo(25);
+        assertThat(PylonType.COLOSSAL.halfSide()).isEqualTo(40);
+        assertThat(PylonType.HUGE.maxCurrentA()).isEqualTo(4_000.0);
+        assertThat(PylonType.COLOSSAL.maxCurrentA()).isEqualTo(10_000.0);
     }
 
     @Test
@@ -31,6 +36,8 @@ class EnergyTableTest {
         assertThat(PylonType.SMALL.capacityW()).isEqualTo(23_000.0);
         assertThat(PylonType.MEDIUM.capacityW()).isEqualTo(92_000.0);
         assertThat(PylonType.LARGE.capacityW()).isEqualTo(368_000.0);
+        assertThat(PylonType.HUGE.capacityW()).isEqualTo(920_000.0);
+        assertThat(PylonType.COLOSSAL.capacityW()).isEqualTo(2_300_000.0);
     }
 
     @Test
@@ -41,6 +48,10 @@ class EnergyTableTest {
         assertThat(AccumulatorLevel.I.powerW()).isEqualTo(5_000.0);
         assertThat(AccumulatorLevel.II.powerW()).isEqualTo(20_000.0);
         assertThat(AccumulatorLevel.III.powerW()).isEqualTo(60_000.0);
+        assertThat(AccumulatorLevel.IV.capacityWh()).isEqualTo(320_000.0);
+        assertThat(AccumulatorLevel.V.capacityWh()).isEqualTo(1_280_000.0);
+        assertThat(AccumulatorLevel.IV.powerW()).isEqualTo(200_000.0);
+        assertThat(AccumulatorLevel.V.powerW()).isEqualTo(800_000.0);
         assertThat(EnergyTable.ACCUMULATOR_ROUND_TRIP).isEqualTo(0.9);
     }
 
@@ -57,9 +68,30 @@ class EnergyTableTest {
     @Test
     void burnTimesPerItemMatchTheContract() {
         assertThat(GeneratorKind.CHARCOAL.burnSeconds()).isCloseTo(30.0, within(1e-9));
-        assertThat(GeneratorKind.PETROLEUM.burnSeconds()).isCloseTo(160.0, within(0.2));
-        assertThat(GeneratorKind.DIESEL.burnSeconds()).isCloseTo(96.0, within(0.5));
+        assertThat(GeneratorKind.PETROLEUM.burnSeconds()).isCloseTo(150.5, within(0.01));
+        assertThat(GeneratorKind.DIESEL.burnSeconds()).isCloseTo(96.32, within(0.01));
         assertThat(GeneratorKind.NUCLEAR.burnSeconds()).isCloseTo(178.0 * 3600.0, within(1e-6));
+    }
+
+    @Test
+    void aFluidKindDrawsLitresAtItsRatedOutputOverTheEnergyOfALitre() {
+        assertThat(GeneratorKind.PETROLEUM.litresPerSecond())
+                .isEqualTo(GeneratorKind.PETROLEUM.ratedW() / GeneratorKind.PETROLEUM.electricJoulesPerItem());
+        assertThat(GeneratorKind.DIESEL.litresPerSecond())
+                .isEqualTo(GeneratorKind.DIESEL.ratedW() / GeneratorKind.DIESEL.electricJoulesPerItem());
+        assertThat(GeneratorKind.PETROLEUM.litresPerSecond()).isCloseTo(1.0 / 150.5, within(1e-5));
+    }
+
+    @Test
+    void onlyPetroleumAndDieselBurnAFluid() {
+        assertThat(GeneratorKind.PETROLEUM.fluid()).contains(Fluid.PETROLEUM);
+        assertThat(GeneratorKind.DIESEL.fluid()).contains(Fluid.DIESEL);
+        for (GeneratorKind kind : GeneratorKind.values()) {
+            if (kind != GeneratorKind.PETROLEUM && kind != GeneratorKind.DIESEL) {
+                assertThat(kind.fluid()).as(kind.name()).isEmpty();
+                assertThat(kind.litresPerSecond()).as(kind.name()).isZero();
+            }
+        }
     }
 
     @Test
@@ -78,8 +110,8 @@ class EnergyTableTest {
     @Test
     void theElectricEnergyOfAnItemIsItsFuelEnergyTimesItsEfficiency() {
         assertThat(GeneratorKind.CHARCOAL.electricJoulesPerItem()).isCloseTo(3.0e6 * 0.25, within(1e-6));
-        assertThat(GeneratorKind.PETROLEUM.electricJoulesPerItem()).isCloseTo(36.6e6 * 0.35, within(1e-6));
-        assertThat(GeneratorKind.DIESEL.electricJoulesPerItem()).isCloseTo(36.1e6 * 0.40, within(1e-6));
+        assertThat(GeneratorKind.PETROLEUM.electricJoulesPerItem()).isCloseTo(Fluid.PETROLEUM.joulesPerLitre() * 0.35, within(1e-6));
+        assertThat(GeneratorKind.DIESEL.electricJoulesPerItem()).isCloseTo(Fluid.DIESEL.joulesPerLitre() * 0.40, within(1e-6));
         assertThat(GeneratorKind.NUCLEAR.electricJoulesPerItem()).isCloseTo(356e6 * 3600.0, within(1e-3));
     }
 

@@ -1,6 +1,7 @@
 package io.corefactory.core.turret;
 
-import org.bukkit.configuration.MemoryConfiguration;
+import io.corefactory.core.config.TestConfig;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -11,7 +12,7 @@ class LaserSettingsTest {
 
     @Test
     void aMissingSectionGivesTheDocumentedDefaults() {
-        LaserSettings laser = LaserSettings.from(new MemoryConfiguration());
+        LaserSettings laser = LaserSettings.from(Map.of());
 
         assertThat(laser.range()).isEqualTo(40.0);
         assertThat(laser.damage()).isEqualTo(12.0);
@@ -23,19 +24,19 @@ class LaserSettingsTest {
 
     @Test
     void aLaserScansEveryFiveTicksUnlessTheSectionSaysOtherwise() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("laser-turret.search-interval-ticks", 2);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "laser-turret.search-interval-ticks", 2);
 
-        assertThat(LaserSettings.from(new MemoryConfiguration()).searchIntervalTicks()).isEqualTo(5);
+        assertThat(LaserSettings.from(Map.of()).searchIntervalTicks()).isEqualTo(5);
         assertThat(LaserSettings.from(config).searchIntervalTicks()).isEqualTo(2);
         assertThat(LaserSettings.defaults().searchIntervalTicks()).isEqualTo(LaserSettings.DEFAULT_SEARCH_INTERVAL_TICKS);
     }
 
     @Test
     void theValuesAreReadFromTheLaserSection() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("laser-turret.armour-bypass", 0.25);
-        config.set("laser-turret.beam-particles", 12);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "laser-turret.armour-bypass", 0.25);
+        TestConfig.set(config, "laser-turret.beam-particles", 12);
 
         LaserSettings laser = LaserSettings.from(config);
 
@@ -45,11 +46,11 @@ class LaserSettingsTest {
 
     @Test
     void theLevelStatsAreNotReadFromTheRootKeys() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("laser-turret.range", 52);
-        config.set("laser-turret.damage", 9.5);
-        config.set("laser-turret.firing-interval-ticks", 6);
-        config.set("laser-turret.power-demand-w", 30000);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "laser-turret.range", 52);
+        TestConfig.set(config, "laser-turret.damage", 9.5);
+        TestConfig.set(config, "laser-turret.firing-interval-ticks", 6);
+        TestConfig.set(config, "laser-turret.power-demand-w", 30000);
 
         LaserSettings laser = LaserSettings.from(config);
 
@@ -61,9 +62,9 @@ class LaserSettingsTest {
 
     @Test
     void theValuesAreClampedToTheirRanges() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("laser-turret.armour-bypass", 3);
-        config.set("laser-turret.beam-particles", 100);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "laser-turret.armour-bypass", 3);
+        TestConfig.set(config, "laser-turret.beam-particles", 100);
 
         LaserSettings laser = LaserSettings.from(config);
 
@@ -73,11 +74,11 @@ class LaserSettingsTest {
 
     @Test
     void theTurretViewKeepsTheMachineGunsTargetingAndTurningAndTakesTheLasersStats() {
-        MemoryConfiguration config = new MemoryConfiguration();
-        config.set("turrets.targets", List.of("monsters", "phantoms"));
-        config.set("turrets.target-named", true);
-        config.set("turrets.arc-degrees", 90);
-        config.set("turrets.rotation-speed-degrees", 4);
+        Map<String, Object> config = TestConfig.config();
+        TestConfig.set(config, "turrets.targets", List.of("monsters", "phantoms"));
+        TestConfig.set(config, "turrets.target-named", true);
+        TestConfig.set(config, "turrets.arc-degrees", 90);
+        TestConfig.set(config, "turrets.rotation-speed-degrees", 4);
         TurretSettings machineGun = TurretSettings.from(config);
 
         TurretSettings view = LaserSettings.defaults().asTurret(machineGun);

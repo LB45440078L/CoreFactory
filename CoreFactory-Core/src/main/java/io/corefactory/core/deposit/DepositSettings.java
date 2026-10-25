@@ -1,8 +1,8 @@
 package io.corefactory.core.deposit;
 
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemoryConfiguration;
+import io.corefactory.core.config.ConfigValues;
 
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -58,26 +58,23 @@ public record DepositSettings(int cellSize, double density, double oilShare, int
      * Reads the {@code deposits:} section. A missing key takes its default. When the values together break a rule, one
      * warning is logged and the defaults are used for the whole section, so the world never gets a half-applied set.
      *
-     * @param config the root configuration, or any section that holds a {@code deposits} section; may be null
+     * @param config the root configuration as plain data, or any section that holds a {@code deposits} section; may be null
      * @param log    receives the warning when the section is refused
      * @return the settings read, or the defaults
      */
-    public static DepositSettings from(ConfigurationSection config, Logger log) {
-        ConfigurationSection section = config == null ? null : config.getConfigurationSection(SECTION);
-        if (section == null) {
-            section = new MemoryConfiguration();
-        }
+    public static DepositSettings from(Map<String, Object> config, Logger log) {
+        Map<String, Object> section = ConfigValues.section(config, SECTION);
         DepositSettings defaults = defaults();
         try {
             return new DepositSettings(
-                    section.getInt("cell-size", defaults.cellSize()),
-                    section.getDouble("density", defaults.density()),
-                    section.getDouble("oil-share", defaults.oilShare()),
-                    section.getInt("min-radius", defaults.minRadius()),
-                    section.getInt("max-radius", defaults.maxRadius()),
-                    section.getLong("min-amount", defaults.minAmount()),
-                    section.getLong("max-amount", defaults.maxAmount()),
-                    section.getDouble("ore-block-density", defaults.oreBlockDensity()));
+                    ConfigValues.integer(section, "cell-size", defaults.cellSize()),
+                    ConfigValues.number(section, "density", defaults.density()),
+                    ConfigValues.number(section, "oil-share", defaults.oilShare()),
+                    ConfigValues.integer(section, "min-radius", defaults.minRadius()),
+                    ConfigValues.integer(section, "max-radius", defaults.maxRadius()),
+                    ConfigValues.longValue(section, "min-amount", defaults.minAmount()),
+                    ConfigValues.longValue(section, "max-amount", defaults.maxAmount()),
+                    ConfigValues.number(section, "ore-block-density", defaults.oreBlockDensity()));
         } catch (IllegalArgumentException e) {
             log.warning("config.yml: '" + SECTION + "' is invalid (" + e.getMessage() + "); the defaults are used.");
             return defaults;

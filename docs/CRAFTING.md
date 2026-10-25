@@ -4,9 +4,9 @@ The cheap TNT types need only vanilla items. The strong ones need **components**
 The nuclear tiers need the most, and the <img src="images/components/thermonuclear_core.png" width="24" height="24" align="absmiddle"> Thermonuclear Core at the top of the chain is the hardest recipe on the server.
 
 Both kinds of recipe are registered with the server when the plugin loads or `/cf reload` runs. Their
-definitions live in [`items.yml`](../CoreFactory-Spigot/src/main/resources/items.yml) (components), [`materials.yml`](../CoreFactory-Spigot/src/main/resources/materials.yml) (science materials, machines, drills
-and the scanner), [`processes.yml`](../CoreFactory-Spigot/src/main/resources/processes.yml) (machines and processes) and
-[`tnts.yml`](../CoreFactory-Spigot/src/main/resources/tnts.yml) (TNT). Ingredients that are custom items match
+definitions live in [`items.yml`](../CoreFactory-Paper/src/main/resources/items.yml) (components), [`materials.yml`](../CoreFactory-Paper/src/main/resources/materials.yml) (science materials, machines, drills
+and the scanner), [`processes.yml`](../CoreFactory-Paper/src/main/resources/processes.yml) (machines and processes) and
+[`tnts.yml`](../CoreFactory-Paper/src/main/resources/tnts.yml) (TNT). Ingredients that are custom items match
 exactly, by their identity, so a plain vanilla item of the same material never substitutes for a component.
 
 The Ore Density Scanner (`ore_density_scanner`) crafts after Laboratory Basics. Right-click it to scan for the nearest deposits,
@@ -47,7 +47,7 @@ The component chain for the nuclear family is therefore: **Enriched Uranium** co
 
 ## Materials, machines and drills (materials.yml)
 
-These components are in [`materials.yml`](../CoreFactory-Spigot/src/main/resources/materials.yml). The research column
+These components are in [`materials.yml`](../CoreFactory-Paper/src/main/resources/materials.yml). The research column
 is the node that gates the crafting, placing and lighting of the item. "None" means no node lists it. The machines are
 placed by their own item, and the drills work like machines.
 
@@ -69,7 +69,6 @@ placed by their own item, and the drills work like machines.
 | `antimatter_condenser` | Antimatter Condenser | shaped: `SAS` / `ACA` / `SAS`. S Superconducting Magnet, A Antiproton Capsule, C Neutron Flux Cell | Antimatter Physics |
 | `ore_density_scanner` | Ore Density Scanner (finds deposits) | shaped: `GIG` / `ILI` / `GRG`. G Glass, I Iron Ingot, L Amethyst Shard, R Redstone | Laboratory Basics |
 | `solar_panel` | Solar Panel | shaped: `PPP` / `RIR` / `IRI`. P Blue Stained Glass Pane, R Redstone, I Iron Ingot | Metallurgy |
-| `petroleum` | Petroleum | none. Found in crude petroleum deposits, or drawn from them by a petroleum drill | None |
 | `petroleum_drill_1` | Petroleum Drill I | shaped: `IPI` / `HBH` / `IRI`. I Iron Ingot, P Piston, H Hopper, B Chest, R Redstone | Chemical Separation |
 | `petroleum_drill_2` | Petroleum Drill II | shapeless: Petroleum Drill I, Iron Block, Redstone, Piston | Chemical Separation |
 | `petroleum_drill_3` | Petroleum Drill III | shapeless: Petroleum Drill II, Iron Block, Redstone Block, Piston, Hopper | Hydrogen Processes |
@@ -96,7 +95,7 @@ The lab machines have these slot counts (from `processes.yml`). Input, output an
 | `particle_accelerator` | 2 | 2 | 0 |
 | `antimatter_condenser` | 2 | 1 | 0 |
 | `research_console` | 6 (research packs) | 0 | 0 |
-| `crude_oil_refinery` | 1 | 2 | 0 |
+| `crude_oil_refinery` | 0 | 0 | 0 |
 | `induction_furnace` | 2 | 1 | 0 |
 | `powder_mill` | 3 | 1 | 0 |
 | `cartridge_press` | 2 | 1 | 0 |
@@ -110,8 +109,8 @@ Each drill has one fuel slot and nine output slots. The levels and the cycle len
 
 ## Electricity and belts (materials.yml)
 
-These items are in [`materials.yml`](../CoreFactory-Spigot/src/main/resources/materials.yml). Their research node is in
-[`research.yml`](../CoreFactory-Spigot/src/main/resources/research.yml). "None" means no node lists the item, so it is free.
+These items are in [`materials.yml`](../CoreFactory-Paper/src/main/resources/materials.yml). Their research node is in
+[`research.yml`](../CoreFactory-Paper/src/main/resources/research.yml). "None" means no node lists the item, so it is free.
 The solar panel is in the table above.
 
 | Component id | Name | Recipe | Research |
@@ -120,15 +119,18 @@ The solar panel is in the table above.
 | `pylon_1` | <img src="images/components/pylon_1.png" width="24" height="24" align="absmiddle"> Pylon I | shaped: `ICI` / `CRC` / `ICI`. I Iron Ingot, C Copper Ingot, R Redstone | Metallurgy |
 | `pylon_2` | <img src="images/components/pylon_2.png" width="24" height="24" align="absmiddle"> Pylon II | shapeless: <img src="images/components/pylon_1.png" width="24" height="24" align="absmiddle"> Pylon I, <img src="images/components/purified_iron.png" width="24" height="24" align="absmiddle"> Purified Iron, Copper Ingot | Chemical Separation |
 | `pylon_3` | <img src="images/components/pylon_3.png" width="24" height="24" align="absmiddle"> Pylon III | shapeless: <img src="images/components/pylon_2.png" width="24" height="24" align="absmiddle"> Pylon II, <img src="images/components/high_purity_graphite.png" width="24" height="24" align="absmiddle"> High-Purity Graphite, <img src="images/components/superconducting_magnet.png" width="24" height="24" align="absmiddle"> Superconducting Magnet | Particle Physics |
+| `pylon_4` | Pylon IV | None: made only by the process `assemble_pylon_4` | Pylon IV |
+| `pylon_5` | Pylon V | None: made only by the process `assemble_pylon_5` | Pylon V |
 | `accumulator_1` | <img src="images/components/accumulator_1.png" width="24" height="24" align="absmiddle"> Accumulator I | shaped: `LIL` / `IRI` / `LIL`. L Lead, I Iron Ingot, R Redstone | Chemical Separation |
 | `accumulator_2` | <img src="images/components/accumulator_2.png" width="24" height="24" align="absmiddle"> Accumulator II | shapeless: <img src="images/components/accumulator_1.png" width="24" height="24" align="absmiddle"> Accumulator I, Copper Ingot, Lapis Lazuli | Fluorine Chemistry |
 | `accumulator_3` | <img src="images/components/accumulator_3.png" width="24" height="24" align="absmiddle"> Accumulator III | shapeless: <img src="images/components/accumulator_2.png" width="24" height="24" align="absmiddle"> Accumulator II, <img src="images/components/superconducting_magnet.png" width="24" height="24" align="absmiddle"> Superconducting Magnet, <img src="images/components/purified_iron.png" width="24" height="24" align="absmiddle"> Purified Iron | Particle Physics |
+| `accumulator_4` | Accumulator IV | None: made only by the process `assemble_accumulator_4` | Accumulator IV |
+| `accumulator_5` | Accumulator V | None: made only by the process `assemble_accumulator_5` | Accumulator V |
 | `wind_generator` | <img src="images/components/wind_generator.png" width="24" height="24" align="absmiddle"> Wind Generator | shaped: `ISI` / `SCS` / `ISI`. I Iron Ingot, S Stick, C Copper Ingot | Metallurgy |
 | `charcoal_generator` | <img src="images/components/charcoal_generator.png" width="24" height="24" align="absmiddle"> Charcoal Generator | shaped: `BIB` / `IRI` / `BIB`. B Brick, I Iron Ingot, R Redstone Block | Chemical Separation |
-| `petroleum_generator` | <img src="images/components/petroleum_generator.png" width="24" height="24" align="absmiddle"> Petroleum Generator | shaped: `IRI` / `RPR` / `IRI`. I Iron Ingot, R Redstone, P <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> Petroleum | Fluorine Chemistry |
+| `petroleum_generator` | <img src="images/components/petroleum_generator.png" width="24" height="24" align="absmiddle"> Petroleum Generator | shapeless: Oil Tube, Oil T Splitter, Purified Iron | Fluorine Chemistry |
 | `diesel_generator` | <img src="images/components/diesel_generator.png" width="24" height="24" align="absmiddle"> Diesel Generator | shapeless: <img src="images/components/petroleum_generator.png" width="24" height="24" align="absmiddle"> Petroleum Generator, <img src="images/components/purified_iron.png" width="24" height="24" align="absmiddle"> Purified Iron, <img src="images/components/deuterium_cell.png" width="24" height="24" align="absmiddle"> Deuterium Cell | Nuclear Fission |
 | `nuclear_generator` | <img src="images/components/nuclear_generator.png" width="24" height="24" align="absmiddle"> Nuclear Generator | shapeless: Purified Iron, High-Purity Graphite, <img src="images/components/neutron_flux_cell.png" width="24" height="24" align="absmiddle"> Neutron Flux Cell, <img src="images/components/plutonium_pit.png" width="24" height="24" align="absmiddle"> Plutonium Pit | Isotope Transmutation |
-| `diesel` | <img src="images/components/diesel.png" width="24" height="24" align="absmiddle"> Diesel | No hand recipe: made by the crude oil refinery, from petroleum | None |
 | `nuclear_fuel_rod` | <img src="images/components/nuclear_fuel_rod.png" width="24" height="24" align="absmiddle"> Nuclear Fuel Rod | shaped: ` E ` / ` N ` / ` E `. E <img src="images/components/enriched_uranium.png" width="24" height="24" align="absmiddle"> Enriched Uranium, N <img src="images/components/neutron_initiator.png" width="24" height="24" align="absmiddle"> Neutron Initiator | Hydrogen Processes |
 | `crude_oil_refinery` | <img src="images/components/crude_oil_refinery.png" width="24" height="24" align="absmiddle"> Crude Oil Refinery | shapeless: 2 Iron Block, Copper Ingot, Piston, Furnace | Fluorine Chemistry |
 | `belt_1` | <img src="images/components/belt_1.png" width="24" height="24" align="absmiddle"> Transport Belt I | shapeless: Iron Ingot, Redstone, Copper Ingot | Chemical Separation |
@@ -141,7 +143,7 @@ The solar panel is in the table above.
 | `splitter_2` | <img src="images/components/splitter_2.png" width="24" height="24" align="absmiddle"> Splitter II | shapeless: <img src="images/components/splitter_1.png" width="24" height="24" align="absmiddle"> Splitter I, <img src="images/components/purified_iron.png" width="24" height="24" align="absmiddle"> Purified Iron, Gold Ingot | Nuclear Fission |
 | `splitter_3` | <img src="images/components/splitter_3.png" width="24" height="24" align="absmiddle"> Splitter III | shapeless: <img src="images/components/splitter_2.png" width="24" height="24" align="absmiddle"> Splitter II, <img src="images/components/neutron_flux_cell.png" width="24" height="24" align="absmiddle"> Neutron Flux Cell, Diamond | Hydrogen Processes |
 
-The refinery's process is `distill_diesel` in `processes.yml`: three petroleum make two diesel in 600 ticks.
+The refinery has no process row. The code runs it: it takes three litres of petroleum from the oil network and gives two litres of diesel back to it in 600 ticks at full speed (see [MECHANICS.md](MECHANICS.md#oil-and-fluids)).
 
 ## Processes (processes.yml)
 
@@ -188,7 +190,6 @@ present in full and the outputs fit. A `fuel` machine burns one coal or charcoal
 | `roast_sphalerite` | roaster, fuel | 240 | zinc_ore_dust 2 | zinc_ingot 1; slag 1 (30%) |
 | `recrystallise_saltpeter` | purifier | 300 | water bucket 1; crude_saltpeter 2 | potassium_nitrate 1; bucket 1 |
 | `recrystallise_potassium_nitrate` | purifier | 400 | water bucket 1; potassium_nitrate 2 | high_purity_potassium_nitrate 1; bucket 1 |
-| `distill_diesel` | crude_oil_refinery | 600 | petroleum 3 | diesel 2 |
 | `induction_brass` | induction_furnace | 400 | copper ingot 2; zinc_ingot 1 | brass_ingot 3 |
 | `mill_gunpowder` | powder_mill | 300 | charcoal 1; sulfur 1; high_purity_potassium_nitrate 1 | high_grade_gunpowder 3 |
 | `press_empty_shell` | cartridge_press | 300 | brass_ingot 2 | empty_shell 4 |
@@ -202,6 +203,9 @@ present in full and the outputs fit. A `fuel` machine burns one coal or charcoal
 | `assemble_round_depleted_uranium` | ammunition_assembly | 140 | empty_shell 1; bullet_depleted_uranium 1; high_grade_gunpowder 1 | round_depleted_uranium 1 |
 | `turn_precision_barrel` | metal_lathe | 400 | iron ingot 4; purified_iron 1 | precision_barrel 1 |
 | `turn_optical_lens` | metal_lathe | 300 | amethyst shard 1; high_purity_graphite 1 | optical_lens 2 |
+| `assemble_oil_pipe` | component_assembly | 200 | iron_plate 2; high_purity_graphite 1; circuit_board 1 | oil_pipe 2 |
+| `assemble_oil_splitter_t` | component_assembly | 300 | oil_pipe 2; iron_plate 1 | oil_splitter_t 1 |
+| `assemble_oil_splitter_x` | component_assembly | 400 | oil_pipe 4; iron_plate 2 | oil_splitter_x 1 |
 | `assemble_steel_frame` | component_assembly | 300 | iron ingot 6; iron_plate 2 | steel_frame 1 |
 | `assemble_turret_mechanism` | component_assembly | 300 | iron_gear 3; iron_plate 1 | turret_mechanism 1 |
 | `assemble_ammunition_feed` | component_assembly | 300 | iron_gear 2; brass_ingot 2 | ammunition_feed 1 |
@@ -211,8 +215,15 @@ present in full and the outputs fit. A `fuel` machine burns one coal or charcoal
 | `assemble_turret_upgrade_3` | component_assembly | 900 | steel_frame 1; turret_mechanism 1; ammunition_feed 1; optical_lens 1 | turret_upgrade_3 1 |
 | `assemble_machine_gun_turret` | heavy_weapons_assembly | 1200 | steel_frame 1; brass_ingot 8; precision_barrel 1; targeting_unit 1; turret_mechanism 1; ammunition_feed 1 | machine_gun_turret 1 |
 | `assemble_laser_turret` | heavy_weapons_assembly | 1400 | steel_frame 1; targeting_unit 1; turret_mechanism 1; optical_lens 4; laser_emitter 2 | laser_turret 1 |
+| `turn_rail_barrel` | metal_lathe | 800 | precision_barrel 2; high_purity_graphite 2 | rail_barrel 1 |
+| `assemble_rail_coil` | heavy_weapons_assembly | 1200 | superconducting_magnet 2; pulse_capacitor 2; antiproton_capsule 1; COPPER_INGOT 8 | rail_coil 2 |
+| `assemble_railgun_turret` | heavy_weapons_assembly | 2400 | rail_barrel 2; rail_coil 4; enriched_uranium 2; tesseract_lattice 1; targeting_unit 1; turret_mechanism 1 | railgun_turret 1 |
 | `assemble_turret_upgrade_4` | heavy_weapons_assembly | 1200 | targeting_unit 1; precision_barrel 2; turret_mechanism 1; steel_frame 1; optical_lens 2 | turret_upgrade_4 1 |
 | `assemble_turret_upgrade_5` | heavy_weapons_assembly | 1800 | targeting_unit 1; turret_mechanism 1; ammunition_feed 1; precision_barrel 1; optical_lens 2; laser_emitter 2 | turret_upgrade_5 1 |
+| `assemble_pylon_4` | heavy_weapons_assembly | 2400 | pylon_3 1; tesseract_lattice 1; superconducting_magnet 4; antiproton_capsule 2; enriched_uranium 2 | pylon_4 1 |
+| `assemble_pylon_5` | heavy_weapons_assembly | 4800 | pylon_4 1; tesseract_lattice 2; antimatter_containment 1; antiproton_capsule 4; superconducting_magnet 8 | pylon_5 1 |
+| `assemble_accumulator_4` | heavy_weapons_assembly | 2000 | accumulator_3 1; pulse_capacitor 4; superconducting_magnet 2; tesseract_lattice 1 | accumulator_4 1 |
+| `assemble_accumulator_5` | heavy_weapons_assembly | 4000 | accumulator_4 1; pulse_capacitor 8; antiproton_capsule 2; enriched_uranium 4; tesseract_lattice 1 | accumulator_5 1 |
 
 The drills are not processes. Their kind and level are in the `drills:` section of `processes.yml`, and the
 [Drills](MECHANICS.md#drills) section of the mechanics explains how each one runs.

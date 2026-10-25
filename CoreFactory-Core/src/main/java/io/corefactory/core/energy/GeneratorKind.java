@@ -1,8 +1,13 @@
 package io.corefactory.core.energy;
 
+import io.corefactory.core.oil.Fluid;
+
+import java.util.Optional;
+
 /**
- * The six generator kinds. Wind and solar need no fuel. The other four burn one fuel item at a time while they run at
- * their rated output, so an item lasts its electric energy divided by that output.
+ * The six generator kinds. Wind and solar need no fuel. Charcoal and nuclear burn one fuel item at a time while they run at
+ * their rated output, so an item lasts its electric energy divided by that output. Petroleum and diesel burn a fluid from the
+ * oil network instead: they draw litres at a rate that gives their rated output.
  */
 public enum GeneratorKind {
 
@@ -15,10 +20,10 @@ public enum GeneratorKind {
     /** 25 kW while burning; one charcoal lasts 30 s. */
     CHARCOAL(EnergyTable.CHARCOAL_RATED_W, EnergyTable.CHARCOAL_FUEL_J * EnergyTable.CHARCOAL_EFFICIENCY),
 
-    /** 80 kW while burning; one petroleum lasts about 160 s. */
+    /** 80 kW at rated output, burning petroleum from the oil network; one litre lasts about 150 s. */
     PETROLEUM(EnergyTable.PETROLEUM_RATED_W, EnergyTable.PETROLEUM_FUEL_J * EnergyTable.PETROLEUM_EFFICIENCY),
 
-    /** 150 kW while burning; one diesel lasts about 96 s. */
+    /** 150 kW at rated output, burning diesel from the oil network; one litre lasts about 96 s. */
     DIESEL(EnergyTable.DIESEL_RATED_W, EnergyTable.DIESEL_FUEL_J * EnergyTable.DIESEL_EFFICIENCY),
 
     /** 2 MW while burning underwater; one fuel rod lasts 178 h. */
@@ -37,13 +42,36 @@ public enum GeneratorKind {
         return ratedW;
     }
 
-    /** The electric energy one fuel item gives, in J; 0 for a kind with no fuel. */
+    /**
+     * The electric energy one unit of fuel gives, in J: one item for an item-fuelled kind, one litre for a fluid kind; 0 for a kind
+     * with no fuel.
+     */
     public double electricJoulesPerItem() {
         return electricJoulesPerItem;
     }
 
+    /** The fluid the kind burns from the oil network: petroleum or diesel, or empty for a kind that burns no fluid. */
+    public Optional<Fluid> fluid() {
+        return switch (this) {
+            case PETROLEUM -> Optional.of(Fluid.PETROLEUM);
+            case DIESEL -> Optional.of(Fluid.DIESEL);
+            case WIND, SOLAR, CHARCOAL, NUCLEAR -> Optional.empty();
+        };
+    }
+
     /**
-     * The seconds one fuel item burns for at rated output: its electric energy over the rated output.
+     * The litres of fluid the kind burns each second at rated output: its rated output over the electric energy of a litre. The fluid
+     * kinds only.
+     *
+     * @return the litres per second, or 0 for a kind that burns no fluid
+     */
+    public double litresPerSecond() {
+        return fluid().isPresent() ? ratedW / electricJoulesPerItem : 0.0;
+    }
+
+    /**
+     * The seconds one fuel item burns for at rated output: its electric energy over the rated output. For a fluid kind it is the
+     * seconds one litre lasts.
      *
      * @return the burn time in s, or 0 for a kind with no fuel
      */
@@ -51,7 +79,7 @@ public enum GeneratorKind {
         return burnsFuel() ? electricJoulesPerItem / ratedW : 0.0;
     }
 
-    /** True for the kinds that burn a fuel item: charcoal, petroleum, diesel and nuclear. */
+    /** True for the kinds that burn a fuel: charcoal and nuclear items, and petroleum and diesel fluids. */
     public boolean burnsFuel() {
         return electricJoulesPerItem > 0.0;
     }

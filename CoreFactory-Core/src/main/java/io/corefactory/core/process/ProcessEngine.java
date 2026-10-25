@@ -29,6 +29,9 @@ public final class ProcessEngine {
     /** The water bucket input of a process. A run takes its water from a connected water network instead, when that delivers. */
     public static final ItemRef WATER_BUCKET = ItemRef.material("WATER_BUCKET");
 
+    /** The empty bucket a water bucket process gives back. A run that is watered by a pipe has no water bucket to give back. */
+    public static final ItemRef BUCKET = ItemRef.material("BUCKET");
+
     /** What one tick of a machine did. */
     public enum Step {
         /** No process can run. */
@@ -105,8 +108,23 @@ public final class ProcessEngine {
 
     /** Rolls every output of the process once, and returns the products that were made. */
     public List<Portion> roll(ProcessDefinition process, Random random) {
+        return roll(process, random, false);
+    }
+
+    /**
+     * Rolls every output of the process once. When {@code watered} is true, the water came from a pipe rather than a bucket, so the
+     * empty bucket the process would give back is not made: a pipe gives its water virtually, and there is no bucket to return.
+     *
+     * @param watered true when the water network delivers the water of this run
+     * @return the products that were made
+     */
+    public List<Portion> roll(ProcessDefinition process, Random random, boolean watered) {
         List<Portion> made = new ArrayList<>();
+        boolean takesWater = takesWater(process);
         for (Product product : process.outputs()) {
+            if (watered && takesWater && BUCKET.equals(product.ref())) {
+                continue;
+            }
             if (random.nextDouble() < product.chance()) {
                 made.add(new Portion(product.ref(), product.amount()));
             }
@@ -159,7 +177,7 @@ public final class ProcessEngine {
             }
         }
         if (state.pending() == null) {
-            state.setPending(roll(process, random));
+            state.setPending(roll(process, random, watered));
         }
         if (!fits(state.outputs(), state.pending())) {
             return Step.BLOCKED;

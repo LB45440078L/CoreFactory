@@ -164,12 +164,12 @@ public final class RecipeRegistrar {
         if (ingredient.startsWith("item:")) {
             ComponentDefinition component = components.get(ingredient.substring(5));
             return component == null ? null
-                    : new RecipeChoice.ExactChoice(items.component(component, 1));
+                    : RecipeChoice.exactChoice(items.component(component, 1));
         }
         if (ingredient.startsWith("tnt:")) {
             TntDefinition definition = tnts.get(ingredient.substring(4));
             return definition == null ? null
-                    : new RecipeChoice.ExactChoice(items.tnt(definition, 1));
+                    : RecipeChoice.exactChoice(items.tnt(definition, 1));
         }
         String materialName = ingredient.startsWith("material:") ? ingredient.substring(9) : ingredient;
         Material material = Material.matchMaterial(materialName);

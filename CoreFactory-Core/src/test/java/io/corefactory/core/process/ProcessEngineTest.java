@@ -1,10 +1,10 @@
 package io.corefactory.core.process;
 
-import org.bukkit.configuration.file.YamlConfiguration;
+import io.corefactory.core.config.TestConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.StringReader;
+import java.util.Map;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -59,7 +59,7 @@ class ProcessEngineTest {
 
     @BeforeEach
     void setUp() {
-        catalog = ProcessCatalog.parse(YamlConfiguration.loadConfiguration(new StringReader(YAML)),
+        catalog = ProcessCatalog.parse(TestConfig.yaml(YAML),
                 Logger.getLogger("ProcessEngineTest"));
         engine = new ProcessEngine(catalog, ProcessEngine.FUEL, ref -> 64);
     }
@@ -319,8 +319,8 @@ class ProcessEngineTest {
 
     @Test
     void duplicateIngredientsNeedTheirTotal() {
-        ProcessEngine other = new ProcessEngine(ProcessCatalog.parse(YamlConfiguration.loadConfiguration(
-                new StringReader("""
+        ProcessEngine other = new ProcessEngine(ProcessCatalog.parse(
+                TestConfig.yaml("""
                         machines:
                           m:
                             host: DISPENSER
@@ -331,7 +331,7 @@ class ProcessEngineTest {
                             ticks: 1
                             inputs: ["item:raw:1", "item:raw:2"]
                             outputs: [{item: item:out, amount: 1}]
-                        """)), Logger.getLogger("x")), ProcessEngine.FUEL, ref -> 64);
+                        """), Logger.getLogger("x")), ProcessEngine.FUEL, ref -> 64);
         List<Stack> inputs = MemoryStack.slots(2);
         MemoryStack.fill(inputs, 0, RAW, 2);
         MachineState state = new MachineState("m", inputs, MemoryStack.slots(1), List.of());

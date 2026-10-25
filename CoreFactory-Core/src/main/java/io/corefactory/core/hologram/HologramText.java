@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * The text of a machine's hologram, one string per line of the hologram. A lab tool shows three lines and a drill five.
  * Each line is short, and the pure string work uses ampersand colour codes, as the messages in config.yml do, so it has no
- * Bukkit or PacketEvents types.
+ * Bukkit types.
  */
 public final class HologramText {
 

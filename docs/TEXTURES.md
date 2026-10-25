@@ -67,6 +67,8 @@ A component is a silhouette (a canister, a capacitor, a crystal, a sphere with r
 details painted on top in the accent colour. Its outline is one pixel in a darkened base colour. Glows are drawn behind
 the silhouette at reduced opacity.
 
+The shells and the propellant charges of the artillery are components too, painted by `ShellArt`. See [Shell and charge layout](#shell-and-charge-layout).
+
 The science components follow these families, so that the set reads at a glance:
 
 - Raw ore drops show the mineral itself: <img src="images/ores/uraninite_ore.png" width="24" height="24" align="absmiddle"> uraninite black with green glints, <img src="images/ores/pitchblende_ore.png" width="24" height="24" align="absmiddle"> pitchblende brown-black, <img src="images/ores/monazite_ore.png" width="24" height="24" align="absmiddle"> monazite amber,
@@ -80,7 +82,10 @@ The science components follow these families, so that the set reads at a glance:
 ### Machine layout
 
 A machine is a 3D item model rather than a flat sprite. Its silhouette is a few cuboids, and each side of the model has
-its own 32 × 32 texture:
+its own 32 × 32 texture. The pylons of levels IV and V are taller than one block: they reach up to y 21 and y 28 of the
+model, so the rest of the models stay within one block (or, for an artillery piece, between -16 and 32). The fourth and
+fifth pylons are wider at the base than the third, with more bands and arms; the fifth has a crown on its cap. The fourth and
+fifth accumulators are wider cells, with coils round their sides (three for level IV, four for level V):
 
 - `north` is the front. It carries the machine's own detail: a fire door, a pressure gauge, a rotor drum, a lens, a
   screen, a dewar window, and so on.
@@ -118,18 +123,25 @@ file is 16 × 128 pixels, and each frame is shown for 2 ticks.
 
 ### Animated faces
 
-A machine can have one animated face instead of a static one. The face is a vertical strip of eight square frames, 16 pixels
-wide, and its `.mcmeta` sets the frame time. The animated faces are the pylons (`pylon_1` to `pylon_3`, on the up face), the
-accumulators (`accumulator_1` to `accumulator_3`, on the north face), the generators (`wind_generator`, `charcoal_generator`,
+A machine can have one animated face instead of a static one. The face is a vertical strip of square frames, 16 pixels
+wide, and its `.mcmeta` sets the frame time. The animated faces are the pylons (`pylon_1` to `pylon_5`, on the up face), the
+accumulators (`accumulator_1` to `accumulator_5`, on the north face), the generators (`wind_generator`, `charcoal_generator`,
 `petroleum_generator`, `diesel_generator` and `nuclear_generator`, on the north face), the crude oil refinery (up) and the
 solar panel (up), and the turrets at every level: the machine gun turret's amber indicator (north, every 3 ticks) and the laser turret's
-red lens (north, every 2 ticks; on the upper half of a tall laser, from level 3). The frame time is 2, 3 or 4 ticks, by machine. The other faces stay static.
+red lens (north, every 2 ticks; on the upper half of a tall laser, from level 3). The frame time is 2, 3 or 4 ticks, by machine, and a clip may have its own frame count from 4 to 8. The pylons and accumulators
+have eight frames, shown for 3 ticks. The pylon beacon has two rings at levels I to III, three at level IV and four at level V.
+The accumulator meter has three bars at levels I to III and five at levels IV and V, and the fill of level V is brighter. The artillery pieces and the command center animate their north faces too (see [Artillery models](#artillery-models)). The other faces stay static.
+
+The device screens, the black panel on the front face of a generator, drill or lab machine, are not textures: each is a block display of `BLACK_CONCRETE` with a text display in front of it.
 
 ### Two-block models and process machines
 
 A device that stands two blocks tall has two models: `machine/<id>` for the lower block, and `machine/<id>_top` for the upper
-block (the wind, charcoal, petroleum, diesel and nuclear generators, and the ore and petroleum drills of level IV and V). Both are
-written by `MachineArt` and `MachineAnimation`, and the upper model's animated face is named in the clip list. The eight process
+block (the wind, charcoal, petroleum, diesel and nuclear generators, the ore and petroleum drills of level IV and V, and the water
+pumps of level IV and V). Both are written by `MachineArt` and `MachineAnimation`, and the upper model's animated face is named in
+the clip list. The water pumps are baked by `WaterVariants` from the canonical pumps in `WaterArt`, one set per front: `machine/water_pump_4_north`
+with `machine/water_pump_4_north_top`, and so on for each level. The upper model is the upper half of the pump, and its impeller strip runs
+across both blocks, so it turns across the seam. The eight process
 machines are painted by `ProcessMachineArt`, which writes their descriptors itself; they are not in `MachineArt.ALL`. Their
 fronts are eight-frame strips, and each one's frame time is in `ProcessMachineArt.CLIPS`.
 
@@ -150,6 +162,67 @@ model turns toward its target. The laser's inventory sprite, and the sprites of 
 `TurretArt.SPRITES`. The four upgrade kits have item sprites too, `turret_upgrade_2` to `turret_upgrade_5` in `TurretLevelArt.SPRITES`:
 a sealed brass cartridge with a window of pips, one pip lit for kit II up to four for kit V, in silver, green, blue and gold.
 
+### Artillery models
+
+The seven artillery pieces are each made of a body and a barrel: `machine/artillery_1_body` and `machine/artillery_1_barrel` to
+`machine/artillery_7_body` and `machine/artillery_7_barrel`, painted by `ArtilleryArt`. Level VII has one more model,
+`machine/artillery_7_top`. The body is the carriage, the turret ring and the base, everything that turns to the aim. The barrel is
+the barrel and its breech, which tilts to the elevation. The upper model is the top 0.75 block of level VII, which turns with the body
+and does not tilt. The inventory sprites are the levels' own `artillery_N` component items, not models. Each level is as tall as it
+was: 1.5 blocks for levels I and II, 2.5 for III to V, 3.0 for VI and 3.75 for VII.
+
+A vanilla model keeps its elements between -16 and 32 units on every axis, which is three blocks, so each model is written from
+y -16, the floor of its frame, and reaches up to its part of the piece. The plugin translates each display up by
+`ArtilleryArt.displayLift(id)` blocks, which is one block for every artillery model, so the frame's floor sits on the block.
+Levels I to VI have a body and a barrel, and none reaches above y 32. Level VII's upper model and its barrel are written in the
+upper frame: their own y -16 is y 48 of the level, so the plugin places each one three blocks above the base, at
+`ArtilleryArt.displayOffset(id)`. The body covers the bottom three blocks.
+
+The barrel is written around its trunnion, the pivot it tilts about, which is at the middle of the block on the horizontal axes, at
+the height `ArtilleryArt.trunnionBlocks(id)` above the floor of the block. The plugin turns the body about the vertical axis by its
+yaw, and the barrel about its trunnion by its elevation, after its yaw. The upper model turns with the body.
+
+Each body is a plinth, a column that rises to the top, and a shield in front of the column, with side wings from level II and a
+lower band from level IV. From level VI the column stops two units short of the top, and two smoke vents stand on it. Each barrel is
+a tube of its level's width that reaches from the muzzle at z 0 back to the column at z 4, where its breech sits.
+
+The north face is the front. It carries the muzzle, two warning lights that pulse, and a glow around the bore from level III. The
+front texture is one 32-pixel face, stretched over the whole height of each element that shows it, so on the tall levels it is
+stretched. On level VII the same front is on both models. The glow grows with the level, from 0.15 at level III to 0.8 at level VII.
+The armour bands grow from one to three, the warning stripes
+start at level III, and the smoke vents and their red glow start at level VI. The animation of each level is in
+`ArtilleryArt.CLIPS`: level I and II have 4 frames at 4 ticks, level III 4 frames at 3 ticks, level IV 5 at 3, level V 6 at 3,
+level VI 7 at 2, and level VII 8 at 2. The pulse of the lights and the glow is a cosine shifted by 15 degrees, so that no two
+neighbouring frames match at any frame count from 4 to 8. The other faces use the shared casing pattern in the level's colours.
+
+The Artillery Command Center Unit, `machine/command_center`, is a table: a top slab, 12 to 14 units up, on a front pedestal that reaches the ground. Its
+screen is a flat area on the pedestal's north face, at z = 2 in model units, from x 4.5 to 11.5 and from y 4.5 to 9.75
+(`ArtilleryArt.SCREEN`). The screen is a dark glass panel with a thin bright frame, and the plugin places its hologram in that
+rectangle. The north face is an eight-frame strip, shown for 2 ticks a frame, whose scan lines move down one pixel a frame. The item
+texture is the same table seen from above.
+
+### Shell and charge layout
+
+The nine shells and the three tiers of charge are item sprites painted by `ShellArt`, each with a component model like any other
+sprite. A shell is drawn nose up, with an ogive nose, a body and a flared tail with fins, and each kind has its own markings:
+
+- `explosive_shell` has one band; `high_explosive_shell` has two bands.
+- `white_phosphorus_shell` is white with a broad yellow band, which flickers over 4 frames shown for 3 ticks.
+- `napalm_shell` is grey with an orange shoulder band and a drip on its side, whose flame grows and shrinks over 6 frames shown for 2 ticks, and turns from orange to white-hot as it grows.
+- `cluster_shell` has seams from the nose to the sides, a seam across the body and rivets, which show where it splits.
+- `enriched_uranium_shell` is black with a green radiation mark.
+- `hydrogen_thermonuclear_shell` is a large white shell with two blue bands and a blue cap.
+- `cluster_enriched_uranium_shell` has five small green bombs on its body.
+- `condensed_antimatter_shell` is dark violet with a glowing ring around its body.
+
+The charges are cylinders, `tier1_explosive_charge` in bronze with two bands, `tier2_explosive_charge` in silver-blue with three
+bands, and `tier3_explosive_charge` in purple-black with a glowing rim. An animated sprite is a strip of 32-pixel square frames,
+with a `.mcmeta` beside its PNG that gives the frame time, as the machine faces and belt tops do.
+
+The hand-made stock and containment are components painted by `ComponentArt`, not by `ShellArt`: `shell_casing_stock` is a stack
+of three brass casings with a steel strap, `shell_powder_stock` is three grey propellant bags tied with a dark cord, and
+`antimatter_containment` is a dark violet crystal in a steel ring, with a violet core.
+
 ### Colours
 
 - Write a colour as six hex digits with a `#`: `#E8FF60`. Three-digit forms are rejected with an error, so a typo
@@ -163,10 +236,10 @@ a sealed brass cartridge with a window of pips, one pip lit for kit II up to fou
 | `ArtGenerator` | Paints every texture and writes the PNGs, the descriptors and `contact-sheet.png`. | `java -cp CoreFactory-ResourcePack/target/classes io.corefactory.resourcepack.art.ArtGenerator CoreFactory-ResourcePack/art` |
 | `contact-sheet.png` | Every texture on one sheet, at three times scale, for review. It is not packed and not committed. | Run `ArtGenerator` locally, then open `CoreFactory-ResourcePack/art/contact-sheet.png`. |
 | `ResourcePackBuilder` | Packs the art into the zip, with the pack format it is given. Run by `mvn package`. | `mvn package` (see [RESOURCE_PACK.md](RESOURCE_PACK.md)) |
-| `ArtTest` | Checks the size, uniqueness and repeatability of every texture and machine face, that every id in `tnts.yml`, `items.yml`, `materials.yml` and `ores.yml` has art (and that each ore's host block matches `ores.yml`), that every machine's cuboids lie within one block, and that every effect sprite has a transparent border and visible pixels. | `mvn test` |
-| `ResourcePackBuilderTest` | Generates into a temporary folder, builds a zip, and checks the pack format, every item's files, that every machine model has elements whose faces refer to written textures, that every ore has its block model, item definition and host blockstate with every variant pointing at a model in the zip, and that every effect sprite has its three files and visible pixels. | `mvn test` |
+| `ArtTest` | Checks the size, uniqueness and repeatability of every texture and machine face, that every id in `tnts.yml`, `items.yml`, `materials.yml` and `ores.yml` has art (and that each ore's host block matches `ores.yml`), that every machine's cuboids lie within one block (or, for an artillery model, between -16 and 32 on y, and for pylons of levels IV and V up to y 28), that each pylon level is taller than the one below, and that every effect sprite has a transparent border and visible pixels. | `mvn test` |
+| `ResourcePackBuilderTest` | Generates into a temporary folder, builds a zip, and checks the pack format, every item's files, that every machine model has elements whose faces refer to written textures, that every ore has its block model, item definition and host blockstate with every variant pointing at a model in the zip, that every effect sprite has its three files and visible pixels, that every artillery piece and shell has its model, that every artillery model and the command center has every element between -16 and 32 on all three axes, and that every animated sprite has its strip and `.mcmeta`. | `mvn test` |
 
-The generator is deterministic. Running it twice gives identical files, so a diff in `art/` means a painter changed.
+The generator is deterministic. Running it twice gives identical files, so a diff in `art/` means a painter changed. The art output is generated and committed, so it must be regenerated with `ArtGenerator` after any art change, and the resource pack is built from it.
 
 ## 3. Processes
 
@@ -306,7 +379,7 @@ The builder writes `assets/corefactory/models/item/machine/<id>.json`:
 
 ## 5. Ore blocks
 
-Spigot cannot register a new block type, so each ore is a vanilla block that the pack re-textures. An ore block item is
+Paper cannot register a new block type, so each ore is a vanilla block that the pack re-textures. An ore block item is
 the host block's item carrying the ore's id: placing it registers the block as that ore, and breaking it with silk touch
 gives the item back. The ore's host is
 the vanilla block the plugin places (`host` in `ores.yml`). The pack replaces that block's appearance, so a placed ore
@@ -478,6 +551,7 @@ and a dark panel, and its tesseract pictogram is the largest contrast on the blo
 | <img src="images/components/anchor_plate.png" width="24" height="24" align="absmiddle"> `anchor_plate` | `#9AA0A8` | `#D0D4DA` |
 | <img src="images/components/antimatter_condensate.png" width="24" height="24" align="absmiddle"> `antimatter_condensate` | `#2A1040` | `#E0B0FF` |
 | <img src="images/components/antimatter_condenser.png" width="24" height="24" align="absmiddle"> `antimatter_condenser` | `#1A1E3A` | `#C080FF` |
+| <img src="images/components/antimatter_containment.png" width="24" height="24" align="absmiddle"> `antimatter_containment` | `#1A1430` | `#B56BFF` |
 | <img src="images/components/antiproton_capsule.png" width="24" height="24" align="absmiddle"> `antiproton_capsule` | `#5ACBE0` | `#F0FFFF` |
 | <img src="images/components/biohazard_culture.png" width="24" height="24" align="absmiddle"> `biohazard_culture` | `#3B7A2A` | `#A8FF60` |
 | <img src="images/components/converter.png" width="24" height="24" align="absmiddle"> `converter` | `#5A5A6A` | `#FFD040` |
@@ -513,7 +587,6 @@ and a dark panel, and its tesseract pictogram is the largest contrast on the blo
 | <img src="images/components/ore_drill_4.png" width="24" height="24" align="absmiddle"> `ore_drill_4` | `#6E7884` | `#3AA8FF` |
 | <img src="images/components/ore_drill_5.png" width="24" height="24" align="absmiddle"> `ore_drill_5` | `#6E7884` | `#3AA8FF` |
 | <img src="images/components/particle_accelerator.png" width="24" height="24" align="absmiddle"> `particle_accelerator` | `#4A4E60` | `#7AB8FF` |
-| <img src="images/components/petroleum.png" width="24" height="24" align="absmiddle"> `petroleum` | `#2A2014` | `#FFC83A` |
 | <img src="images/components/petroleum_drill_1.png" width="24" height="24" align="absmiddle"> `petroleum_drill_1` | `#2B2B2F` | `#B5482A` |
 | <img src="images/components/petroleum_drill_2.png" width="24" height="24" align="absmiddle"> `petroleum_drill_2` | `#2B2B2F` | `#B5482A` |
 | <img src="images/components/petroleum_drill_3.png" width="24" height="24" align="absmiddle"> `petroleum_drill_3` | `#2B2B2F` | `#B5482A` |
@@ -548,6 +621,8 @@ and a dark panel, and its tesseract pictogram is the largest contrast on the blo
 | <img src="images/components/roaster.png" width="24" height="24" align="absmiddle"> `roaster` | `#6A3A24` | `#FF7A20` |
 | <img src="images/components/separator.png" width="24" height="24" align="absmiddle"> `separator` | `#3A5A6A` | `#9FF0FF` |
 | <img src="images/components/shaped_charge_lens.png" width="24" height="24" align="absmiddle"> `shaped_charge_lens` | `#A8E0F0` | `#2F7F9F` |
+| <img src="images/components/shell_casing_stock.png" width="24" height="24" align="absmiddle"> `shell_casing_stock` | `#C9A24A` | `#7A5A1E` |
+| <img src="images/components/shell_powder_stock.png" width="24" height="24" align="absmiddle"> `shell_powder_stock` | `#6E7480` | `#2A2C32` |
 | <img src="images/components/silicate_tailings.png" width="24" height="24" align="absmiddle"> `silicate_tailings` | `#B8C4CC` | `#F0F8FF` |
 | <img src="images/components/slag.png" width="24" height="24" align="absmiddle"> `slag` | `#353030` | `#7A9A9A` |
 | <img src="images/components/solar_panel.png" width="24" height="24" align="absmiddle"> `solar_panel` | `#C4CBD4` | `#2A6FD8` |

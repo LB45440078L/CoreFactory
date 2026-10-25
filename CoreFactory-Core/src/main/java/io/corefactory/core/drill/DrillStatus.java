@@ -9,7 +9,7 @@ public enum DrillStatus {
     /** The drill has no power: no redstone, no panel and no charcoal, or for an ore drill no petroleum. */
     NO_POWER,
 
-    /** The output slots have no room for another item. */
+    /** The output slots have no room for another item, or for a petroleum drill the oil network takes no more petroleum. */
     FULL,
 
     /** The drill has power and room, but no deposit it may mine touches its square. */
@@ -27,9 +27,9 @@ public enum DrillStatus {
         return switch (this) {
             case RUNNING -> "Running";
             case NO_POWER -> kind == DrillKind.ORE ? "No petroleum" : "No power";
-            case FULL -> "Output full";
+            case FULL -> kind == DrillKind.PETROLEUM ? "Network full" : "Output full";
             case NO_TARGET -> "No deposit in range";
-            case EXHAUSTED -> "Deposit exhausted: no items left in range";
+            case EXHAUSTED -> "Deposit exhausted";
         };
     }
 }

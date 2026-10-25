@@ -62,6 +62,11 @@ class EnergyNetworkTest {
             return this;
         }
 
+        World criticalConsumer(String id, int x, int z, double demandW) {
+            consumers.add(new Consumer(id, new Pos(x, 66, z), demandW, true));
+            return this;
+        }
+
         World grids(GridRegistry registry) {
             this.grids = registry;
             return this;
@@ -378,6 +383,35 @@ class EnergyNetworkTest {
     }
 
     @Test
+    void levelFiveChargesAtItsEightHundredKilowattLimit() {
+        World world = new World().pylon("p1", 0, 0, PylonType.COLOSSAL)
+                .generator("g1", 3, 0, 1_000_000).wire("g1", "p1")
+                .accumulator("acc", 1, 0, AccumulatorLevel.V);
+        AccumulatorResult acc = accumulatorOf(solve(world, HOUR), "acc");
+        assertThat(acc.chargedWh()).isCloseTo(800_000, within(1e-9));
+        assertThat(acc.state().storedWh()).isCloseTo(720_000, within(1e-9));
+    }
+
+    @Test
+    void levelFourChargesAtItsTwoHundredKilowattLimit() {
+        World world = new World().pylon("p1", 0, 0, PylonType.HUGE)
+                .generator("g1", 3, 0, 500_000).wire("g1", "p1")
+                .accumulator("acc", 1, 0, AccumulatorLevel.IV);
+        AccumulatorResult acc = accumulatorOf(solve(world, HOUR), "acc");
+        assertThat(acc.chargedWh()).isCloseTo(200_000, within(1e-9));
+        assertThat(acc.state().storedWh()).isCloseTo(180_000, within(1e-9));
+    }
+
+    @Test
+    void aColossalPylonAddsItsTwoPointThreeMegawattsToTheGridCapacity() {
+        World world = new World().pylon("p1", 0, 0, PylonType.COLOSSAL)
+                .generator("g1", 3, 0, 3_000_000).wire("g1", "p1");
+        GridResult grid = gridOf(solve(world), "p1");
+        assertThat(grid.grid().supplyW()).isEqualTo(3_000_000);
+        assertThat(grid.grid().capacityW()).isEqualTo(2_300_000);
+    }
+
+    @Test
     void theChargeScalesWithTheLengthOfTheTick() {
         World world = new World().pylon("p1", 0, 0, PylonType.SMALL)
                 .generator("g1", 3, 0, 10_000).wire("g1", "p1")
@@ -548,6 +582,29 @@ class EnergyNetworkTest {
         assertThatThrownBy(() -> new World().pylon("p1", 0, 0, PylonType.SMALL)
                 .pylon("p1", 9, 9, PylonType.SMALL).snapshot())
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void aCriticalPumpIsServedBeforeAHungryConsumerWhateverItsId() {
+        World world = new World().pylon("p1", 0, 0, PylonType.SMALL)
+                .generator("g1", 3, 0, 20_000_000).wire("g1", "p1")
+                .consumer("a-rail", 1, 0, 8_000_000)
+                .criticalConsumer("pump", 2, 0, 50_000);
+        ConsumerResult pump = consumerOf(solve(world), "pump");
+        assertThat(pump.absorbedW()).isCloseTo(23_000, within(1e-9));
+        assertThat(pump.satisfaction()).isCloseTo(0.46, within(1e-12));
+        assertThat(consumerOf(solve(world), "a-rail").absorbedW()).isZero();
+    }
+
+    @Test
+    void theOrderOfCriticalConsumersIsStillTheirIdOrder() {
+        World world = new World().pylon("p1", 0, 0, PylonType.SMALL)
+                .generator("g1", 3, 0, 3_000).wire("g1", "p1")
+                .criticalConsumer("b", 2, 0, 2_000)
+                .criticalConsumer("a", 1, 0, 2_000);
+        EnergyResult result = solve(world);
+        assertThat(consumerOf(result, "a").absorbedW()).isCloseTo(2_000, within(1e-9));
+        assertThat(consumerOf(result, "b").absorbedW()).isCloseTo(1_000, within(1e-9));
     }
 
     @Test

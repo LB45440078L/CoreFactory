@@ -138,6 +138,13 @@
     </dependencies>
   </dependencyManagement>
 
+  <licenses>
+    <license>
+      <name>PolyForm Strict License 1.0.0</name>
+      <url>https://polyformproject.org/licenses/strict/1.0.0</url>
+      <distribution>manual</distribution>
+    </license>
+  </licenses>
   <repositories>
     <repository>
       <id>papermc</id>

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Licence or commercial use request
+    url: https://github.com/LB45440078L/CoreFactory/blob/main/LICENSING.md
+    about: Read the licence first. Use an issue marked "licence request" for permissions.
+  - name: Contributing
+    url: https://github.com/LB45440078L/CoreFactory/blob/main/CONTRIBUTING.md
+    about: Contributions are by invitation. Read this before writing code.

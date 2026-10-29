@@ -1,0 +1,91 @@
+name: Bug report
+description: Report a problem in CoreFactory.
+title: "[Bug] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please search existing issues first. Remove any personal information, server addresses and IP addresses from your logs.
+
+  - type: input
+    id: version
+    attributes:
+      label: CoreFactory version
+      description: The version in `plugin.yml` or the jar name, for example 1.0.0.
+    validations:
+      required: true
+
+  - type: input
+    id: server
+    attributes:
+      label: Server software and version
+      description: For example Paper 26.3 or Purpur 26.3.
+    validations:
+      required: true
+
+  - type: input
+    id: java
+    attributes:
+      label: Java version
+      description: The output of `java -version`.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The exact steps, in order.
+      placeholder: |
+        1. Place a pylon at ...
+        2. Attach a wire to ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant console or log output
+      description: Paste only the lines that mention CoreFactory or an exception. Use a code block.
+      render: text
+
+  - type: dropdown
+    id: optional
+    attributes:
+      label: Optional plugins installed
+      multiple: true
+      options:
+        - WorldEdit
+        - FastAsyncWorldEdit
+        - WorldGuard
+        - GriefPrevention
+        - ResourcePackManager
+        - None of these
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched the existing issues and found no duplicate.
+          required: true
+        - label: I removed personal information and IP addresses from the text above.
+          required: true

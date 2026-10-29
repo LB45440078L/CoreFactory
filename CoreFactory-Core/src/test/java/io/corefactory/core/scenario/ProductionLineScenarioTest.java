@@ -14,7 +14,6 @@ import io.corefactory.core.drill.DrillCatalog;
 import io.corefactory.core.drill.DrillKind;
 import io.corefactory.core.drill.DrillDefinition;
 import io.corefactory.core.drill.DrillDeposits;
-import io.corefactory.core.drill.DrillPower;
 import io.corefactory.core.drill.DrillRules;
 import io.corefactory.core.drill.DrillSelection;
 import io.corefactory.core.drill.DrillSpec;
@@ -165,12 +164,12 @@ class ProductionLineScenarioTest {
     /** The panels' ids, in the order of {@link #SOLAR_PANELS}. */
     static final List<String> SOLAR_IDS = List.of("solar-0", "solar-1", "solar-2", "solar-3", "solar-4", "solar-5");
 
-    /** The four level I pylons: A near the feed, B between, E at the oil field, C at the ore line. */
+    /** The pylons: three level I, A near the feed, B between, E at the oil field, and a level II C at the ore line, which reaches the ore drill. */
     static final List<Pylon> PYLONS = List.of(
             new Pylon("pylon-a", at(5, 3), PylonType.SMALL),
             new Pylon("pylon-b", at(20, 0), PylonType.SMALL),
             new Pylon("pylon-e", at(35, -3), PylonType.SMALL),
-            new Pylon("pylon-c", at(28, -19), PylonType.SMALL));
+            new Pylon("pylon-c", at(28, -15), PylonType.MEDIUM));
 
     /** The deposits, with the ids the drills' searches report. */
     private static final long CRUDE_ID = 1L;
@@ -192,13 +191,16 @@ class ProductionLineScenarioTest {
     /**
      * The power the covered devices ask for: the feed line (picker 100 W, seven belts 200 W each, picker 100 W) 1600 W; the oil
      * drill 40000 W (level III); the refinery 4000 W (a lab machine at the lab default); the ore line (level II picker 200 W, five
-     * belts 200 W, splitter 500 W) 1700 W; and the two crushers 4000 W each. The ore drill is outside every pylon's range, so its
-     * 40000 W is not in the load: 1600 + 40000 + 4000 + 1700 + 8000 = 55300 W.
+     * belts 200 W, splitter 500 W) 1700 W; the two crushers 4000 W each; and the ore drill 40000 W, which pylon C reaches. Every
+     * device is in range: 1600 + 40000 + 4000 + 1700 + 8000 + 40000 = 95300 W.
      */
-    static final double COVERED_LOAD_W = 55_300.0;
+    static final double COVERED_LOAD_W = 95_300.0;
 
-    /** The four pylons carry this much between them: the most a grid can deliver, whatever its supply. */
-    private static final double FOUR_PYLONS_CAPACITY_W = 4 * PylonType.SMALL.capacityW();
+    /**
+     * The most the pylons carry between them: three level I pylons at 23 kW and the level II pylon C at 92 kW. The load is well under it,
+     * so every device gets its full demand; a grid over its capacity would serve the devices in id order and starve the rest.
+     */
+    private static final double PYLONS_CAPACITY_W = 3 * PylonType.SMALL.capacityW() + PylonType.MEDIUM.capacityW();
 
     /** The items. */
     private static final Item FLUORITE_ITEM = Item.component("raw_fluorite");
@@ -262,7 +264,7 @@ class ProductionLineScenarioTest {
      */
     @Test
     void gridSatisfactionIsWhatTheGridDeliversOverTheCoveredLoad() {
-        assertThat(FOUR_PYLONS_CAPACITY_W).isCloseTo(92_000.0, within(1e-9));
+        assertThat(PYLONS_CAPACITY_W).isCloseTo(161_000.0, within(1e-9));
 
         EnergyResult night = solveWith(outputsAt(13_000L, 25_000.0, 0.0));
         GridResult nightGrid = night.grids().get(0);
@@ -276,7 +278,7 @@ class ProductionLineScenarioTest {
         assertThat(dayGrid.satisfaction()).isCloseTo(1.0, within(1e-9));
     }
 
-    /** The covered load is the demand of every device inside a pylon's square: 20 of the 21 devices, all but the ore drill. */
+    /** The covered load is the demand of every device inside a pylon's square: all 21 devices, the ore drill included. */
     @Test
     void theCoveredLoadIsTheDemandOfEveryDeviceInPylonRange() {
         double covered = 0.0;
@@ -287,9 +289,9 @@ class ProductionLineScenarioTest {
                 devices++;
             }
         }
-        assertThat(devices).isEqualTo(20);
+        assertThat(devices).isEqualTo(21);
         assertThat(covered).isCloseTo(COVERED_LOAD_W, within(1e-6));
-        assertThat(PYLONS.stream().noneMatch(pylon -> pylon.covers(ORE_DRILL))).isTrue();
+        assertThat(PYLONS.stream().anyMatch(pylon -> pylon.covers(ORE_DRILL))).isTrue();
     }
 
     /**
@@ -436,9 +438,9 @@ class ProductionLineScenarioTest {
     // ----------------------------------------------------------------------------------------------------------------
 
     /**
-     * Every device in pylon range gets its full demand at every tick: the supply of the diesel generator alone (150 kW) exceeds the
-     * 92 kW the four pylons carry, so the delivery is the whole 55.3 kW load. The ore drill, which no pylon reaches, is fed by the
-     * petroleum network and gets no grid power, so its satisfaction from the grid is zero.
+     * Every device in pylon range gets its full demand at every tick: the supply of the generators (charcoal, diesel and the panels)
+     * is more than the 95.3 kW load, and the pylons carry 161 kW, so nothing is short. The ore drill is powered by the grid alone, so it
+     * runs at full efficiency too.
      */
     @Test
     void theGridCarriesEveryDeviceInPylonRangeAtFullSatisfactionForTheWholeRun() {
@@ -448,7 +450,7 @@ class ProductionLineScenarioTest {
         assertThat(line.minLoadW).isCloseTo(COVERED_LOAD_W, within(1e-6));
         assertThat(line.maxLoadW).isCloseTo(COVERED_LOAD_W, within(1e-6));
         assertThat(line.minGridSatisfaction).isCloseTo(1.0, within(1e-9));
-        assertThat(line.worstOreSatisfaction).isZero();
+        assertThat(line.oreSatisfaction).isCloseTo(1.0, within(1e-9));
     }
 
     /**
@@ -488,7 +490,7 @@ class ProductionLineScenarioTest {
         assertThat(line.outlet.litres())
                 .isCloseTo(SEED_DIESEL_LITRES + line.dieselSupplied - line.dieselDrawn, within(1e-6));
         assertThat(line.intake.litres())
-                .isCloseTo(line.pumped - line.refineryDrawn - line.oreDrawn, within(1e-6));
+                .isCloseTo(line.pumped - line.refineryDrawn, within(1e-6));
         assertThat(line.intake.litres()).isPositive();
     }
 
@@ -501,6 +503,7 @@ class ProductionLineScenarioTest {
     void theOreLineRoutesFluoriteLeftSaltpeterRightAndCharcoalStraightIntoTheChest() {
         Line line = Line.run(RUN_TICKS);
 
+        assertThat(line.oreStatusRunning).isPositive();
         assertThat(line.misroutedItems).isZero();
         assertThat(line.badCrusherInputs).isZero();
         assertThat(line.depositRemaining(COAL_ID)).isZero();
@@ -516,10 +519,11 @@ class ProductionLineScenarioTest {
 
     /**
      * Petroleum and diesel never share a tube: the refinery's intake and outlet are two networks of their own, joined to the refinery as an
-     * intake and an output. The ore drill draws its petroleum from the intake network.
+     * intake and an output. The petroleum drill is a source on the intake network, and the ore drill joins no network at all, so it never
+     * draws petroleum from the intake.
      */
     @Test
-    void petroleumAndDieselNeverShareATubeAndTheOreDrillDrawsFromThePetroleumNetwork() {
+    void petroleumAndDieselNeverShareATubeAndTheOreDrillJoinsNoNetwork() {
         Line line = Line.run(RUN_TICKS);
 
         assertThat(FluidRules.mayJoin(EnumSet.of(Fluid.PETROLEUM), EnumSet.of(Fluid.DIESEL))).isFalse();
@@ -528,11 +532,10 @@ class ProductionLineScenarioTest {
         assertThat(intake).isNotEqualTo(outlet);
         assertThat(line.tubes.joinsAt(REFINERY)).containsExactlyInAnyOrder(
                 new Join(intake, Kind.SINK, null), new Join(outlet, Kind.SOURCE, Fluid.DIESEL));
-        assertThat(line.tubes.joinsAt(ORE_DRILL)).containsExactly(new Join(intake, Kind.SINK, null));
+        assertThat(line.tubes.joinsAt(ORE_DRILL)).isEmpty();
         assertThat(line.tubes.joinsAt(OIL_DRILL)).containsExactly(new Join(intake, Kind.SOURCE, Fluid.PETROLEUM));
         assertThat(line.intake.kinds()).containsOnly(Fluid.PETROLEUM);
         assertThat(line.outlet.kinds()).containsOnly(Fluid.DIESEL);
-        assertThat(line.oreDrawn).isPositive();
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -595,9 +598,10 @@ class ProductionLineScenarioTest {
     }
 
     /**
-     * The oil tubes as the plugin builds them: the intake pipes from the petroleum drill to the refinery's west face, the ore drill's pipe
-     * run joined to the intake, and the outlet pipes from the refinery's east face to the diesel generator. The drills and the generator join
-     * the networks beside them; the refinery keeps its two networks apart, taking petroleum from the intake and giving diesel to the outlet.
+     * The oil tubes as the plugin builds them: the intake pipes from the petroleum drill to the refinery's west face, and the outlet pipes
+     * from the refinery's east face to the diesel generator. The petroleum drill and the generator join the networks beside them; the
+     * refinery keeps its two networks apart, taking petroleum from the intake and giving diesel to the outlet. The ore drill is not a device
+     * of the network, so the pipe that runs north past it is not joined to it.
      */
     static OilJoinPlan oilTubes() {
         List<Tube> tubes = new ArrayList<>();
@@ -612,7 +616,6 @@ class ProductionLineScenarioTest {
         }
         return OilJoinPlan.of(tubes, List.of(
                 new Device(OIL_DRILL, Footprint.heightOf("petroleum_drill_" + DRILL_LEVEL), Fluid.PETROLEUM, null, false),
-                new Device(ORE_DRILL, Footprint.heightOf("ore_drill_" + DRILL_LEVEL), null, null, false),
                 new Device(REFINERY, Footprint.heightOf("crude_oil_refinery"), Fluid.DIESEL, Fluid.PETROLEUM, true),
                 new Device(DIESEL_GENERATOR, Footprint.heightOf("diesel_generator"), null, Fluid.DIESEL, false)));
     }
@@ -718,12 +721,12 @@ class ProductionLineScenarioTest {
         private Long oilCurrent;
         private Long oreCurrent;
         private boolean pumpRefused;
+        private int oreStatusRunning;
         private double fluoriteCredit;
         private double saltpeterCredit;
 
         /** Totals over the run. */
         private double pumped;
-        private double oreDrawn;
         private double refineryDrawn;
         private double dieselSupplied;
         private double dieselDrawn;
@@ -732,7 +735,7 @@ class ProductionLineScenarioTest {
 
         /** The checks over the run. */
         private double worstCoveredGap;
-        private double worstOreSatisfaction;
+        private double oreSatisfaction;
         private double minLoadW = Double.MAX_VALUE;
         private double maxLoadW;
         private double minGridSatisfaction = Double.MAX_VALUE;
@@ -887,10 +890,9 @@ class ProductionLineScenarioTest {
             for (Consumer consumer : consumers) {
                 double s = satisfaction.get(consumer.id());
                 if (consumer.pos().equals(ORE_DRILL)) {
-                    worstOreSatisfaction = Math.max(worstOreSatisfaction, s);
-                } else {
-                    worstCoveredGap = Math.max(worstCoveredGap, Math.abs(1.0 - s));
+                    oreSatisfaction = s;
                 }
+                worstCoveredGap = Math.max(worstCoveredGap, Math.abs(1.0 - s));
             }
 
             pumpPetroleum();
@@ -913,9 +915,9 @@ class ProductionLineScenarioTest {
             List<Deposit> inSquare = inRange(oilDrill, at);
             Optional<Deposit> crude = DrillDeposits.choose(DrillDeposits.mineable(inSquare, new DrillSelection()));
             oilCurrent = crude.map(Deposit::id).orElse(null);
-            DrillPower power = DrillRules.withGrid(DrillRules.petroleumPower(0, List.of(), false), sat(at));
-            if (power.powered() && crude.isPresent()) {
-                double rate = yield.itemsPerSecond(DRILL_LEVEL) * power.efficiency();
+            double efficiency = DrillRules.efficiency(sat(at));
+            if (efficiency > 0 && crude.isPresent()) {
+                double rate = yield.itemsPerSecond(DRILL_LEVEL) * efficiency;
                 long whole = pumpAccumulator.step(rate, crude.get().remaining());
                 if (whole > 0) {
                     double accepted = intake.supply(Fluid.PETROLEUM, whole);
@@ -927,11 +929,11 @@ class ProductionLineScenarioTest {
                     }
                 }
             }
-            DrillStatus status = DrillRules.status(power.powered(), !pumpRefused, !inSquare.isEmpty(), crude.isPresent());
+            DrillStatus status = DrillRules.status(efficiency > 0, !pumpRefused, !inSquare.isEmpty(), crude.isPresent());
             if (status == DrillStatus.RUNNING) {
-                oilState.advance(power.efficiency());
+                oilState.advance(efficiency);
                 if (oilState.ready()) {
-                    oilState.finishCycle(false);
+                    oilState.finishCycle();
                 }
             }
         }
@@ -957,17 +959,9 @@ class ProductionLineScenarioTest {
             }
         }
 
-        /** The ore drill's own petroleum: the Core's rate for its kind and level, drawn from the intake network each tick. */
-        private boolean drawOreDrillPetroleum() {
-            double wanted = oreDrill.kind().litresPerTick(oreDrill.spec().cycleTicks());
-            double drawn = intake.draw(Fluid.PETROLEUM, wanted);
-            oreDrawn += drawn;
-            return drawn + 1e-9 >= wanted;
-        }
-
         /**
-         * The ore drill: searches its square, draws the petroleum it burns only on a tick it would run, produces into its batch while
-         * it has room, and takes the batch into its barrel.
+         * The ore drill: searches its square, produces into its batch while it has room and runs on its grid share, and takes the batch
+         * into its barrel. It draws nothing from the oil network.
          */
         private void runOreDrill() {
             List<Deposit> inSquare = inRange(oreDrill, ORE_DRILL);
@@ -978,14 +972,13 @@ class ProductionLineScenarioTest {
             ItemRef product = ore.map(deposit -> productOf(deposit.ore())).orElse(null);
 
             long freeSpace = DrillStorage.room(barrel, product, STACK_LIMIT) - oreBatch.pending();
-            boolean draws = DrillRules.drawsFuel(DrillKind.ORE, freeSpace > 0, !inSquare.isEmpty(), ore.isPresent());
-            boolean fed = draws && drawOreDrillPetroleum();
-            DrillPower power = DrillRules.withGrid(DrillRules.orePower(fed), sat(ORE_DRILL));
-            DrillStatus status = DrillRules.status(power.powered() || !draws, freeSpace > 0, !inSquare.isEmpty(), ore.isPresent());
+            double efficiency = DrillRules.efficiency(sat(ORE_DRILL));
+            DrillStatus status = DrillRules.status(efficiency > 0, freeSpace > 0, !inSquare.isEmpty(), ore.isPresent());
             if (status == DrillStatus.RUNNING) {
+                oreStatusRunning++;
                 long available = ore.get().remaining() - oreBatch.pending();
                 if (available > 0 && freeSpace > 0) {
-                    double rate = yield.itemsPerSecond(DRILL_LEVEL) * power.efficiency();
+                    double rate = yield.itemsPerSecond(DRILL_LEVEL) * efficiency;
                     oreBatch.produce(Math.min(oreAccumulator.step(rate, available), freeSpace));
                 }
             }

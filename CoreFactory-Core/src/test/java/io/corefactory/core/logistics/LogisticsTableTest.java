@@ -6,6 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 
 class LogisticsTableTest {
@@ -67,12 +68,23 @@ class LogisticsTableTest {
     @ParameterizedTest
     @EnumSource(LogisticsLevel.class)
     void everyLevelHasPositiveNumbers(LogisticsLevel level) {
-        assertThat(LogisticsTable.beltSpeedBlocksPerSecond(level)).isPositive();
-        assertThat(LogisticsTable.beltPowerW(level)).isPositive();
         assertThat(LogisticsTable.pickerItemsPerSecond(level)).isPositive();
         assertThat(LogisticsTable.pickerPowerW(level)).isPositive();
-        assertThat(LogisticsTable.splitterItemsPerSecond(level)).isPositive();
-        assertThat(LogisticsTable.splitterPowerW(level)).isPositive();
+        if (level.compareTo(LogisticsLevel.III) <= 0) {
+            assertThat(LogisticsTable.beltSpeedBlocksPerSecond(level)).isPositive();
+            assertThat(LogisticsTable.beltPowerW(level)).isPositive();
+            assertThat(LogisticsTable.splitterItemsPerSecond(level)).isPositive();
+            assertThat(LogisticsTable.splitterPowerW(level)).isPositive();
+        }
+    }
+
+    @Test
+    void theLevelsAboveIIIAreForPickersOnly() {
+        assertThatThrownBy(() -> LogisticsTable.beltSpeedBlocksPerSecond(LogisticsLevel.IV)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> LogisticsTable.splitterPowerW(LogisticsLevel.V)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> LogisticsTable.duplexItemsPerSecond(LogisticsLevel.IV)).isInstanceOf(IllegalArgumentException.class);
+        assertThat(LogisticsTable.pickerItemsPerSecond(LogisticsLevel.V)).isEqualTo(16.0);
+        assertThat(LogisticsTable.pickerPowerW(LogisticsLevel.IV)).isEqualTo(800.0);
     }
 
     @ParameterizedTest
@@ -82,8 +94,10 @@ class LogisticsTableTest {
             return;
         }
         LogisticsLevel below = LogisticsLevel.values()[level.ordinal() - 1];
-        assertThat(LogisticsTable.beltSpeedBlocksPerSecond(level)).isGreaterThan(LogisticsTable.beltSpeedBlocksPerSecond(below));
         assertThat(LogisticsTable.pickerItemsPerSecond(level)).isGreaterThan(LogisticsTable.pickerItemsPerSecond(below));
-        assertThat(LogisticsTable.splitterItemsPerSecond(level)).isGreaterThan(LogisticsTable.splitterItemsPerSecond(below));
+        if (level.compareTo(LogisticsLevel.III) <= 0) {
+            assertThat(LogisticsTable.beltSpeedBlocksPerSecond(level)).isGreaterThan(LogisticsTable.beltSpeedBlocksPerSecond(below));
+            assertThat(LogisticsTable.splitterItemsPerSecond(level)).isGreaterThan(LogisticsTable.splitterItemsPerSecond(below));
+        }
     }
 }

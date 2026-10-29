@@ -4,6 +4,7 @@ import io.corefactory.core.CoreFactoryCore;
 import io.corefactory.core.process.ItemRef;
 import io.corefactory.core.process.Machine;
 import io.corefactory.core.process.ProcessCatalog;
+import io.corefactory.core.process.ProcessDefinition;
 import io.corefactory.core.process.ProcessEngine;
 import io.corefactory.core.process.Stack;
 import io.corefactory.core.text.Text;
@@ -219,6 +220,11 @@ public class MachineMenu implements SlotMenu {
             }
         }
         return false;
+    }
+
+    /** The processes this machine runs, in file order. */
+    public List<ProcessDefinition> recipes() {
+        return catalog.processesFor(machine.id());
     }
 
     /** True when an item of this reference may go into a slot of the given kind. */

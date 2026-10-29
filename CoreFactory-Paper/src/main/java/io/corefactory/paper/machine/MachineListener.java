@@ -4,9 +4,7 @@ import io.corefactory.core.CoreFactoryCore;
 import io.corefactory.core.device.Footprint;
 import io.corefactory.core.drill.DrillCatalog;
 import io.corefactory.core.drill.DrillDefinition;
-import io.corefactory.core.drill.DrillKind;
 import io.corefactory.core.drill.DrillRules;
-import io.corefactory.core.oil.Fluid;
 import io.corefactory.core.process.Machine;
 import io.corefactory.core.process.ProcessCatalog;
 import io.corefactory.core.text.Text;
@@ -105,9 +103,11 @@ public final class MachineListener implements Listener {
                     + "tuff or deepslate."));
             return;
         }
-        // A drill gives its petroleum into every network it joins; a refinery keeps its networks apart, so it is never refused here.
+        // A petroleum drill gives its petroleum into every network it joins; a refinery keeps its networks apart, so it is never refused
+        // here, and an ore drill joins no network.
         Optional<DrillDefinition> drill = drills.drill(machine.get().id());
-        if (drill.isPresent() && oil.wouldMix(block.getLocation(), Footprint.MAX_HEIGHT, petroleumGiven(drill.get()))) {
+        if (drill.isPresent() && drill.get().kind().pumps().isPresent()
+                && oil.wouldMix(block.getLocation(), Footprint.MAX_HEIGHT, drill.get().kind().pumps().get())) {
             event.setCancelled(true);
             player.sendMessage(Text.parse("&cThis would mix petroleum and diesel in one oil network."));
             return;
@@ -151,11 +151,6 @@ public final class MachineListener implements Listener {
         Face front = WaterOrientation.lookFace(event.getPlayer().getLocation().getYaw()).opposite();
         PlacedMachine placed = store.place(block.getLocation(), machine.get(), event.getPlayer().getUniqueId(), front);
         achievements.placed(event.getPlayer(), machine.get().id());
-    }
-
-    /** The fluid a drill gives into the oil network: petroleum for a petroleum drill, null for any other drill. */
-    private static Fluid petroleumGiven(DrillDefinition drill) {
-        return drill.kind() == DrillKind.PETROLEUM ? Fluid.PETROLEUM : null;
     }
 
     /** The machine an item places: a lab tool from processes.yml, or a drill, or empty for any other item. */

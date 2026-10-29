@@ -11,7 +11,6 @@ import java.util.List;
 
 import static io.corefactory.core.oil.OilPlanFixture.dieselGenerator;
 import static io.corefactory.core.oil.OilPlanFixture.dieselPump;
-import static io.corefactory.core.oil.OilPlanFixture.oreDrill;
 import static io.corefactory.core.oil.OilPlanFixture.petroleumDrill;
 import static io.corefactory.core.oil.OilPlanFixture.petroleumGenerator;
 import static io.corefactory.core.oil.OilPlanFixture.tube;
@@ -19,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * The other machines on the oil network, each on every horizontal face of one tube: a petroleum drill gives petroleum, a petroleum generator
- * and a diesel generator and a level II diesel pump take from the network, and an ore drill joins without a fluid. Each device joins the
+ * and a diesel generator and a level II diesel pump take from the network. An ore drill is not a device of the network at all. Each device joins the
  * tube's network on whichever face it stands, and no device changes the fluid of a network it does not give into.
  */
 class OilDeviceFacesTest {
@@ -113,16 +112,4 @@ class OilDeviceFacesTest {
         }
     }
 
-    /** An ore drill joins the tube on any face and takes no oil: the network keeps its fluid. */
-    @Test
-    void anOreDrillJoinsOnEveryFaceAndKeepsTheFluid() {
-        for (Face face : FACES) {
-            Device drill = oreDrill(face.step(TUBE));
-            OilJoinPlan plan = OilJoinPlan.of(List.of(tube(TUBE, Fluid.PETROLEUM)), List.of(drill));
-            int net = plan.networkOf(TUBE);
-
-            assertThat(plan.joinsAt(drill.anchor())).as("face %s", face).contains(new Join(net, Kind.SINK, null));
-            assertThat(plan.networks().get(net).fluids()).as("face %s", face).containsExactly(Fluid.PETROLEUM);
-        }
-    }
 }

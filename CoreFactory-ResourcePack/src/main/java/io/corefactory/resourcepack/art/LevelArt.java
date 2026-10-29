@@ -18,8 +18,8 @@ import java.util.stream.Stream;
  * are the same machine with trim. Level II has gold trim along the edges of its front and top faces; level III has cyan trim
  * on the same edges and three small lamps on the front. The other sides are the level I sides.
  *
- * <p>Each level is a {@link MachineArt.Spec} with the id {@code ID_2} or {@code ID_3}, which the resource pack draws as
- * {@code machine/ID_2} or {@code machine/ID_3}. Its faces are the level I faces with the trim painted on. An animated face is
+ * <p>Each level is a {@link MachineArt.Spec} with the id {@code ID_2} to {@code ID_5}, which the resource pack draws as
+ * {@code machine/ID_2} to {@code machine/ID_5}. Its faces are the level I faces with the trim painted on. An animated face is
  * painted frame by frame from the same frames as the level I strip, and trimmed, so the level keeps its motion.
  * {@link #write} is called once by {@link ArtGenerator}.
  */
@@ -31,19 +31,23 @@ public final class LevelArt {
             "research_console", "crude_oil_refinery", "induction_furnace", "powder_mill", "cartridge_press",
             "bullet_swaging_machine", "ammunition_assembly", "metal_lathe", "component_assembly", "heavy_weapons_assembly");
 
-    /** The levels that have a texture of their own: II and III. */
-    public static final List<Integer> LEVELS = List.of(2, 3);
+    /** The levels that have a texture of their own: II to V. */
+    public static final List<Integer> LEVELS = List.of(2, 3, 4, 5);
 
     /**
-     * The inventory sprites of the module kits, machine_upgrade_2 and machine_upgrade_3: a module housing with a trim frame in the
-     * level's colour and a row of lamps, one lit for level II and all three for level III.
+     * The inventory sprites of the module kits, machine_upgrade_2 to machine_upgrade_5: a module housing with a trim frame in the
+     * level's colour and a row of lamps, one lit for level II and all three for levels III to V.
      */
     public static final List<ComponentArt.Spec> SPRITES = List.of(
             new ComponentArt.Spec("machine_upgrade_2", "#5A6068", "#F2C230", module(1)),
-            new ComponentArt.Spec("machine_upgrade_3", "#5A6068", "#3FE8FF", module(3)));
+            new ComponentArt.Spec("machine_upgrade_3", "#5A6068", "#3FE8FF", module(3)),
+            new ComponentArt.Spec("machine_upgrade_4", "#5A6068", "#FF5CA8", module(3)),
+            new ComponentArt.Spec("machine_upgrade_5", "#5A6068", "#FF8A2A", module(3)));
 
     private static final int GOLD = Color.hex("#F2C230");
     private static final int CYAN = Color.hex("#3FE8FF");
+    private static final int MAGENTA = Color.hex("#FF5CA8");
+    private static final int ORANGE = Color.hex("#FF8A2A");
     /** The width of a trim line, in texture pixels: one model unit, a sixteenth of a block. */
     private static final int TRIM = 2;
     private static final int LAMP = 2;
@@ -57,7 +61,7 @@ public final class LevelArt {
     }
 
     /**
-     * Writes the level II and III faces and their descriptors under {@code out}, in the layout {@link ArtGenerator} uses, and adds
+     * Writes the level II to V faces and their descriptors under {@code out}, in the layout {@link ArtGenerator} uses, and adds
      * the front and top faces of each to {@code tiles} for the contact sheet.
      *
      * @param out   the art directory
@@ -87,7 +91,7 @@ public final class LevelArt {
      * paint the level I face with the level's trim on it.
      *
      * @param base  the level I spec, from {@link #base}
-     * @param level the level, {@code 2} or {@code 3}
+     * @param level the level, from 2 to 5
      */
     public static MachineArt.Spec levelSpec(MachineArt.Spec base, int level) {
         checkLevel(level);
@@ -112,17 +116,22 @@ public final class LevelArt {
 
     /**
      * Paints the trim of a level on one face of a level I machine. Levels II and III trim the north (front) face along the edges of
-     * the boxes nearest the viewer, and the up (top) face along the edges of the boxes that reach the top. Level III adds three lamps
-     * on the front. The other faces are not trimmed.
+     * the boxes nearest the viewer, and the up (top) face along the edges of the boxes that reach the top. Levels III to V add three
+     * lamps on the front. The other faces are not trimmed.
      */
     static void trim(Canvas c, MachineArt.Spec base, MachineArt.Face face, int level) {
-        int colour = level == 2 ? GOLD : CYAN;
+        int colour = switch (level) {
+            case 2 -> GOLD;
+            case 3 -> CYAN;
+            case 4 -> MAGENTA;
+            default -> ORANGE;
+        };
         if (face == MachineArt.Face.NORTH) {
             List<MachineArt.Box> front = frontmost(base.boxes());
             for (MachineArt.Box box : front) {
                 c.paint(outline(2 * box.x0(), 32 - 2 * box.y1(), 2 * box.x1(), 32 - 2 * box.y0()), colour);
             }
-            if (level == 3 && !front.isEmpty()) {
+            if (level >= 3 && !front.isEmpty()) {
                 lamps(c, front.get(0), colour);
             }
         } else if (face == MachineArt.Face.UP) {
@@ -275,7 +284,7 @@ public final class LevelArt {
 
     private static void checkLevel(int level) {
         if (!LEVELS.contains(level)) {
-            throw new IllegalArgumentException("Level textures exist for levels 2 and 3, not " + level);
+            throw new IllegalArgumentException("Level textures exist for levels 2 to 5, not " + level);
         }
     }
 

@@ -19,6 +19,11 @@ class LogisticsIdsTest {
         assertThat(LogisticsIds.of("belt_2")).contains(new LogisticsIds.Device(LogisticsIds.Kind.BELT, LogisticsLevel.II));
         assertThat(LogisticsIds.of("picker_3")).contains(new LogisticsIds.Device(LogisticsIds.Kind.PICKER, LogisticsLevel.III));
         assertThat(LogisticsIds.of("splitter_1")).contains(new LogisticsIds.Device(LogisticsIds.Kind.SPLITTER, LogisticsLevel.I));
+        assertThat(LogisticsIds.of("picker_4")).contains(new LogisticsIds.Device(LogisticsIds.Kind.PICKER, LogisticsLevel.IV));
+        assertThat(LogisticsIds.of("picker_5")).contains(new LogisticsIds.Device(LogisticsIds.Kind.PICKER, LogisticsLevel.V));
+        assertThat(LogisticsIds.of("picker_6")).isEmpty();
+        assertThat(LogisticsIds.of("belt_4")).isEmpty();
+        assertThat(LogisticsIds.of("splitter_4")).isEmpty();
     }
 
     @Test

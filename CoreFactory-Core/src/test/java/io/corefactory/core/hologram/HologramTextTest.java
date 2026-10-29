@@ -2,7 +2,6 @@ package io.corefactory.core.hologram;
 
 import io.corefactory.core.deposit.Deposit;
 import io.corefactory.core.drill.DrillKind;
-import io.corefactory.core.drill.DrillPower;
 import io.corefactory.core.drill.DrillRules;
 import io.corefactory.core.drill.DrillStatus;
 import io.corefactory.core.drill.DrillText;
@@ -131,68 +130,63 @@ class HologramTextTest {
     }
 
     @Test
-    void aPetroleumDrillOnCharcoalShowsItsFiveLines() {
-        DrillPower power = DrillRules.petroleumPower(0, List.of(), true);
+    void aPetroleumDrillOnAPartFedGridShowsItsFourLines() {
+        List<String> lines = HologramText.drillLines(DrillKind.PETROLEUM, DrillTable.level(1), 0.35, DrillStatus.RUNNING,
+                0.35, DrillText.deposit("&7Crude Petroleum Deposit", null), 12, 576);
 
-        assertThat(HologramText.drillLines(DrillKind.PETROLEUM, DrillTable.level(1), power, DrillStatus.RUNNING,
-                0.35, DrillText.deposit("&7Crude Petroleum Deposit", null), 12, 576, 3)).containsExactly(
+        assertThat(lines).containsExactly(
                 "&bL1 Petroleum drill",
-                "&7Power: &echarcoal 35%",
+                "&7Power: &egrid 35%",
                 "&7Extracting &f0.35/s  (21.0/min)",
                 "&7Deposit &cnone in range",
-                "&7Stored &f12&7/576 &7· fuel &f3");
+                "&7Stored &f12&7/576");
     }
 
     @Test
     void theDepositLineShowsTheOreAndWhatIsLeft() {
-        DrillPower power = DrillRules.orePower(true);
-
-        List<String> lines = HologramText.drillLines(DrillKind.ORE, DrillTable.level(5), power, DrillStatus.RUNNING,
-                6.0, DrillText.deposit("&7Galena Ore", galena(1_200_000)), 40, 576, 0);
+        List<String> lines = HologramText.drillLines(DrillKind.ORE, DrillTable.level(5), 1.0, DrillStatus.RUNNING,
+                6.0, DrillText.deposit("&7Galena Ore", galena(1_200_000)), 40, 576);
 
         assertThat(lines.get(3)).isEqualTo("&7Deposit &f&7Galena Ore &71.2M / 2.5M (48%)");
         assertThat(lines.get(2)).isEqualTo("&7Extracting &f6.00/s  (360.0/min)");
     }
 
     @Test
-    void aFullRedstoneBlockShowsItsPowerAsOneHundredPercent() {
-        DrillPower power = DrillRules.petroleumPower(15, List.of(), false);
+    void aFullyFedDrillShowsItsGridAsOneHundredPercent() {
+        List<String> lines = HologramText.drillLines(DrillKind.PETROLEUM, DrillTable.level(3), 1.0,
+                DrillStatus.RUNNING, 2.5, "", 0, 576);
 
-        List<String> lines = HologramText.drillLines(DrillKind.PETROLEUM, DrillTable.level(3), power,
-                DrillStatus.RUNNING, 2.5, "", 0, 576, 0);
-
-        assertThat(lines.get(1)).isEqualTo("&7Power: &eredstone 100%");
+        assertThat(lines.get(1)).isEqualTo("&7Power: &egrid 100%");
         assertThat(lines.get(2)).isEqualTo("&7Extracting &f2.50/s  (150.0/min)");
     }
 
     @Test
-    void anOreDrillOnPetroleumShowsItsRateAndItsPetroleumAsPower() {
-        DrillPower power = DrillRules.orePower(true);
-
-        List<String> lines = HologramText.drillLines(DrillKind.ORE, DrillTable.level(5), power, DrillStatus.RUNNING,
-                6.0, "", 40, 576, 0);
+    void anOreDrillShowsItsRateAndItsGridPower() {
+        List<String> lines = HologramText.drillLines(DrillKind.ORE, DrillTable.level(5), 1.0, DrillStatus.RUNNING,
+                6.0, "", 40, 576);
 
         assertThat(lines.get(0)).isEqualTo("&bL5 Ore drill");
-        assertThat(lines.get(1)).isEqualTo("&7Power: &epetroleum 100%");
+        assertThat(lines.get(1)).isEqualTo("&7Power: &egrid 100%");
         assertThat(lines.get(2)).isEqualTo("&7Extracting &f6.00/s  (360.0/min)");
-        assertThat(lines.get(4)).isEqualTo("&7Stored &f40&7/576 &7· fuel &f0");
+        assertThat(lines.get(4)).isEqualTo("&7Stored &f40&7/576");
     }
 
     @Test
-    void aDrillThatIsNotRunningShowsItsStatusInPlaceOfTheRate() {
-        assertThat(HologramText.drillLines(DrillKind.PETROLEUM, DrillTable.level(1), DrillPower.NONE,
-                DrillStatus.NO_POWER, 0, "", 0, 576, 0).get(2)).isEqualTo("&7No power");
-        assertThat(HologramText.drillLines(DrillKind.PETROLEUM, DrillTable.level(1),
-                DrillRules.petroleumPower(15, List.of(), false), DrillStatus.NO_TARGET, 0, "", 0, 576, 0).get(2))
-                .isEqualTo("&7No deposit in range");
-        assertThat(HologramText.drillLines(DrillKind.ORE, DrillTable.level(1),
-                DrillRules.orePower(true), DrillStatus.FULL, 0, "", 576, 576, 4).get(2)).isEqualTo("&7Output full");
+    void aDrillWithNoGridPowerShowsNoPowerInPlaceOfTheRate() {
+        assertThat(HologramText.drillLines(DrillKind.PETROLEUM, DrillTable.level(1), 0.0,
+                DrillStatus.NO_POWER, 0, "", 0, 576).get(2)).isEqualTo("&7No power");
+        assertThat(HologramText.drillLines(DrillKind.ORE, DrillTable.level(1), 0.0,
+                DrillStatus.NO_POWER, 0, "", 0, 576).get(2)).isEqualTo("&7No power");
+        assertThat(HologramText.drillLines(DrillKind.PETROLEUM, DrillTable.level(1), 1.0,
+                DrillStatus.NO_TARGET, 0, "", 0, 576).get(2)).isEqualTo("&7No deposit in range");
+        assertThat(HologramText.drillLines(DrillKind.ORE, DrillTable.level(1), 1.0,
+                DrillStatus.FULL, 0, "", 576, 576).get(2)).isEqualTo("&7Output full");
     }
 
     @Test
     void anExhaustedDepositSaysSo() {
-        assertThat(visible(HologramText.drillLines(DrillKind.ORE, DrillTable.level(2), DrillRules.orePower(true),
-                DrillStatus.EXHAUSTED, 0, "", 0, 576, 0).get(2)))
+        assertThat(visible(HologramText.drillLines(DrillKind.ORE, DrillTable.level(2), 1.0,
+                DrillStatus.EXHAUSTED, 0, "", 0, 576).get(2)))
                 .isEqualTo("Deposit exhausted");
     }
 
@@ -200,9 +194,8 @@ class HologramTextTest {
     void everyDrillLineStaysWithinAHologramWidth() {
         for (DrillStatus status : DrillStatus.values()) {
             for (DrillKind kind : DrillKind.values()) {
-                List<String> lines = HologramText.drillLines(kind, DrillTable.level(5),
-                        DrillRules.petroleumPower(0, List.of(), true), status, 999, DrillText.deposit(
-                                "&8Crude Petroleum Deposit", galena(2_000_000)), 999, 576, 99);
+                List<String> lines = HologramText.drillLines(kind, DrillTable.level(5), 1.0, status, 999, DrillText.deposit(
+                        "&8Crude Petroleum Deposit", galena(2_000_000)), 999, 576);
                 assertThat(lines).hasSize(HologramText.DRILL_LINES);
                 for (String line : lines) {
                     assertThat(visible(line).length()).as(line).isLessThanOrEqualTo(64);

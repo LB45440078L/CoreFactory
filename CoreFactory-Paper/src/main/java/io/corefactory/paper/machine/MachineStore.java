@@ -322,7 +322,7 @@ public final class MachineStore {
             }
             placed.state().restore(entry.getString("process"), entry.getInt("progress"));
             if (placed.drill() != null) {
-                placed.drill().restore(entry.getDouble("cycle"), entry.getInt("fuel-cycles"));
+                placed.drill().restore(entry.getDouble("cycle"));
                 placed.setSelection(new DrillSelection(entry.getStringList("ignore")));
             }
             placed.setOwner(parseUuid(entry.getString("owner")));
@@ -377,7 +377,6 @@ public final class MachineStore {
             }
             if (placed.drill() != null) {
                 yaml.set(base + "cycle", placed.drill().progress());
-                yaml.set(base + "fuel-cycles", placed.drill().fuelCycles());
                 if (!placed.selection().serialise().isEmpty()) {
                     yaml.set(base + "ignore", placed.selection().serialise());
                 }
@@ -435,8 +434,8 @@ public final class MachineStore {
             log.warning("The menu of machine '" + machine.id() + "' does not have the slots processes.yml gives it.");
         }
         MachineSlots slots = new MachineSlots(layout.inputSlots().size(), layout.outputSlots().size(),
-                layout.fuelSlots().size(), drill.isPresent());
-        Set<ItemRef> fuels = drill.isPresent() ? drill.get().fuel().map(Set::of).orElse(Set.of()) : ProcessEngine.FUEL;
+                layout.fuelSlots().size());
+        Set<ItemRef> fuels = drill.isPresent() ? Set.of() : ProcessEngine.FUEL;
         PlacedMachine placed = new PlacedMachine(at, machine, host, menus.create(machine, layout, at, slots, fuels));
         drill.ifPresent(definition -> {
             placed.setDrill(new DrillState(definition));
@@ -454,8 +453,8 @@ public final class MachineStore {
     }
 
     /**
-     * The display item of a lab machine at a level above I: the same item, with the model of that level ({@code machine/<id>_2} or
-     * {@code machine/<id>_3}). Level I, and every drill, keep the machine's own model.
+     * The display item of a lab machine at a level above I: the same item, with the model of that level ({@code machine/<id>_2} to
+     * {@code machine/<id>_5}). Level I, and every drill, keep the machine's own model.
      */
     private static ItemStack levelModel(ItemStack item, PlacedMachine placed) {
         if (placed.drill() != null || placed.level() == LabLevels.MIN_LEVEL) {

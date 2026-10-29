@@ -73,6 +73,18 @@ class DrillDepositsTest {
     }
 
     @Test
+    void theCommonMetalsAreDrilledByOreDrillsAndNotByPetroleumDrills() {
+        for (String ore : List.of("iron_ore", "copper_ore", "gold_ore", "diamond_ore")) {
+            assertThat(DrillDeposits.kindTakes(DrillKind.ORE, ore)).as(ore).isTrue();
+            assertThat(DrillDeposits.kindTakes(DrillKind.PETROLEUM, ore)).as(ore).isFalse();
+        }
+        Deposit iron = deposit(1, 0, 0, 3, "iron_ore", 50);
+        Deposit crude = deposit(2, 1, 1, 3, CRUDE, 50);
+        assertThat(DrillDeposits.inSquare(List.of(iron, crude), SQUARE, DrillKind.ORE,
+                Set.of("iron_ore", "copper_ore", "gold_ore", "diamond_ore", CRUDE)::contains)).containsExactly(iron);
+    }
+
+    @Test
     void inTheSquareOnlyDepositsOfTheKindAndAKnownOreAreListed() {
         Deposit crude = deposit(1, 0, 0, 3, CRUDE, 50);
         Deposit galena = deposit(2, 1, 1, 3, GALENA, 50);

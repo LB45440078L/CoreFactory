@@ -71,6 +71,42 @@ class OreDefinitionTest {
     }
 
     @Test
+    void aWeightIsReadAndAnOrdinaryOreHasTheOrdinaryWeight() {
+        String weighted = """
+            ores:
+              rare_ore:
+                host: SMOOTH_BASALT
+                drop: raw_rare
+                drop-amount: [1, 1]
+                replace: [STONE]
+                min-y: 0
+                max-y: 10
+                weight: 1
+              plain_ore:
+                host: SMOOTH_BASALT
+                drop: raw_plain
+                drop-amount: [1, 1]
+                replace: [STONE]
+                min-y: 0
+                max-y: 10
+              zero_ore:
+                host: SMOOTH_BASALT
+                drop: raw_zero
+                drop-amount: [1, 1]
+                replace: [STONE]
+                min-y: 0
+                max-y: 10
+                weight: 0
+            """;
+        List<OreDefinition> ores = OreDefinition.parse(ConfigValues.optionalSection(TestConfig.yaml(weighted), "ores"), LOG);
+        assertThat(ores).extracting(OreDefinition::id).containsExactly("rare_ore", "plain_ore");
+        assertThat(ores.get(0).weight()).isEqualTo(1);
+        assertThat(ores.get(1).weight()).isEqualTo(OreDefinition.ORDINARY_WEIGHT);
+        assertThatThrownBy(() -> new OreDefinition("o", "o", "STONE", "r", 1, 1, Set.of("STONE"), 0, 10, 0, 0))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void parseOfAMissingSectionLoadsNothing() {
         assertThat(OreDefinition.parse(null, LOG)).isEmpty();
     }

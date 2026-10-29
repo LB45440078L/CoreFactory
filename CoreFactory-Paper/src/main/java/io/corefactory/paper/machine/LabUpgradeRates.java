@@ -11,8 +11,8 @@ import java.util.logging.Logger;
  */
 public final class LabUpgradeRates {
 
-    /** The factors used when config.yml gives none that are valid: levels I, II and III. */
-    static final List<Double> DEFAULTS = List.of(1.0, 1.5, 2.0);
+    /** The factors used when config.yml gives none that are valid: levels I to V. */
+    static final List<Double> DEFAULTS = List.of(1.0, 1.5, 2.0, 2.75, 3.5);
 
     private LabUpgradeRates() {
     }

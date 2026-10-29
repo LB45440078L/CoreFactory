@@ -105,7 +105,7 @@ The lab machines have these slot counts (from `processes.yml`). Input, output an
 | `component_assembly` | 4 | 1 | 0 |
 | `heavy_weapons_assembly` | 6 | 1 | 0 |
 
-Each drill has one fuel slot and nine output slots. The levels and the cycle lengths are in `DrillTable` in the code.
+A drill has no fuel slot and no input slot: it runs on the energy network, so no fuel item is crafted for it. An ore drill has nine output slots, and a petroleum drill has none. The levels and the cycle lengths are in `DrillTable` in the code.
 
 ## Electricity and belts (materials.yml)
 
@@ -139,6 +139,8 @@ The solar panel is in the table above.
 | `picker_1` | <img src="images/components/picker_1.png" width="24" height="24" align="absmiddle"> Picker I | shapeless: Piston, Hopper, Iron Ingot, Redstone | Chemical Separation |
 | `picker_2` | <img src="images/components/picker_2.png" width="24" height="24" align="absmiddle"> Picker II | shapeless: <img src="images/components/picker_1.png" width="24" height="24" align="absmiddle"> Picker I, Gold Ingot, <img src="images/components/purified_iron.png" width="24" height="24" align="absmiddle"> Purified Iron | Fluorine Chemistry |
 | `picker_3` | <img src="images/components/picker_3.png" width="24" height="24" align="absmiddle"> Picker III | shapeless: <img src="images/components/picker_2.png" width="24" height="24" align="absmiddle"> Picker II, Diamond Block, <img src="images/components/superconducting_magnet.png" width="24" height="24" align="absmiddle"> Superconducting Magnet | Nuclear Fission |
+| `picker_4` | <img src="images/components/picker_4.png" width="24" height="24" align="absmiddle"> Picker IV | process `assemble_picker_4`, heavy_weapons_assembly: picker_3 1, superconducting_magnet 2, optical_lens 2, precision_barrel 1 | Pickers IV and V |
+| `picker_5` | <img src="images/components/picker_5.png" width="24" height="24" align="absmiddle"> Picker V | process `assemble_picker_5`, heavy_weapons_assembly: picker_4 1, tesseract_lattice 1, laser_emitter 2, antiproton_capsule 1 | Pickers IV and V |
 | `splitter_1` | <img src="images/components/splitter_1.png" width="24" height="24" align="absmiddle"> Splitter I | shapeless: Hopper, Iron Ingot, Copper Ingot, Lapis Lazuli | Fluorine Chemistry |
 | `splitter_2` | <img src="images/components/splitter_2.png" width="24" height="24" align="absmiddle"> Splitter II | shapeless: <img src="images/components/splitter_1.png" width="24" height="24" align="absmiddle"> Splitter I, <img src="images/components/purified_iron.png" width="24" height="24" align="absmiddle"> Purified Iron, Gold Ingot | Nuclear Fission |
 | `splitter_3` | <img src="images/components/splitter_3.png" width="24" height="24" align="absmiddle"> Splitter III | shapeless: <img src="images/components/splitter_2.png" width="24" height="24" align="absmiddle"> Splitter II, <img src="images/components/neutron_flux_cell.png" width="24" height="24" align="absmiddle"> Neutron Flux Cell, Diamond | Hydrogen Processes |
@@ -224,6 +226,10 @@ present in full and the outputs fit. A `fuel` machine burns one coal or charcoal
 | `assemble_pylon_5` | heavy_weapons_assembly | 4800 | pylon_4 1; tesseract_lattice 2; antimatter_containment 1; antiproton_capsule 4; superconducting_magnet 8 | pylon_5 1 |
 | `assemble_accumulator_4` | heavy_weapons_assembly | 2000 | accumulator_3 1; pulse_capacitor 4; superconducting_magnet 2; tesseract_lattice 1 | accumulator_4 1 |
 | `assemble_accumulator_5` | heavy_weapons_assembly | 4000 | accumulator_4 1; pulse_capacitor 8; antiproton_capsule 2; enriched_uranium 4; tesseract_lattice 1 | accumulator_5 1 |
+| `assemble_machine_upgrade_4` | heavy_weapons_assembly | 1800 | tesseract_lattice 1; superconducting_magnet 2; laser_emitter 2; optical_lens 2 | machine_upgrade_4 1 |
+| `assemble_machine_upgrade_5` | heavy_weapons_assembly | 2400 | tesseract_lattice 2; superconducting_magnet 2; antiproton_capsule 1; targeting_unit 2 | machine_upgrade_5 1 |
+| `assemble_picker_4` | heavy_weapons_assembly | 1200 | picker_3 1; superconducting_magnet 2; optical_lens 2; precision_barrel 1 | picker_4 1 |
+| `assemble_picker_5` | heavy_weapons_assembly | 1800 | picker_4 1; tesseract_lattice 1; laser_emitter 2; antiproton_capsule 1 | picker_5 1 |
 
 The drills are not processes. Their kind and level are in the `drills:` section of `processes.yml`, and the
 [Drills](MECHANICS.md#drills) section of the mechanics explains how each one runs.

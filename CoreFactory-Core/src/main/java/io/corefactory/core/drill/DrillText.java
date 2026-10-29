@@ -3,7 +3,6 @@ package io.corefactory.core.drill;
 import io.corefactory.core.deposit.Deposit;
 import io.corefactory.core.hologram.HologramText;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -30,9 +29,9 @@ public final class DrillText {
         return String.format(Locale.ROOT, "%.2f/s  (%.1f/min)", perSecond, perSecond * 60);
     }
 
-    /** The power of a drill as {@code redstone 100%}: its source and its percentage, with no colour codes. */
-    public static String power(DrillPower power) {
-        return power.source().label() + " " + HologramText.percent(power.efficiency());
+    /** The power of a drill as {@code grid 100%}: the energy network and the share of the demand it gives, with no colour codes. */
+    public static String power(double efficiency) {
+        return "grid " + HologramText.percent(efficiency);
     }
 
     /**
@@ -99,37 +98,26 @@ public final class DrillText {
      *
      * @param kind           the drill's kind
      * @param spec           the drill's level
-     * @param power          the drill's power this moment
+     * @param efficiency     the drill's efficiency this moment, the share of its demand the grid gives it
      * @param status         the drill's status
      * @param itemsPerSecond the units the drill yields per second now, litres for a petroleum drill and items for an ore drill: its
-     *                       level's rate times its power
+     *                       level's rate times its efficiency
      * @param depositLine    the deposit line from {@link #deposit}
      */
-    public static List<String> infoLines(DrillKind kind, DrillSpec spec, DrillPower power, DrillStatus status,
+    public static List<String> infoLines(DrillKind kind, DrillSpec spec, double efficiency, DrillStatus status,
                                          double itemsPerSecond, String depositLine) {
         boolean running = status == DrillStatus.RUNNING;
-        List<String> lines = new ArrayList<>(List.of(
+        return List.of(
                 "&7Level &f" + spec.level(),
                 "&7Area &f" + spec.area() + "x" + spec.area(),
                 "&7Depth &f" + spec.depth() + " blocks",
                 "&7Status " + (running ? "&a" : "&c") + status.text(kind),
                 "&7Rate " + (running ? "&f" + rate(itemsPerSecond) : "&cstopped"),
                 depositLine,
-                "&7Power: &f" + power(power),
-                "&7Powered by:"));
-        for (String source : poweredBy(kind)) {
-            lines.add("&8- " + source);
-        }
-        lines.add("&8The strongest source runs it.");
-        return List.copyOf(lines);
-    }
-
-    /** What powers a drill of this kind, one short phrase per source, with no colour codes. */
-    static List<String> poweredBy(DrillKind kind) {
-        if (kind == DrillKind.ORE) {
-            return List.of("petroleum from the oil network");
-        }
-        return List.of("a redstone block or wire next to it", "a solar panel next to it", "charcoal in the fuel slot");
+                "&7Power: &f" + power(efficiency),
+                "&7Powered by: &fthe energy network",
+                "&8A pylon in range links the drill to the grid.",
+                "&8It runs at the share of its demand the grid gives it.");
     }
 
     /** One decimal place of {@code value / unit}, truncated: 4250 with unit 1000 reads {@code 4.2}. */

@@ -58,7 +58,7 @@ public final class CrafterPort implements Port {
      */
     public static Optional<CrafterPort> of(Block block, ItemRefs refs, ContainerProtection protection, UUID putOwner, UUID takeOwner) {
         Objects.requireNonNull(block, "block");
-        if (!StorageKinds.isCrafter(block.getType().name()) || !(block.getState() instanceof Crafter crafter)) {
+        if (!StorageKinds.isCrafter(block.getType().name()) || !(block.getState(false) instanceof Crafter crafter)) {
             return Optional.empty();
         }
         if (crafter.getInventory().getSize() != CrafterGrid.SLOTS) {
@@ -139,6 +139,7 @@ public final class CrafterPort implements Port {
         if (!StorageKinds.isCrafter(block.getType().name())) {
             return Optional.empty();
         }
-        return block.getState() instanceof Crafter crafter ? Optional.of(crafter) : Optional.empty();
+        // The live state, not a snapshot: a snapshot's inventory does not always write through to the crafter.
+        return block.getState(false) instanceof Crafter crafter ? Optional.of(crafter) : Optional.empty();
     }
 }

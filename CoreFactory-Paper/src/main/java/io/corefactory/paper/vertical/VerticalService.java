@@ -8,6 +8,7 @@ import io.corefactory.core.logistics.Port;
 import io.corefactory.core.vertical.Belt;
 import io.corefactory.core.vertical.VerticalCarry;
 import io.corefactory.core.vertical.VerticalDir;
+import io.corefactory.core.vertical.VerticalIntake;
 import io.corefactory.core.vertical.VerticalLevels;
 import io.corefactory.core.vertical.VerticalTower;
 import io.corefactory.core.vertical.VerticalTowers;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 import java.util.logging.Logger;
 
 /**
@@ -195,6 +197,7 @@ public final class VerticalService {
                 }
                 tower.carry.step(TICK_SECONDS, levels.speed(tower.level), levels.capacity(tower.level));
                 output(entry.getKey(), tower, neighbours);
+                intake(entry.getKey(), tower, neighbours);
                 render(world, tower);
             }
         }
@@ -234,47 +237,22 @@ public final class VerticalService {
     }
 
     /**
-     * The port a regular belt or a picker gives items to at a tower's belt. It takes an item while the belt's entry has room on the
-     * tower, and it never gives an item out.
+     * The port of one belt of a tower: a regular belt or a picker puts an item in at the belt's entry while the tower has room there, and
+     * a picker beside the belt takes from the items in that belt's block. See {@link VerticalBeltPort}.
      *
+     * @param world         the world
+     * @param cell          the belt's block
+     * @param takePermitted asked on each take, whether the picker's owner may take from the belt
      * @return the port, or empty when the cell is not a belt of a tower
      */
-    public Optional<Port> inputPort(UUID world, Pos cell) {
+    public Optional<Port> portAt(UUID world, Pos cell, BooleanSupplier takePermitted) {
         WorldState state = worlds.get(world);
         Tower tower = state == null ? null : state.byBelt.get(cell);
         if (tower == null) {
             return Optional.empty();
         }
-        int block = tower.shape.carryBlock(cell);
-        return Optional.of(new Port() {
-            @Override
-            public boolean accepts(Item item) {
-                return tower.carry.slotFor(block, levels.capacity(tower.level)) >= 0;
-            }
-
-            @Override
-            public void accept(Item item) {
-                int slot = tower.carry.place(block, levels.capacity(tower.level));
-                if (slot >= 0) {
-                    tower.items.add(slot, item);
-                }
-            }
-
-            @Override
-            public Item peekOutput() {
-                return null;
-            }
-
-            @Override
-            public Item takeOutput() {
-                return null;
-            }
-
-            @Override
-            public int storedCount() {
-                return 0;
-            }
-        });
+        return Optional.of(new VerticalBeltPort(tower.carry, tower.items, tower.shape.carryBlock(cell),
+                levels.capacity(tower.level), takePermitted));
     }
 
     /**
@@ -461,6 +439,15 @@ public final class VerticalService {
             tower.carry.output(1);
             tower.items.remove(0);
         }
+    }
+
+    /**
+     * Takes one item from the storage beyond the tower's input end, when the input block has room: a chest below an UP tower, or
+     * above a DOWN tower, feeds the tower the way a belt fed from it would.
+     */
+    private void intake(UUID world, Tower tower, TowerNeighbours neighbours) {
+        neighbours.sourceAt(world, tower.shape.inputEndCell(), tower.owner)
+                .ifPresent(source -> VerticalIntake.pull(tower.carry, tower.items, levels.capacity(tower.level), source));
     }
 
     /** Shows the items of a tower as displays along it, within the cap, and removes the displays of items that left. */

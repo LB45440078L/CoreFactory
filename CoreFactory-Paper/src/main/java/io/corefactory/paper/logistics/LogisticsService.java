@@ -97,6 +97,7 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
     private final LogisticsPorts ports;
     private final VerticalService vertical;
     private final DisplayBudget budget;
+    private final CapWarningThrottle capWarning;
     private final int saveIntervalTicks;
     private final Logger log;
     private final Map<String, LogisticsDevice> byId = new LinkedHashMap<>();
@@ -132,7 +133,12 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
 
         @Override
         public Optional<Port> portAt(UUID world, Pos cell, UUID owner) {
-            return ports.at(world, cell, owner, null);
+            return vertical.contains(world, cell) ? Optional.empty() : ports.at(world, cell, owner, null);
+        }
+
+        @Override
+        public Optional<Port> sourceAt(UUID world, Pos cell, UUID owner) {
+            return vertical.contains(world, cell) ? Optional.empty() : ports.at(world, cell, null, owner);
         }
     };
 
@@ -149,20 +155,23 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
      * @param file              {@code logistics.yml}
      * @param maxDisplays       the most item displays on belts at once
      * @param saveIntervalTicks ticks between saves, at least 1
+     * @param capWarning        limits how often the display cap is logged
      * @param log               receives warnings
      */
     public LogisticsService(CoreFactoryCore core, MachineStore machines, DeviceRegistry energyDevices, EnergyService energy,
                             HologramService holograms, TurretRegistry turrets, ItemRefs refs, ContainerProtection containers,
-                            VerticalService vertical, File file, int maxDisplays, int saveIntervalTicks, Logger log) {
+                            VerticalService vertical, File file, int maxDisplays, CapWarningThrottle capWarning,
+                            int saveIntervalTicks, Logger log) {
         this.core = core;
         this.machines = machines;
         this.energyDevices = energyDevices;
         this.energy = energy;
         this.store = new LogisticsStore(file, log);
         this.entities = new LogisticsEntities(core, holograms, refs);
-        this.ports = new LogisticsPorts(machines, energyDevices, turrets, refs, containers);
+        this.ports = new LogisticsPorts(machines, energyDevices, turrets, refs, containers, vertical);
         this.vertical = vertical;
         this.budget = new DisplayBudget(maxDisplays);
+        this.capWarning = capWarning;
         this.saveIntervalTicks = Math.max(1, saveIntervalTicks);
         this.log = log;
     }
@@ -342,7 +351,8 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
 
     /**
      * What a picker or a splitter placed on the face {@code toward} of a cell takes from: a belt at the cell that flows into that
-     * face or flows past its side (a straight belt), a machine or a generator at the cell, or nothing.
+     * face or flows past its side (a straight belt), a vertical belt at the cell from any side face, a machine or a generator at the cell,
+     * or nothing.
      *
      * @param cell   the aimed block
      * @param toward the direction from the aimed block to the new device, or null for a top or bottom face
@@ -356,6 +366,10 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
             if (belt != SidePlacement.Input.OTHER) {
                 return belt;
             }
+        }
+        if (toward != null && cell.getWorld() != null
+                && vertical.contains(cell.getWorld().getUID(), new Pos(cell.getBlockX(), cell.getBlockY(), cell.getBlockZ()))) {
+            return SidePlacement.Input.BELT_SIDE;
         }
         if (machines.at(cell).isPresent() || energyDevices.at(cell).filter(GeneratorDevice.class::isInstance).isPresent()) {
             return SidePlacement.Input.PORT;
@@ -556,9 +570,7 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
         for (LogisticsDevice device : here) {
             for (Pos cell : cellsOf(device)) {
                 if (!occupied.contains(cell) && !portMap.containsKey(cell)) {
-                    Optional<Port> tower = vertical.inputPort(world, cell);
-                    (tower.isPresent() ? tower : ports.at(world, cell, owners.get(cell), takers.get(cell)))
-                            .ifPresent(port -> portMap.put(cell, port));
+                    ports.at(world, cell, owners.get(cell), takers.get(cell)).ifPresent(port -> portMap.put(cell, port));
                 }
             }
         }
@@ -637,9 +649,11 @@ public final class LogisticsService implements EnergyService.ConsumerSource {
             return;
         }
         DisplayBudget.Take take = budget.take();
-        if (take == DisplayBudget.Take.REFUSED_WARN) {
-            log.warning("Logistics: the item displays on belts are capped at " + budget.cap() + " (logistics.max-item-displays). "
-                    + "More items are carried but not shown until some leave the belts.");
+        if (take == DisplayBudget.Take.REFUSED || take == DisplayBudget.Take.REFUSED_WARN) {
+            if (capWarning.allow(System.currentTimeMillis())) {
+                log.warning("Logistics: the item displays on belts are capped at " + budget.cap() + " (logistics.max-item-displays). "
+                        + "More items are carried but not shown until some leave the belts.");
+            }
             return;
         }
         if (take == DisplayBudget.Take.TAKEN) {

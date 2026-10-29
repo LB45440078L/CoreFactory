@@ -1,6 +1,8 @@
 package io.corefactory.paper.machine;
 
 import io.corefactory.core.process.ItemRef;
+import io.corefactory.core.process.Machine;
+import io.corefactory.core.process.Portion;
 import io.corefactory.core.process.ProcessCatalog;
 import io.corefactory.core.process.ProcessDefinition;
 import io.corefactory.paper.ShippedContent;
@@ -9,7 +11,9 @@ import io.corefactory.paper.machine.MachineSlots.Role;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -119,6 +123,89 @@ class HopperRulesTest {
         List<ItemRef> held = Arrays.asList(COBBLESTONE, CRUSHED_GALENA);
         List<Integer> counts = List.of(1, 64);
         assertThat(HopperRules.insertionSlot(held, counts, CRUSHED_GALENA, 64)).isEmpty();
+    }
+
+    private static final ItemRef YELLOWCAKE = ItemRef.item("yellowcake");
+    private static final ItemRef CRUSHED_FLUORITE = ItemRef.item("crushed_fluorite");
+
+    @Test
+    void aDepletedInputSlotIsNotFilledByTheOtherIngredient() {
+        List<ProcessDefinition> converter = catalog.processesFor("converter");
+        List<ItemRef> held = Arrays.asList(null, CRUSHED_FLUORITE);
+        List<Integer> counts = List.of(0, 64);
+        assertThat(HopperRules.insertionSlot(held, counts, CRUSHED_FLUORITE, 64, converter)).isEmpty();
+        assertThat(HopperRules.insertionSlot(held, counts, YELLOWCAKE, 64, converter)).isEqualTo(OptionalInt.of(0));
+    }
+
+    @Test
+    void aFirstIngredientGoesToItsOwnSlotAndNotTheOthers() {
+        List<ProcessDefinition> converter = catalog.processesFor("converter");
+        List<ItemRef> empty = Arrays.asList(null, null);
+        List<Integer> none = List.of(0, 0);
+        assertThat(HopperRules.insertionSlot(empty, none, CRUSHED_FLUORITE, 64, converter)).isEqualTo(OptionalInt.of(1));
+        assertThat(HopperRules.insertionSlot(empty, none, YELLOWCAKE, 64, converter)).isEqualTo(OptionalInt.of(0));
+    }
+
+    @Test
+    void aThirdCopyGoesToItsOwnSlotNeverToTheOther() {
+        List<ProcessDefinition> converter = catalog.processesFor("converter");
+        List<ItemRef> partial = Arrays.asList(YELLOWCAKE, CRUSHED_FLUORITE);
+        assertThat(HopperRules.insertionSlot(partial, List.of(5, 64), YELLOWCAKE, 64, converter)).isEqualTo(OptionalInt.of(0));
+        List<ItemRef> full = Arrays.asList(YELLOWCAKE, CRUSHED_FLUORITE);
+        assertThat(HopperRules.insertionSlot(full, List.of(64, 64), YELLOWCAKE, 64, converter)).isEmpty();
+        assertThat(HopperRules.insertionSlot(full, List.of(64, 64), CRUSHED_FLUORITE, 64, converter)).isEmpty();
+    }
+
+    /** For every machine process with two or more distinct inputs: each input gets in from empty, and the others keep a slot after it. */
+    @Test
+    void everyMultiInputRecipeKeepsASlotForEachOfItsIngredients() {
+        int checked = 0;
+        for (Machine machine : catalog.machines()) {
+            List<ProcessDefinition> processes = catalog.processesFor(machine.id());
+            for (ProcessDefinition process : processes) {
+                List<ItemRef> ingredients = process.inputs().stream().map(Portion::ref).distinct().toList();
+                if (ingredients.size() < 2) {
+                    continue;
+                }
+                checked++;
+                int slots = machine.inputSlots();
+                for (ItemRef first : ingredients) {
+                    List<ItemRef> held = new ArrayList<>(Collections.nCopies(slots, (ItemRef) null));
+                    List<Integer> counts = new ArrayList<>(Collections.nCopies(slots, 0));
+                    OptionalInt placed = HopperRules.insertionSlot(held, counts, first, 64, processes);
+                    assertThat(placed).as(machine.id() + " " + process.id() + " takes " + first).isPresent();
+                    held.set(placed.getAsInt(), first);
+                    counts.set(placed.getAsInt(), 64);
+                    for (ItemRef other : ingredients) {
+                        if (!other.equals(first)) {
+                            assertThat(HopperRules.insertionSlot(held, counts, other, 64, processes))
+                                    .as(machine.id() + " " + process.id() + ": " + other + " keeps a slot after " + first)
+                                    .isPresent();
+                        }
+                    }
+                    OptionalInt again = HopperRules.insertionSlot(held, counts, first, 64, processes);
+                    if (again.isPresent() && machineIngredients(processes) <= slots) {
+                        int slot = again.getAsInt();
+                        assertThat(held.get(slot)).as(machine.id() + " overflow of " + first + " lands on an empty slot")
+                                .isNull();
+                        held.set(slot, first);
+                        counts.set(slot, 1);
+                        for (ItemRef other : ingredients) {
+                            if (!other.equals(first)) {
+                                assertThat(HopperRules.insertionSlot(held, counts, other, 64, processes))
+                                        .as(machine.id() + " " + process.id() + ": " + other + " keeps a slot after an overflow")
+                                        .isPresent();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assertThat(checked).isPositive();
+    }
+
+    private static int machineIngredients(List<ProcessDefinition> processes) {
+        return processes.stream().flatMap(process -> process.inputs().stream()).map(Portion::ref).distinct().toList().size();
     }
 
     @Test

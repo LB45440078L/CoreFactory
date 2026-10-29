@@ -69,7 +69,7 @@ devices. Each grid chart is a hologram too. Each hologram is one text display en
 The plugin sends no packets for holograms, and nothing is written to the world.
 
 - A lab tool's hologram has three lines: the process, a bar of 20 segments, and the percentage with the seconds left (or `idle`).
-- A drill's hologram has five lines: its level and kind, its power, its rate (or its status), its deposit, and its storage and fuel.
+- A drill's hologram has five lines: its level and kind, its power, its rate (or its status), its deposit, and its storage.
 - Both also end with a `Grid` line for the power network: the grid's voltage, the power the device asks for and the share it
   gets, such as `Grid 230.0 V  4.0 kW  100 %`. It is always shown. See [MECHANICS.md](MECHANICS.md#looks-menus-and-the-grid-line).
 
@@ -106,7 +106,7 @@ and fuel are fixed in the code, so they have no keys.
 | Key | Default | Meaning |
 |---|---|---|
 | `consumers.lab-demand` | `4000` | Power, in watts (W), that each placed lab tool asks for, whether or not it runs. A machine whose `processes.yml` entry has a `power` value asks for that instead (the chemistry and ammunition machines do). A lab tool runs at the share its network supplies, so one with no pylon in range stops. `0` means lab tools need no power, which was the behaviour before pylons. Read at start. |
-| `consumers.drill-demand` | `15000` | Power, in watts (W), that a placed drill asks for when its level is not known. A drill normally asks for the demand of its level: 15 kW, 25 kW, 40 kW, 60 kW or 90 kW for levels I to V. A drill runs on the stronger of its own power and its network. Read at start. |
+| `consumers.drill-demand` | `15000` | Power, in watts (W), that a placed drill asks for when its level is not known. A drill normally asks for the demand of its level, which is fixed in the code: 15 kW, 25 kW, 40 kW, 60 kW or 90 kW for levels I to V. Every drill, of either kind, runs at the share of its demand its grid gives it, and has no other power. Read at start. |
 | `save-interval-ticks` | `300` | Ticks between saves of `energy.yml`. The file is also saved on shutdown. Read at start. |
 | `wire-view-blocks` | `24` | Blocks from a player within which a wire is drawn to them. A wire counts as near by its middle. Read at start. |
 | `wire-particle-cap` | `320` | The most particles a player is sent for wires in one redraw, which is every 5 ticks. The nearest wires come first, and each is sent whole or not at all. `0` turns the wires off for every player. Read at start. |
@@ -125,22 +125,24 @@ saved in `energy.yml`. The history each chart draws from is kept in memory and s
 
 ### `logistics`
 
-The belts, pickers and splitters. Their rules are in [MECHANICS.md](MECHANICS.md#electricity-and-logistics).
+The belts, pickers and splitters. Their rules are in [MECHANICS.md](MECHANICS.md#electricity-and-logistics). Their rates and power are fixed in the core (`LogisticsTable`), not in this file: pickers I to V move 1, 2, 4, 8 and 16 items a second.
 
 | Key | Default | Meaning |
 |---|---|---|
 | `max-item-displays` | `2000` | Most item displays shown on belts at once. Past the cap an item is still carried, but not shown, and one warning is logged. Read at start. |
+| `cap-warning` | `true` | Whether the console warning about `max-item-displays` is logged. Off: items past the cap are still carried, and nothing is logged. Read at start. |
+| `cap-warning-minutes` | `10` | Minutes between two of those warnings, in server time. Zero or less: logged once only, the first time the cap is reached. Read at start. |
 | `save-interval-ticks` | `300` | Ticks between saves of `logistics.yml`. The file is also saved on shutdown. Read at start. |
 
 As with `concealment`, a `config.yml` without these keys takes the defaults in the tables above.
 
 ### `machine-upgrades`
 
-The work pace of the lab machine levels, set by the upgrade modules `machine_upgrade_2` and `machine_upgrade_3`.
+The work pace of the lab machine levels, set by the upgrade modules `machine_upgrade_2` to `machine_upgrade_5`.
 
 | Key | Default | Meaning |
 |---|---|---|
-| `speed` | `[1.0, 1.5, 2.0]` | Work pace factor of lab machine levels I, II and III. A level II machine runs its process 1.5 times as fast at full power, and level III twice as fast; the power it draws is unchanged. Each factor must be finite, above zero, and never lower for a higher level. A list that is not valid reverts to the defaults, with one warning. Read at start. |
+| `speed` | `[1.0, 1.5, 2.0, 2.75, 3.5]` | Work pace factor of lab machine levels I to V. A level II machine runs its process 1.5 times as fast at full power, level III twice as fast, level IV 2.75 times and level V 3.5 times; the power it draws is unchanged. Each factor must be finite, above zero, and never lower for a higher level. A list that is not valid reverts to the defaults, with one warning. Read at start. |
 
 ### `vertical-belt`
 
@@ -172,7 +174,7 @@ water its network reaches, not the water under it. The rules are in [ARCHITECTUR
 ### `oil`
 
 The oil network: oil tubes carry petroleum, from petroleum drills, and diesel, from the crude oil refinery, as litres of fluid
-to the generators, ore drills and level II pumps that burn them. A network never holds both fluids. The rules are in
+to the generators and level II pumps that burn them. An ore drill joins no oil network. A network never holds both fluids. The rules are in
 [MECHANICS.md](MECHANICS.md#oil-and-fluids). Read at start.
 
 | Key | Default | Meaning |
@@ -471,7 +473,7 @@ The last three keys are the scanner's, and they are read on their own: when they
 
 ### drill-rates
 
-One rate for each drill level from 1 to 5. A drill's output is its level's rate times its power efficiency (see [MECHANICS.md](MECHANICS.md#drills)). Read at startup, so a change needs a restart.
+One rate for each drill level from 1 to 5. A drill's output is its level's rate times its efficiency, the share of its demand the energy network gives it (see [MECHANICS.md](MECHANICS.md#drills)). Read at startup, so a change needs a restart.
 
 | Key | Default | Meaning |
 |---|---|---|
@@ -646,6 +648,7 @@ One entry per special ore, keyed by its id:
 | `drop-amount` | `[min, max]` items per placed ore block. |
 | `replace` | Blocks a patch block may replace. |
 | `min-y`, `max-y` | Vertical range in which a deposit's patch blocks become host blocks. |
+| `weight` | Relative chance that a new solid deposit holds this ore, from 1 up. An ore with no `weight` has 2. Each ore is in the pool once per point of its weight, and one is picked evenly, so a weight of 6 is three times as likely as 2. The shipped weights are iron and copper 6, gold 3, diamond 1, and 2 for the rest, a total of 38. Only new cells are affected: a deposit already stored keeps its ore. |
 
 The keys `veins-per-chunk` and `vein-size` are no longer read, so they do nothing. Deposits are not placed from this file: the world lays them, with the settings under [deposits](#deposits) (see [MECHANICS.md](MECHANICS.md#deposits)). A crude petroleum deposit (`crude_petroleum_deposit`) is one of the entries. It has no `drop`: a petroleum drill pumps its
 petroleum into the oil network as litres of fluid, and no item is given.
@@ -773,10 +776,10 @@ process ids are tied to the code, so the plugin does not merge its entries. Its 
 written for:
 
 ```
-# data-version: 10
+# data-version: 12
 ```
 
-The shipped version is 10. The changes of each version are listed in [CHANGELOG.md](../CHANGELOG.md).
+The shipped version is 12. The changes of each version are listed in [CHANGELOG.md](../CHANGELOG.md).
 
 On start the plugin compares that line with the version the jar ships. The file is handled as follows:
 

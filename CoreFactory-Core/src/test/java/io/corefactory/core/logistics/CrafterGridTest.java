@@ -186,6 +186,73 @@ class CrafterGridTest {
     }
 
     @Test
+    void aBeltSpreadsItemsOverTheMatchingSlotsRowByRowUntilEachIsFull() {
+        ItemRef uranium = ItemRef.item("enriched_uranium");
+        ItemRef casing = ItemRef.item("nuclear_casing");
+        int[] square = {0, 1, 2, 3, 5, 6, 7, 8};
+        List<Stack> slots = emptySlots();
+        for (int index : square) {
+            slots.set(index, MemorySlot.of(uranium, 1));
+        }
+        slots.set(4, MemorySlot.of(casing, 1));
+        CrafterGrid grid = grid(slots);
+
+        // The first eight items go one to each slot, left to right, row by row: every slot is then at two.
+        for (int i = 0; i < square.length; i++) {
+            grid.accept(Item.component("enriched_uranium"));
+            assertThat(slots.get(square[i]).count()).isEqualTo(2);
+        }
+        for (int index : square) {
+            assertThat(slots.get(index).count()).isEqualTo(2);
+        }
+        // The next eight go to the same slots in the same order: each slot is then at three.
+        for (int i = 0; i < square.length; i++) {
+            grid.accept(Item.component("enriched_uranium"));
+        }
+        for (int index : square) {
+            assertThat(slots.get(index).count()).isEqualTo(3);
+        }
+        // Filling the rest of the way takes every slot to a full stack, and none goes past it.
+        for (int i = 0; i < square.length * (LIMIT - 3); i++) {
+            grid.accept(Item.component("enriched_uranium"));
+        }
+        for (int index : square) {
+            assertThat(slots.get(index).count()).isEqualTo(LIMIT);
+        }
+        assertThat(slots.get(4).count()).isEqualTo(1);
+        assertThat(slots.get(4).ref()).isEqualTo(casing);
+    }
+
+    @Test
+    void aFullSlotIsSkippedAndAnotherItemTypeGoesToAnEmptySlot() {
+        List<Stack> slots = emptySlots();
+        slots.set(0, MemorySlot.of(ITEM_A, LIMIT));
+        CrafterGrid grid = grid(slots);
+
+        grid.accept(B);
+
+        assertThat(slots.get(0).count()).isEqualTo(LIMIT);
+        assertThat(slots.get(1).ref()).isEqualTo(ITEM_B);
+        assertThat(slots.get(1).count()).isEqualTo(1);
+    }
+
+    @Test
+    void aFullCrafterOfOneItemTypeRefusesItAndTakesAnotherInItsOnlyEmptySlot() {
+        List<Stack> slots = new ArrayList<>();
+        for (int i = 0; i < CrafterGrid.SLOTS - 1; i++) {
+            slots.add(MemorySlot.of(ITEM_A, LIMIT));
+        }
+        slots.add(MemorySlot.empty());
+        CrafterGrid grid = grid(slots);
+
+        assertThat(grid.accepts(A)).isTrue();
+        grid.accept(B);
+        assertThat(slots.get(CrafterGrid.SLOTS - 1).ref()).isEqualTo(ITEM_B);
+        assertThat(grid.accepts(A)).isFalse();
+        assertThat(grid.accepts(B)).isTrue();
+    }
+
+    @Test
     void componentsAreStoredAsComponentReferences() {
         List<Stack> slots = emptySlots();
         CrafterGrid grid = grid(slots);

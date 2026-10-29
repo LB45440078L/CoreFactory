@@ -176,6 +176,60 @@ public final class VerticalCarry {
         positions.subList(0, accepted).clear();
     }
 
+    /**
+     * The index in the item order of the item a picker at a side of a block takes: the item nearest the output end among the items in
+     * that block, or -1 when the block holds none. An item that waits at the output end is in no block, since the output cell takes it.
+     *
+     * @param block the block index from the input end, 0 to {@link #blocks()} minus 1
+     * @throws IllegalArgumentException when the block is out of range
+     */
+    public int indexIn(int block) {
+        checkBlockIndex(block);
+        for (int i = 0; i < positions.size(); i++) {
+            double position = positions.get(i);
+            if (position >= block - EPS && position < block + 1 - EPS) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * The number of items in a block. Items waiting at the output end are not counted.
+     *
+     * @param block the block index from the input end, 0 to {@link #blocks()} minus 1
+     * @throws IllegalArgumentException when the block is out of range
+     */
+    public int countIn(int block) {
+        checkBlockIndex(block);
+        int count = 0;
+        for (double position : positions) {
+            if (position >= block - EPS && position < block + 1 - EPS) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Removes the item at an index of the item order, as a picker takes it from a block.
+     *
+     * @param index the index, 0 to {@link #size()} minus 1
+     * @throws IllegalArgumentException when the index is out of range
+     */
+    public void remove(int index) {
+        if (index < 0 || index >= positions.size()) {
+            throw new IllegalArgumentException("index must be 0 to " + (positions.size() - 1) + ": " + index);
+        }
+        positions.remove(index);
+    }
+
+    private void checkBlockIndex(int block) {
+        if (block < 0 || block >= blocks) {
+            throw new IllegalArgumentException("block must be 0 to " + (blocks - 1) + ": " + block);
+        }
+    }
+
     private static void checkCapacity(int capacityPerBlock) {
         if (capacityPerBlock < 1) {
             throw new IllegalArgumentException("capacity per block must be at least 1: " + capacityPerBlock);

@@ -1,14 +1,20 @@
 package io.corefactory.paper.machine;
 
 import io.corefactory.core.process.ItemRef;
+import io.corefactory.core.process.Portion;
 import io.corefactory.core.process.ProcessDefinition;
 import io.corefactory.core.process.ProcessEngine;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * The decisions a hopper's move meets at a lab tool's barrel. An item goes into an input slot when some process takes it,
@@ -46,7 +52,7 @@ public final class HopperRules {
 
     /**
      * The slot role an item may enter at a machine, with the fuel the machine takes given as a test. Inputs win over fuel when
-     * an item is both. A drill takes no inputs and only its own fuel, so every other item is refused.
+     * an item is both. A drill has no inputs and no fuel slot, so no item is taken into it.
      *
      * @param takesInput true when the machine takes the item as an input
      * @param takesFuel  true when the machine's fuel slot takes the item
@@ -74,6 +80,88 @@ public final class HopperRules {
      * @param limit  the largest stack of the item
      * @return the position in the lists, or empty when no slot has room
      */
+    /**
+     * The position of the slot an item goes into in a lab tool's input slots. The first slot already holding the item with room
+     * comes first. Then an empty slot: the slot the ingredient owns, by its place in the machine's ingredient order, or a slot no
+     * ingredient owns. When the machine has more ingredients than slots, an empty slot takes the item only if it leaves each
+     * other input of a recipe with the item a slot. An item never takes a slot another ingredient needs.
+     *
+     * @param held      what each slot holds, null for an empty slot
+     * @param counts    how many each slot holds
+     * @param item      the item
+     * @param limit     the largest stack of the item
+     * @param processes the processes of the machine
+     * @return the position in the lists, or empty when the item has no slot
+     */
+    public static OptionalInt insertionSlot(List<ItemRef> held, List<Integer> counts, ItemRef item, int limit,
+                                            Collection<ProcessDefinition> processes) {
+        for (int i = 0; i < held.size(); i++) {
+            if (item.equals(held.get(i)) && counts.get(i) < limit) {
+                return OptionalInt.of(i);
+            }
+        }
+        List<ItemRef> ingredients = ingredientsOf(processes);
+        if (ingredients.size() <= held.size()) {
+            // Each ingredient owns the slot at its position in the machine's ingredient order. The item takes its own slot first,
+            // then a slot no ingredient owns, and never the slot of another ingredient.
+            for (int i = 0; i < held.size(); i++) {
+                if (held.get(i) == null && i < ingredients.size() && item.equals(ingredients.get(i))) {
+                    return OptionalInt.of(i);
+                }
+            }
+            for (int i = 0; i < held.size(); i++) {
+                if (held.get(i) == null && i >= ingredients.size()) {
+                    return OptionalInt.of(i);
+                }
+            }
+            return OptionalInt.empty();
+        }
+        // More ingredients than slots across the machine's recipes, so no slot is owned. An empty slot takes the item only when
+        // every other ingredient of a recipe that takes the item still has an empty slot left.
+        if (!emptySlotKeptFor(held, item, processes)) {
+            return OptionalInt.empty();
+        }
+        for (int i = 0; i < held.size(); i++) {
+            if (held.get(i) == null) {
+                return OptionalInt.of(i);
+            }
+        }
+        return OptionalInt.empty();
+    }
+
+    /** The distinct inputs of the processes, in the order the processes give them. */
+    private static List<ItemRef> ingredientsOf(Collection<ProcessDefinition> processes) {
+        Set<ItemRef> ingredients = new LinkedHashSet<>();
+        for (ProcessDefinition process : processes) {
+            for (Portion input : process.inputs()) {
+                ingredients.add(input.ref());
+            }
+        }
+        return new ArrayList<>(ingredients);
+    }
+
+    /**
+     * True when an empty slot may take the item. Some recipe of two or more inputs that takes the item must still have an empty slot
+     * for each of its other inputs that no slot holds yet. A recipe with a single input reserves nothing, and an item that no
+     * two-input recipe takes may take an empty slot.
+     */
+    private static boolean emptySlotKeptFor(List<ItemRef> held, ItemRef item, Collection<ProcessDefinition> processes) {
+        long empty = held.stream().filter(Objects::isNull).count();
+        boolean inTwoInputRecipe = false;
+        for (ProcessDefinition process : processes) {
+            Set<ItemRef> inputs = process.inputs().stream().map(Portion::ref).collect(Collectors.toSet());
+            if (!inputs.contains(item) || inputs.size() < 2) {
+                continue;
+            }
+            inTwoInputRecipe = true;
+            long missing = inputs.stream().filter(ref -> !item.equals(ref) && !held.contains(ref)).count();
+            if (missing < empty) {
+                return true;
+            }
+        }
+        return !inTwoInputRecipe;
+    }
+
     public static OptionalInt insertionSlot(List<ItemRef> held, List<Integer> counts, ItemRef item, int limit) {
         for (int i = 0; i < held.size(); i++) {
             if (item.equals(held.get(i)) && counts.get(i) < limit) {

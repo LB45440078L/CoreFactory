@@ -4,9 +4,11 @@ import io.corefactory.core.logistics.Item;
 import io.corefactory.core.logistics.Port;
 import io.corefactory.core.logistics.PortItems;
 import io.corefactory.core.process.ItemRef;
+import io.corefactory.core.process.ProcessDefinition;
 import io.corefactory.core.process.Stack;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -29,6 +31,7 @@ public final class LabPort implements Port {
     private final Predicate<ItemRef> takesInput;
     private final Predicate<ItemRef> takesFuel;
     private final ToIntFunction<ItemRef> limit;
+    private final List<ProcessDefinition> processes;
 
     /**
      * A lab tool with no fuel slot, so a belt feeds its inputs only.
@@ -52,12 +55,27 @@ public final class LabPort implements Port {
      */
     public LabPort(List<Stack> inputs, List<Stack> fuel, List<Stack> outputs, Predicate<ItemRef> takesInput,
                    Predicate<ItemRef> takesFuel, ToIntFunction<ItemRef> limit) {
+        this(inputs, fuel, outputs, takesInput, takesFuel, limit, List.of());
+    }
+
+    /**
+     * @param inputs     the input slots, in input order
+     * @param fuel       the fuel slots, in fuel order; empty for a lab tool that burns no fuel
+     * @param outputs    the output slots, in output order
+     * @param takesInput true for an item some process of the lab tool takes as an input
+     * @param takesFuel  true for an item the fuel slot takes
+     * @param limit      the largest stack of a reference
+     * @param processes  the processes of the lab tool, which say which input slot each ingredient keeps
+     */
+    public LabPort(List<Stack> inputs, List<Stack> fuel, List<Stack> outputs, Predicate<ItemRef> takesInput,
+                   Predicate<ItemRef> takesFuel, ToIntFunction<ItemRef> limit, Collection<ProcessDefinition> processes) {
         this.inputs = List.copyOf(Objects.requireNonNull(inputs, "inputs"));
         this.fuel = List.copyOf(Objects.requireNonNull(fuel, "fuel"));
         this.outputs = List.copyOf(Objects.requireNonNull(outputs, "outputs"));
         this.takesInput = Objects.requireNonNull(takesInput, "takesInput");
         this.takesFuel = Objects.requireNonNull(takesFuel, "takesFuel");
         this.limit = Objects.requireNonNull(limit, "limit");
+        this.processes = List.copyOf(Objects.requireNonNull(processes, "processes"));
     }
 
     /**
@@ -74,7 +92,7 @@ public final class LabPort implements Port {
         }
         return Optional.of(new LabPort(menu.inputs(), menu.fuel(), menu.outputs(),
                 ref -> menu.accepts(ref, MachineLayout.Kind.INPUT), ref -> menu.accepts(ref, MachineLayout.Kind.FUEL),
-                refs::limit));
+                refs::limit, menu.recipes()));
     }
 
     @Override
@@ -145,7 +163,7 @@ public final class LabPort implements Port {
             held.add(stack.ref());
             counts.add(stack.count());
         }
-        return HopperRules.insertionSlot(held, counts, ref, limit.applyAsInt(ref));
+        return HopperRules.insertionSlot(held, counts, ref, limit.applyAsInt(ref), processes);
     }
 
     private Stack firstOutput() {

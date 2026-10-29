@@ -25,11 +25,18 @@ host block of each ore.
 | <img src="images/ores/galena_ore.png" width="24" height="24" align="absmiddle"> Galena | mid | <img src="images/components/raw_galena.png" width="24" height="24" align="absmiddle"> Raw galena | Lead, for shielding. |
 | <img src="images/ores/cinnabar_ore.png" width="24" height="24" align="absmiddle"> Cinnabar | mid | <img src="images/components/raw_cinnabar.png" width="24" height="24" align="absmiddle"> Raw cinnabar | Mercury. Roasting frees it. |
 | <img src="images/ores/fluorite_ore.png" width="24" height="24" align="absmiddle"> Fluorite | wide | <img src="images/components/raw_fluorite.png" width="24" height="24" align="absmiddle"> Raw fluorite | Fluorine, for converting uranium into a gas. |
-| <img src="images/ores/crude_petroleum_deposit.png" width="24" height="24" align="absmiddle"> Crude petroleum deposit | deep, from y -64 to y 0 | Petroleum, as a fluid and not an item | Fuel for the ore drills. A petroleum drill pumps the deposit into the oil network in litres, and the deposit falls by the litres the network takes. |
+| <img src="images/ores/crude_petroleum_deposit.png" width="24" height="24" align="absmiddle"> Crude petroleum deposit | deep, from y -64 to y 0 | Petroleum, as a fluid and not an item | Pumped by a petroleum drill into the oil network in litres, and the deposit falls by the litres the network takes. It is not fuel for any drill. |
 | <img src="images/ores/saltpeter_deposit.png" width="24" height="24" align="absmiddle"> Saltpeter deposit | y -32 to 80 | <img src="images/components/raw_saltpeter.png" width="24" height="24" align="absmiddle"> Raw saltpeter | Crude potassium nitrate. Purified twice, it is the oxidiser of the powder. |
 | <img src="images/ores/sulfur_deposit.png" width="24" height="24" align="absmiddle"> Sulfur deposit | y -48 to 32 | <img src="images/components/raw_sulfur.png" width="24" height="24" align="absmiddle"> Raw sulfur | Native sulfur, crushed to sulfur for the powder mill. |
 | <img src="images/ores/zinc_deposit.png" width="24" height="24" align="absmiddle"> Sphalerite (zinc ore) | y -48 to 48 | <img src="images/components/raw_sphalerite.png" width="24" height="24" align="absmiddle"> Raw sphalerite | Zinc. Crushed to zinc ore dust, then roasted to a zinc ingot. |
 | <img src="images/ores/coal_ore.png" width="24" height="24" align="absmiddle"> Coal ore | y -64 to 96 | <img src="images/components/charcoal.png" width="24" height="24" align="absmiddle"> Charcoal | Fuel for the roasting kiln, and charcoal for the powder. Coal patches are the vanilla coal ore block. |
+| <img src="images/ores/iron_ore.png" width="24" height="24" align="absmiddle"> Iron ore | y -32 to 80 | <img src="images/components/raw_iron.png" width="24" height="24" align="absmiddle"> Raw iron | Tied for the most common solid deposit. Raw iron has no recipe yet. |
+| <img src="images/ores/copper_ore.png" width="24" height="24" align="absmiddle"> Copper ore | y -16 to 112 | <img src="images/components/raw_copper.png" width="24" height="24" align="absmiddle"> Raw copper | As common as iron. Raw copper has no recipe yet. |
+| <img src="images/ores/gold_ore.png" width="24" height="24" align="absmiddle"> Gold ore | y -64 to 32 | <img src="images/components/raw_gold.png" width="24" height="24" align="absmiddle"> Raw gold | Less common than iron or copper. Raw gold has no recipe yet. |
+| <img src="images/ores/diamond_ore.png" width="24" height="24" align="absmiddle"> Diamond ore | y -64 to -16, deep | <img src="images/components/diamond.png" width="24" height="24" align="absmiddle"> Diamond | The rarest solid deposit. A drill yields vanilla diamonds. |
+
+The four common metals are the ores a drill needs most: iron and copper are the most frequent of the solid deposits, gold is
+less frequent, and diamond is the rarest. The weights are in `ores.yml` (see [CONFIGURATION.md](CONFIGURATION.md#oresyml)).
 
 Ores that were already in your world before the plugin was installed are laid the first time their chunks load after the
 upgrade. Each chunk is laid once, so a restart adds no ore blocks. There is no retrofit command.
@@ -108,13 +115,15 @@ Progress is saved permanently, in SQLite (one file, one server) or PostgreSQL (s
 `config.yml`). A gated item cannot be crafted, placed or lit until its node is finished. The gate exists so that nobody
 can take a bomb from another player, or hack one together, without the research.
 
-The nodes, in order: laboratory basics, radiation safety, metallurgy, chemical separation, fluorine chemistry, nuclear
+The main line, in order: laboratory basics, radiation safety, metallurgy, chemical separation, fluorine chemistry, nuclear
 fission, hydrogen processes, materials purification, plasma physics, thermonuclear engineering, isotope transmutation,
 particle physics, antimatter physics, exotic matter, tesseract geometry.
 
-The grid's top tiers come after that. Pylon IV needs particle physics and tesseract geometry, and Accumulator IV needs particle physics. Pylon V and Accumulator V need the antimatter shell as well, and Accumulator V needs Accumulator IV. The heavy weapons assembly makes all four, from the tesseract lattice, magnets, antiproton capsules and pulse capacitors. See [CRAFTING.md](CRAFTING.md).
+Several nodes come straight after tesseract geometry: Lab Upgrades IV and V, which unlock the modules that take a lab machine to level IV and level V, Pickers IV and V, Rail Coils (then the Railgun Turret), Belt Duplex III, and Pylon IV, which also needs particle physics. The lab upgrade modules and the pickers are made on the heavy weapons assembly.
 
-The drills and the solar panel are on the same line. Petroleum drills I and II come with Chemical Separation, and ore drill I with Fluorine Chemistry. The higher levels follow the line, up to the thermonuclear node. The solar panel comes with Metallurgy. See [CRAFTING.md](CRAFTING.md) for the recipes.
+The grid's top tiers come after that. Pylon IV needs particle physics and tesseract geometry, and Accumulator IV needs particle physics. Pylon V needs Pylon IV and the condensed antimatter shell, and Accumulator V needs Accumulator IV and the same shell. The heavy weapons assembly makes all four, from the tesseract lattice, magnets, antiproton capsules and pulse capacitors. See [CRAFTING.md](CRAFTING.md).
+
+The drills and the solar panel are on the same line. Petroleum drills I and II come with Chemical Separation, and ore drill I with Fluorine Chemistry. Each later level comes with a node on the main line: ore drill II with nuclear fission, petroleum drills III and IV with hydrogen processes, petroleum drill V and ore drill III with materials purification, ore drill IV with plasma physics, and ore drill V with thermonuclear engineering. The solar panel comes with Metallurgy. See [CRAFTING.md](CRAFTING.md) for the recipes.
 
 ## 7. Warheads
 
@@ -171,7 +180,8 @@ Crude petroleum is a second resource, and it is a fluid, not an item. Its deposi
 ore in the stone, planned and laid like the solid ores, each with a remaining amount in litres. A petroleum drill pumps a
 deposit into the oil network until the deposit is empty.
 
-Two kinds of drill work a square below themselves, and each kind has five levels. The levels are set in `DrillTable`
+Two kinds of drill work a square below themselves, and each kind has five levels. Both kinds are powered by the energy
+network, like a lab tool: a drill runs at the share of its demand that its pylon line gives it. The levels are set in `DrillTable`
 in the code. `processes.yml` names each drill's kind and level, and `materials.yml` gives its name and host block.
 
 | Level | Square | Depth (layers) | Cycle (ticks) | Per minute at full power (litres for petroleum, items for ore) |
@@ -185,21 +195,20 @@ in the code. `processes.yml` names each drill's kind and level, and `materials.y
 The rates are set by `drill-rates` in `config.yml`: 1.0, 1.5, 2.5, 4.0 and 6.0 per second for levels 1 to 5, in litres for a
 petroleum drill and in items for an ore drill. The
 square sets which deposits a drill finds. The depth is shown on the drill's info item, but it does not limit anything. The
-cycle no longer sets the output. It counts the fuel use while a drill runs, and it sets the menu's progress bar.
+cycle no longer sets the output. It advances at the drill's efficiency, and it sets the menu's progress bar.
 
 - **Mining:** a drill works one deposit at a time. It keeps its current deposit while that has something left, and otherwise
   moves to the deposit in its square with the most left. Each unit taken from a solid ore deposit is one item, and a full
   output stops the drill. A petroleum drill's full oil network stops it in the same way.
-- **Petroleum drills** run on the strongest of a solar panel (its power over 15), redstone (its power over 15) or charcoal (0.35).
-  Charcoal burns one item every 8 cycles, and only while charcoal is the source of power.
-- **Ore drills** run on petroleum from the oil network. They draw 0.5 litres per cycle, and they run only while the network
-  gives them all the petroleum they want. They mine the solid ore deposits in their square.
+- **Power.** Petroleum drills and ore drills both run on the energy network alone. Charcoal, redstone and solar panels next to a
+  drill do not power it, and no drill burns fuel. A drill the grid does not feed stops with `No power`.
+- **Ore drills** mine the solid ore deposits in their square. They take nothing from the oil network, and they are not joined to it.
 - **Oil tubes and the refinery.** The oil tubes and splitters come with Materials Purification. The crude oil refinery, which
   turns petroleum from the network into diesel, comes with Fluorine Chemistry. Diesel burns in the diesel generator and in
   the level II water pump.
 
-The chain runs from deposit to the oil network, from the network to the ore drills, and from the ore drills to the
-raw minerals that start the process chain above.
+The chain runs from deposit to the oil network, from the network to the refinery, and from the ore drills to the raw minerals
+that start the process chain above.
 
 ## 10. Ore blocks and the scanner
 
@@ -207,7 +216,7 @@ Each special ore has a placeable block item: the host block, named after the ore
 ore. Mining a placed ore block gives the raw mineral, and silk touch gives the block item back.
 
 A patch block that the world generator laid is not registered. Breaking one by hand gives one raw mineral from its deposit,
-and the deposit loses one unit. Coal gives charcoal. A crude petroleum patch block gives nothing, since its petroleum is pumped into the oil network. Silk touch gives the same item. A
+and the deposit loses one unit. Coal gives charcoal, and diamond ore gives a diamond. A crude petroleum patch block gives nothing, since its petroleum is pumped into the oil network. Silk touch gives the same item. A
 block you place on a patch, or that a piston or dispenser puts there, gives no ore, and neither does a blast. Drills take the
 raw minerals of a deposit at their rate, one for each unit.
 

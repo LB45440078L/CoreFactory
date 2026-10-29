@@ -300,6 +300,13 @@ components:
       - "&7Burnt wood. Fuel for the charcoal generator and the kiln."
     material: CHARCOAL
 
+  # Diamond from a diamond ore: drills yield vanilla diamond, and a broken ore block drops this component.
+  diamond:
+    name: "&bDiamond"
+    lore:
+      - "&7Carbon under the deepest pressure. Hard enough to cut anything here."
+    material: DIAMOND
+
   # ----------------------------------------------------------------- Turret parts (hand-made)
 
   iron_plate:

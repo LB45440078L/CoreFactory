@@ -2,7 +2,7 @@
 
 **Research. Refine. Rule.**
 
-New TNT for Paper: 42 TNT types with their own mechanics, 24 crafting components that make the strong ones
+New TNT for Paper: 42 TNT types with their own mechanics, 29 crafting components that make the strong ones
 hard to build, a configurable recipe for every item, a generated resource pack with a unique texture for each one,
 and optional respect for WorldGuard regions and GriefPrevention claims.
 
@@ -20,26 +20,27 @@ and [docs/COMMANDS_AND_PERMISSIONS.md](docs/COMMANDS_AND_PERMISSIONS.md).
 
 - **Science chain:** seven ores, and five ores that the roasting kiln roasts (uraninite, pitchblende, galena, cinnabar and, for
   zinc, sphalerite). The chain separates, converts, enriches and transmutes them to U-233 and plutonium, in twenty machines. Each lab tool keeps its items in a barrel that hoppers can feed and empty.
-- **Progress holograms:** a three-line hologram over each running lab tool (process, bar, time left), and a five-line one over each running drill (name, power, rate or status, the deposit it works on, storage and fuel). Each hologram is one text display, with a faint green background while its device works and a faint red one while it is stuck. Set by `holograms` in `config.yml`.
+- **Progress holograms:** a three-line hologram over each running lab tool (process, bar, time left), and a five-line one over each running drill (name, power, rate or status, the deposit it works on, and storage). Each hologram is one text display, with a faint green background while its device works and a faint red one while it is stuck. Set by `holograms` in `config.yml`.
 - **Device screens:** each generator, drill and lab machine has a small black screen on its front face, with four lines of status.
 - **Ore Density Scanner:** a held item that crafts after Laboratory Basics. Right-click it to find the nearest deposits and their richness, sneak and right-click to filter by ore, sneak and left-click to survey them, and `/cf deposits` for a map with waypoints.
 - **Oil and fluids:** petroleum and diesel are fluids, measured in litres and carried by oil tubes. A network holds one fluid at a
-  time, and the refinery turns petroleum into diesel. Generators, pumps and ore drills draw what they burn from the network.
-  Petroleum and diesel are not items.
-- **Drills:** petroleum drills (five levels) pump petroleum from crude deposits into the oil network, on the strongest of a solar panel,
-  redstone or charcoal. Ore drills (five levels) mine ore deposits, and draw petroleum from the network as fuel. Every machine and drill
-  keeps its items in a barrel, which is hidden from nearby players (`concealment` in `config.yml`).
-- **Solar panel:** a generator placed on air. Panels placed before the electrical system are daylight detectors that still power a petroleum drill next to them.
+  time, and the refinery turns petroleum into diesel. Generators and pumps draw what they burn from the network, and a petroleum
+  drill pumps its petroleum into it. Ore drills do not touch the oil network. Petroleum and diesel are not items.
+- **Drills:** every drill is powered by the energy network: it runs at the share of its demand that its pylon line gives it, and
+  stops with "No power" when the grid gives it none. Petroleum drills (five levels) pump petroleum from crude deposits into the oil
+  network. Ore drills (five levels) mine ore deposits. Charcoal, redstone and solar panels no longer power a drill. Every machine and
+  drill keeps its items in a barrel, which is hidden from nearby players (`concealment` in `config.yml`).
+- **Solar panel:** a generator placed on air, which feeds the energy network like any other generator.
 - **Electricity and belts:** pylons carry power to the machines in their range, wires join pylons and generators into grids, grids have
   outlines and charts, and accumulators store power. Belts, pickers and splitters move items between machines. See the [player guide](docs/PLAYER_GUIDE.md#electricity).
 - **Water:** a water pump on air or water (five levels, burning fuel or drawing power; levels IV and V stand two blocks tall) draws from the water its pipes reach, so a pipe in a lake or beside one is its source. Pipes bend up or down as well as sideways, splitters can stand vertically, and the water goes to lab machines and nuclear generators, which can use it in place of a water bucket. See [docs/MECHANICS.md](docs/MECHANICS.md#water).
 - **Vertical belts:** towers of vertical transport belts (three levels) carry items up or down, with the direction set from the belt's menu. See [docs/MECHANICS.md](docs/MECHANICS.md#vertical-transport-belts).
-- **Lab machine levels:** every lab machine has three levels. An upgrade module takes a machine up one level, and the higher levels work faster. See [the player guide](docs/PLAYER_GUIDE.md#lab-machine-levels).
+- **Lab machine levels:** every lab machine has five levels. An upgrade module takes a machine up one level, and the higher levels work faster. See [the player guide](docs/PLAYER_GUIDE.md#lab-machine-levels).
 - **Protection and claims:** belts, pickers and splitters respect the chests in WorldGuard regions and GriefPrevention claims, so a device delivers, and a picker takes, only where its placer may use the container. Only an owner can change a turret. See [Claims and integrations](docs/MECHANICS.md#claims-and-integrations).
 - **Ore blocks:** each special ore is a placeable block, and its deposits are patches of one ore in the stone, with a remaining amount, dug by hand for one raw item each, and drilled by ore drills. Silk touch keeps a placed ore block item when it is mined.
-- **Catalogue:** `/cf gui` browses everything in eighteen categories, each its own tab. Right-click an entry for its recipe; in the recipe view,
+- **Catalogue:** `/cf gui` browses everything in nineteen categories, each its own tab. Right-click an entry for its recipe; in the recipe view,
   click an ingredient that has a recipe of its own to open it.
-- **Research:** a line of fifteen nodes, finished at a Research Console. Admins can finish it with `/cf research`.
+- **Research:** a tree of 34 nodes, finished at a Research Console. Admins can finish it with `/cf research`.
 - **Particle effects:** sprite effects for blasts, machines, research and ore breaks (`effects` in `config.yml`).
 - **Storage:** research in SQLite for one server, or in PostgreSQL shared by several. The JDBC driver is downloaded on first use.
 
@@ -47,14 +48,14 @@ and [docs/COMMANDS_AND_PERMISSIONS.md](docs/COMMANDS_AND_PERMISSIONS.md).
 
 | Family | Types | What they do |
 |---|---|---|
-| Structural / physics | 7 | <img src="docs/images/tnt/chain_reaction_tnt.png" width="24" height="24" align="absmiddle"> Chain reaction, <img src="docs/images/tnt/shaped_charge_tnt.png" width="24" height="24" align="absmiddle"> shaped charge, <img src="docs/images/tnt/gravity_well_tnt.png" width="24" height="24" align="absmiddle"> gravity well, <img src="docs/images/tnt/implosion_tnt.png" width="24" height="24" align="absmiddle"> implosion, <img src="docs/images/tnt/fuse_linked_tnt.png" width="24" height="24" align="absmiddle"> fuse-linked, <img src="docs/images/tnt/delayed_cascade_tnt.png" width="24" height="24" align="absmiddle"> delayed cascade, <img src="docs/images/tnt/four_dimensional_tnt.png" width="24" height="24" align="absmiddle"> 4-dimensional |
+| Structural / physics | 6 | <img src="docs/images/tnt/chain_reaction_tnt.png" width="24" height="24" align="absmiddle"> Chain reaction, <img src="docs/images/tnt/shaped_charge_tnt.png" width="24" height="24" align="absmiddle"> shaped charge, <img src="docs/images/tnt/gravity_well_tnt.png" width="24" height="24" align="absmiddle"> gravity well, <img src="docs/images/tnt/implosion_tnt.png" width="24" height="24" align="absmiddle"> implosion, <img src="docs/images/tnt/fuse_linked_tnt.png" width="24" height="24" align="absmiddle"> fuse-linked, <img src="docs/images/tnt/delayed_cascade_tnt.png" width="24" height="24" align="absmiddle"> delayed cascade |
 | Terrain morphing | 5 | <img src="docs/images/tnt/vitrify_tnt.png" width="24" height="24" align="absmiddle"> Vitrify, <img src="docs/images/tnt/liquefy_tnt.png" width="24" height="24" align="absmiddle"> liquefy, <img src="docs/images/tnt/terraform_tnt.png" width="24" height="24" align="absmiddle"> terraform, <img src="docs/images/tnt/randomize_tnt.png" width="24" height="24" align="absmiddle"> randomize, <img src="docs/images/tnt/sculpt_tnt.png" width="24" height="24" align="absmiddle"> sculpt |
 | Entity / status | 4 | <img src="docs/images/tnt/concussion_tnt.png" width="24" height="24" align="absmiddle"> Concussion, <img src="docs/images/tnt/launch_tnt.png" width="24" height="24" align="absmiddle"> launch, <img src="docs/images/tnt/teleport_tnt.png" width="24" height="24" align="absmiddle"> teleport, <img src="docs/images/tnt/gravity_flip_tnt.png" width="24" height="24" align="absmiddle"> gravity flip |
 | Timing / logic | 4 | <img src="docs/images/tnt/conditional_tnt.png" width="24" height="24" align="absmiddle"> Conditional, <img src="docs/images/tnt/proximity_tnt.png" width="24" height="24" align="absmiddle"> proximity fuse, <img src="docs/images/tnt/pulse_tnt.png" width="24" height="24" align="absmiddle"> pulse, <img src="docs/images/tnt/mirror_tnt.png" width="24" height="24" align="absmiddle"> mirror |
 | Visual / audio | 4 | <img src="docs/images/tnt/shockwave_tnt.png" width="24" height="24" align="absmiddle"> Shockwave ring, <img src="docs/images/tnt/debris_tnt.png" width="24" height="24" align="absmiddle"> debris, <img src="docs/images/tnt/echo_tnt.png" width="24" height="24" align="absmiddle"> echo, <img src="docs/images/tnt/silent_tnt.png" width="24" height="24" align="absmiddle"> silent |
 | Utility / economy | 4 | <img src="docs/images/tnt/harvest_tnt.png" width="24" height="24" align="absmiddle"> Harvest, <img src="docs/images/tnt/sorting_tnt.png" width="24" height="24" align="absmiddle"> sorting, <img src="docs/images/tnt/marker_tnt.png" width="24" height="24" align="absmiddle"> marker, <img src="docs/images/tnt/anchor_tnt.png" width="24" height="24" align="absmiddle"> anchor |
 | Military | 2 | <img src="docs/images/tnt/biological_tnt.png" width="24" height="24" align="absmiddle"> Biological, <img src="docs/images/tnt/napalm_tnt.png" width="24" height="24" align="absmiddle"> napalm |
-| Exotic matter series | 2 | <img src="docs/images/tnt/exotic_neutron_bomb.png" width="24" height="24" align="absmiddle"> Exotic neutron bomb, a 5 kt blast whose radiation reaches far beyond it; <img src="docs/images/tnt/exotic_antimatter_bomb.png" width="24" height="24" align="absmiddle"> antimatter bomb, 180 megatons |
+| Exotic matter series | 3 | <img src="docs/images/tnt/exotic_neutron_bomb.png" width="24" height="24" align="absmiddle"> Exotic neutron bomb, a 5 kt blast whose radiation reaches far beyond it; <img src="docs/images/tnt/exotic_antimatter_bomb.png" width="24" height="24" align="absmiddle"> antimatter bomb, 180 megatons; <img src="docs/images/tnt/four_dimensional_tnt.png" width="24" height="24" align="absmiddle"> 4-dimensional bomb, 1000 megatons |
 | Nuclear | 10 | <img src="docs/images/tnt/nuke_davy_crockett.png" width="24" height="24" align="absmiddle"> Davy Crockett to <img src="docs/images/tnt/nuke_tsar_bomba.png" width="24" height="24" align="absmiddle"> Tsar Bomba: countdowns, a saucer crater from surface bursts or a deep hemisphere from thermonuclear ones, flattened ground, debris, and a beacon array in the sky |
 
 Every type is a row in [`tnts.yml`](CoreFactory-Paper/src/main/resources/tnts.yml): its mechanic, radius, fuse,

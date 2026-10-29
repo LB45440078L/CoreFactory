@@ -77,6 +77,7 @@ import io.corefactory.paper.energy.EnergyEffects;
 import io.corefactory.paper.energy.EnergyPlacementListener;
 import io.corefactory.paper.energy.EnergyService;
 import io.corefactory.paper.energy.EnergyStore;
+import io.corefactory.paper.logistics.CapWarningThrottle;
 import io.corefactory.paper.logistics.LogisticsListener;
 import io.corefactory.paper.logistics.LogisticsPlacement;
 import io.corefactory.paper.logistics.LogisticsService;
@@ -296,6 +297,8 @@ public final class CoreFactoryPlugin extends JavaPlugin {
                 VerticalSettings.from(getConfig(), getLogger()), getLogger());
         logistics = new LogisticsService(core, machines, devices, energy, holograms, turrets.registry(), itemRefs, containers,
                 vertical, new File(getDataFolder(), "logistics.yml"), getConfig().getInt("logistics.max-item-displays", 2000),
+                CapWarningThrottle.of(getConfig().getBoolean("logistics.cap-warning", true),
+                        getConfig().getDouble("logistics.cap-warning-minutes", 10)),
                 getConfig().getInt("logistics.save-interval-ticks", 300), getLogger());
         logistics.load();
         energy.addConsumerSource(logistics);
@@ -315,7 +318,7 @@ public final class CoreFactoryPlugin extends JavaPlugin {
         charts = new ChartService(energy, holograms, ticks, getConfig().getInt("charts.charts-per-grid", 1),
                 getConfig().getInt("charts.charts-total", 5), getConfig().getInt("charts.refresh-ticks", 10), getLogger());
         manager.registerEvents(charts, this);
-        manager.registerEvents(new LogisticsListener(core, logistics, machines, devices,
+        manager.registerEvents(new LogisticsListener(core, logistics, vertical, machines, devices,
                 new LogisticsPlacement(core, logistics, research.service()), itemRefs), this);
         manager.registerEvents(new VerticalListener(core, vertical, logistics, machines, research.service(), friendAccess), this);
         DeviceBlast deviceBlast = new DeviceBlast(core, machines, devices, energy, logistics, water, oil, vertical);

@@ -3,9 +3,9 @@ package io.corefactory.core.upgrade;
 import java.util.OptionalInt;
 
 /**
- * The levels of a lab machine: three levels (I, II and III), the kit that takes a machine up one level, the work pace of
+ * The levels of a lab machine: five levels (I to V), the kit that takes a machine up one level, the work pace of
  * each level and the model id each level is drawn with. A kit takes a machine up one level only, so a level I machine
- * takes the level II kit and then the level III kit. Pure: the speed factors are given by the caller, read from config.yml.
+ * takes the level II kit, then the level III kit, and so on up to the level V kit. Pure: the speed factors are given by the caller, read from config.yml.
  */
 public final class LabLevels {
 
@@ -13,7 +13,7 @@ public final class LabLevels {
     public static final int MIN_LEVEL = 1;
 
     /** The highest level a lab machine has. */
-    public static final int MAX_LEVEL = 3;
+    public static final int MAX_LEVEL = 5;
 
     private static final String KIT_PREFIX = "machine_upgrade_";
 
@@ -39,7 +39,7 @@ public final class LabLevels {
     private final double[] speeds;
 
     /**
-     * @param speeds the work pace factor of levels I, II and III, in order: each finite and above zero, and never lower for a
+     * @param speeds the work pace factor of levels I to V, in order: each finite and above zero, and never lower for a
      *               higher level
      * @throws IllegalArgumentException when there are not three factors, or one of them is not valid
      */
@@ -58,9 +58,9 @@ public final class LabLevels {
         this.speeds = speeds.clone();
     }
 
-    /** The speed factors of the shipped config: 1.0, 1.5 and 2.0. */
+    /** The speed factors of the shipped config: 1.0, 1.5, 2.0, 2.75 and 3.5. */
     public static LabLevels defaults() {
-        return new LabLevels(1.0, 1.5, 2.0);
+        return new LabLevels(1.0, 1.5, 2.0, 2.75, 3.5);
     }
 
     /** The work pace factor of a level, clamped to the levels that exist. */
@@ -88,7 +88,7 @@ public final class LabLevels {
 
     /**
      * The level a kit upgrades to, read from its component id: {@code machine_upgrade_2} is level II and {@code machine_upgrade_3}
-     * is level III. Empty for any other id.
+     * is level III, up to {@code machine_upgrade_5} at level V. Empty for any other id.
      */
     public static OptionalInt kitLevel(String componentId) {
         if (componentId == null || !componentId.startsWith(KIT_PREFIX)) {
@@ -103,8 +103,8 @@ public final class LabLevels {
     }
 
     /**
-     * The model id a lab machine is drawn with at a level: the machine id itself at level I, and the id with {@code _2} or
-     * {@code _3} above it. The resource pack defines each as {@code machine/<model id>}.
+     * The model id a lab machine is drawn with at a level: the machine id itself at level I, and the id with {@code _2} to
+     * {@code _5} above it. The resource pack defines each as {@code machine/<model id>}.
      *
      * @param machineId the machine id, such as {@code assembler}
      * @param level     the level, from {@link #MIN_LEVEL} to {@link #MAX_LEVEL}
@@ -114,12 +114,14 @@ public final class LabLevels {
         return clamped == MIN_LEVEL ? machineId : machineId + "_" + clamped;
     }
 
-    /** The roman numeral of a level: I, II or III. */
+    /** The roman numeral of a level: I to V. */
     public static String numeral(int level) {
         return switch (clamp(level)) {
             case 1 -> "I";
             case 2 -> "II";
-            default -> "III";
+            case 3 -> "III";
+            case 4 -> "IV";
+            default -> "V";
         };
     }
 

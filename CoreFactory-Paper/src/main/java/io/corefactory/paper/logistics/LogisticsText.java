@@ -17,12 +17,14 @@ public final class LogisticsText {
         return kind.title() + " " + roman(level);
     }
 
-    /** The roman numeral of a level: I, II or III. */
+    /** The roman numeral of a level: I to V. */
     public static String roman(LogisticsLevel level) {
         return switch (level) {
             case I -> "I";
             case II -> "II";
             case III -> "III";
+            case IV -> "IV";
+            case V -> "V";
         };
     }
 

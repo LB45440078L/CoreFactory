@@ -6,7 +6,7 @@ import java.util.Optional;
 
 /**
  * The component ids of the belts, belt duplexes, pickers and splitters: belt_1 to belt_3, belt_duplex_1 to belt_duplex_3, picker_1 to
- * picker_3, splitter_1 to splitter_3. Pure.
+ * picker_5, splitter_1 to splitter_3. Pure.
  */
 public final class LogisticsIds {
 
@@ -70,6 +70,11 @@ public final class LogisticsIds {
         return of(componentId).filter(device -> takesSide(device.kind())).isPresent();
     }
 
+    /** The highest level a kind has: a picker goes up to level V, and a belt, splitter or duplex to level III. */
+    public static LogisticsLevel topLevel(Kind kind) {
+        return kind == Kind.PICKER ? LogisticsLevel.V : LogisticsLevel.III;
+    }
+
     /** The device a component id names, or empty when the id is not a belt, picker or splitter. */
     public static Optional<Device> of(String componentId) {
         if (componentId == null) {
@@ -79,7 +84,7 @@ public final class LogisticsIds {
             String start = kind.prefix() + "_";
             if (componentId.startsWith(start) && componentId.length() == start.length() + 1) {
                 char digit = componentId.charAt(start.length());
-                if (digit >= '1' && digit <= '3') {
+                if (digit >= '1' && digit - '0' <= topLevel(kind).ordinal() + 1) {
                     return Optional.of(new Device(kind, LogisticsLevel.values()[digit - '1']));
                 }
             }

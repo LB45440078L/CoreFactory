@@ -347,10 +347,9 @@ public final class MachineLayouts {
     }
 
     /**
-     * A drill: the info item on top, the resources book beside it, the cycle bar at the start of the second row. A petroleum drill has
-     * the fuel slot beside its grid, which takes charcoal, and no outputs: the petroleum it pumps goes into the oil network, so the grid
-     * shows decoration. An ore drill has no fuel slot, since its petroleum comes from the oil network, and the outputs of its grid. The
-     * petroleum drill is black and the ore drill grey, so the two read apart in a row of drills.
+     * A drill: the info item on top, the resources book beside it, the cycle bar at the start of the second row. Neither kind takes items:
+     * a petroleum drill has no outputs, since the petroleum it pumps goes into the oil network, so its grid shows decoration; an ore drill
+     * has the outputs of its grid. The petroleum drill is black and the ore drill grey, so the two read apart in a row of drills.
      */
     public static MachineLayout drill(String title, DrillKind kind) {
         boolean ore = kind == DrillKind.ORE;
@@ -374,8 +373,7 @@ public final class MachineLayouts {
                     .output(34, product)
                     .build();
         }
-        return builder.fuel(19, "Charcoal. One burns every 8 cycles, only when no solar panel or redstone power is stronger.")
-                .decor(Material.BLACK_STAINED_GLASS_PANE, 14, 15, 16, 23, 24, 25, 32, 33, 34)
+        return builder.decor(Material.BLACK_STAINED_GLASS_PANE, 14, 15, 16, 19, 23, 24, 25, 32, 33, 34)
                 .build();
     }
 

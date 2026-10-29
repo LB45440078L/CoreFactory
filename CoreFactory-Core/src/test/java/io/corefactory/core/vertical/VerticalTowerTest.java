@@ -33,6 +33,16 @@ class VerticalTowerTest {
     }
 
     @Test
+    void upInputEndCellIsBelowTheBottom() {
+        assertThat(upTower().inputEndCell()).isEqualTo(new Pos(0, -1, 0));
+    }
+
+    @Test
+    void downInputEndCellIsAboveTheTop() {
+        assertThat(downTower().inputEndCell()).isEqualTo(new Pos(0, 5, 0));
+    }
+
+    @Test
     void upOutputCellIsAboveTheTop() {
         VerticalTower tower = upTower();
 

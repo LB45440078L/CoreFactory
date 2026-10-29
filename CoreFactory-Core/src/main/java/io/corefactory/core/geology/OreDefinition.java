@@ -25,6 +25,7 @@ import java.util.logging.Logger;
  * @param minY    lowest y an ore block may be placed at
  * @param maxY    highest y an ore block may be placed at
  * @param volume  litres of petroleum one block holds, for a fluid ore such as a deposit; 0 for a count ore
+ * @param weight  the relative chance a new deposit holds this ore, at least 1; see {@link #ORDINARY_WEIGHT}
  */
 public record OreDefinition(
         String id,
@@ -36,8 +37,16 @@ public record OreDefinition(
         Set<String> replace,
         int minY,
         int maxY,
-        int volume
+        int volume,
+        int weight
 ) {
+
+    /**
+     * The weight of an ore that does not set one. An ore with weight 2 is as likely to be picked for a deposit as any
+     * other ore with weight 2; an iron ore with weight 6 is three times as likely as that ore. Iron, copper and gold are
+     * set above it and diamond below it.
+     */
+    public static final int ORDINARY_WEIGHT = 2;
 
     /** The lowest y a registry entry can store. Matches the overworld's bottom. */
     public static final int MIN_Y = -64;
@@ -45,7 +54,13 @@ public record OreDefinition(
     /** The highest y a registry entry can store (the 10-bit offset from {@link #MIN_Y} tops out here). */
     public static final int MAX_Y = 959;
 
-    /** A count ore: the same as the full constructor with no volume. */
+    /** An ore with the ordinary weight: the same as the full constructor with no volume. */
+    public OreDefinition(String id, String name, String host, String drop, int dropMin, int dropMax, Set<String> replace,
+                         int minY, int maxY, int volume) {
+        this(id, name, host, drop, dropMin, dropMax, replace, minY, maxY, volume, ORDINARY_WEIGHT);
+    }
+
+    /** A count ore with the ordinary weight and no volume. */
     public OreDefinition(String id, String name, String host, String drop, int dropMin, int dropMax, Set<String> replace,
                          int minY, int maxY) {
         this(id, name, host, drop, dropMin, dropMax, replace, minY, maxY, 0);
@@ -78,6 +93,9 @@ public record OreDefinition(
         }
         if (volume < 0) {
             throw new IllegalArgumentException("has a negative volume");
+        }
+        if (weight < 1) {
+            throw new IllegalArgumentException("has a weight below 1");
         }
         name = name == null || name.isBlank() ? id : name;
         replace = Set.copyOf(replace);
@@ -137,7 +155,8 @@ public record OreDefinition(
         int minY = integer(section, "min-y");
         int maxY = integer(section, "max-y");
         return new OreDefinition(id, ConfigValues.string(section, "name", id), host, drop, dropAmount[0], dropAmount[1],
-                replace, minY, maxY, ConfigValues.integer(section, "volume", 0));
+                replace, minY, maxY, ConfigValues.integer(section, "volume", 0),
+                ConfigValues.integer(section, "weight", ORDINARY_WEIGHT));
     }
 
     private static String block(String name, String what) {

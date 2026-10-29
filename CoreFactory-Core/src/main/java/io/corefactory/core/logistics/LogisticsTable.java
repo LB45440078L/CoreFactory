@@ -20,57 +20,81 @@ public final class LogisticsTable {
     private LogisticsTable() {
     }
 
-    /** How far an item travels along a belt unit per second, at full satisfaction. */
+    /**
+     * How far an item travels along a belt unit per second, at full satisfaction.
+     *
+     * @throws IllegalArgumentException for level IV or V, which a belt does not have
+     */
     public static double beltSpeedBlocksPerSecond(LogisticsLevel level) {
         return switch (level) {
             case I -> 1.875;
             case II -> 3.75;
             case III -> 7.5;
+            case IV, V -> throw noBelt(level);
         };
     }
 
-    /** The power a belt unit asks for, in W. */
+    /**
+     * The power a belt unit asks for, in W.
+     *
+     * @throws IllegalArgumentException for level IV or V, which a belt does not have
+     */
     public static double beltPowerW(LogisticsLevel level) {
         return switch (level) {
             case I -> 200.0;
             case II -> 400.0;
             case III -> 800.0;
+            case IV, V -> throw noBelt(level);
         };
     }
 
-    /** The items a picker moves per second, at full satisfaction. */
+    /** The items a picker moves per second, at full satisfaction: 1, 2, 4, 8 and 16 from level I to level V. */
     public static double pickerItemsPerSecond(LogisticsLevel level) {
         return switch (level) {
             case I -> 1.0;
             case II -> 2.0;
             case III -> 4.0;
+            case IV -> 8.0;
+            case V -> 16.0;
         };
     }
 
-    /** The power a picker asks for, in W. */
+    /** The power a picker asks for, in W: 100, 200, 400, 800 and 1600 from level I to level V. */
     public static double pickerPowerW(LogisticsLevel level) {
         return switch (level) {
             case I -> 100.0;
             case II -> 200.0;
             case III -> 400.0;
+            case IV -> 800.0;
+            case V -> 1600.0;
         };
     }
 
-    /** The items a splitter passes per second, at full satisfaction. */
+    /**
+     * The items a splitter passes per second, at full satisfaction.
+     *
+     * @throws IllegalArgumentException for level IV or V, which a splitter does not have
+     */
     public static double splitterItemsPerSecond(LogisticsLevel level) {
         return switch (level) {
             case I -> 2.0;
             case II -> 4.0;
             case III -> 8.0;
+            case IV, V -> throw noSplitter(level);
         };
     }
 
-    /** The power a splitter asks for, in W. */
+    /**
+     * The power a splitter asks for, in W.
+     *
+     * @throws IllegalArgumentException for level IV or V, which a splitter does not have
+     */
     public static double splitterPowerW(LogisticsLevel level) {
         return switch (level) {
             case I -> 500.0;
             case II -> 1000.0;
             case III -> 1500.0;
+            case IV, V -> throw noSplitter(level);
         };
     }
 
@@ -84,6 +108,7 @@ public final class LogisticsTable {
             case I -> 7.5;
             case II -> 15.0;
             case III -> 22.5;
+            case IV, V -> throw noDuplex(level);
         };
     }
 
@@ -93,6 +118,19 @@ public final class LogisticsTable {
             case I -> 500.0;
             case II -> 1000.0;
             case III -> 1500.0;
+            case IV, V -> throw noDuplex(level);
         };
+    }
+
+    private static IllegalArgumentException noBelt(LogisticsLevel level) {
+        return new IllegalArgumentException("a belt has no level " + level);
+    }
+
+    private static IllegalArgumentException noSplitter(LogisticsLevel level) {
+        return new IllegalArgumentException("a splitter has no level " + level);
+    }
+
+    private static IllegalArgumentException noDuplex(LogisticsLevel level) {
+        return new IllegalArgumentException("a belt duplex has no level " + level);
     }
 }

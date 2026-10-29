@@ -16,6 +16,8 @@ mvn clean package                     # default profile api-26.3: Paper API 26.3
 mvn test                              # unit tests only
 ```
 
+Do not run `mvn clean` while a server runs this build. The server holds files under `CoreFactory-Paper/target`, and a clean removes them.
+
 The default profile is `api-26.3`, which is active by default in the root POM and sets `paper.api.version` (26.3) and
 `pack.format` (97). The other profiles in the root POM, `api-26.1`, `api-26.2` and `api-1.21.11`, still exist and build
 the same sources, but they are not supported. Build the default profile before a release.
@@ -50,7 +52,7 @@ CoreFactory/
 │   ├── placement/                  PlacedTntStore
 │   ├── display/                    PlacedDisplays
 │   ├── process/                    ProcessCatalog, ProcessEngine, Machine, MachineState, ItemRef, Stack
-│   ├── drill/                      DrillTable, DrillRules, DrillCatalog, DrillStorage, DrillState, DrillBox, DrillKind, DrillPower, PowerSource, DrillStatus, DrillText, DrillSpec, DrillDefinition, DrillDeposits, DrillSelection
+│   ├── drill/                      DrillTable, DrillRules, DrillCatalog, DrillStorage, DrillState, DrillBox, DrillKind, DrillStatus, DrillText, DrillSpec, DrillDefinition, DrillDeposits, DrillSelection
 │   ├── deposit/                    Deposit, DepositPlanner, DepositSettings, DepositStore, MemoryDepositStore, DrillAccumulator, DrillYield, TakeBatch, OreBlocks
 │   ├── geology/                    GeologyService, GeologyRegistry, OreDefinition, DepositVolumes, Placement
 │   ├── research/                   ResearchService, ResearchTree, ResearchStore, Progression
@@ -99,7 +101,7 @@ CoreFactory/
 ```
 
 The energy and logistics tests are in `CoreFactory-Core/src/test/java/io/corefactory/core/energy` and
-`.../core/logistics`, and in `CoreFactory-Paper/src/test/java/io/corefactory/paper/energy` and `.../spigot/logistics`.
+`.../core/logistics`, and in `CoreFactory-Paper/src/test/java/io/corefactory/paper/energy` and `.../paper/logistics`.
 
 ## Tests
 

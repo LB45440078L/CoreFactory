@@ -33,7 +33,7 @@ CoreFactory (parent pom; default profile api-26.3, Paper API 26.3)
 │     PlacedDisplays, ItemFactory, RecipeRegistrar, DefinitionParser, CoreSettings, Messages,
 │     mechanics/*  (every built-in mechanic)
 │     process/*    (lab tool processes: ProcessCatalog, ProcessEngine, Machine)
-│     drill/*      (drill levels, power and status: DrillTable, DrillRules, DrillPower, PowerSource, DrillStatus, DrillText, DrillCatalog, DrillState, DrillDeposits)
+│     drill/*      (drill levels, efficiency and status: DrillTable, DrillRules, DrillKind, DrillStatus, DrillText, DrillCatalog, DrillState, DrillDeposits)
 │     deposit/*   (the deposit model, pure: Deposit, DepositPlanner, DepositSettings, DepositStore, MemoryDepositStore, DrillAccumulator, DrillYield, TakeBatch, OreBlocks)
 │     geology/*   (the placed ore blocks that a player puts down: GeologyService, GeologyRegistry, OreDefinition, DepositVolumes, Placement)
 │     research/*   (the research tree and service: ResearchTree, ResearchService, ResearchStore)
@@ -69,7 +69,7 @@ before the worlds load.
 
 1. Checks that one of `WorldEdit` / `FastAsyncWorldEdit` is loaded; disables itself otherwise.
 2. Saves `config.yml` and writes any missing data file from the jar. `DefaultsMerger.merge` first checks `processes.yml`
-   against `DataVersion.CURRENT` (10, in `io.corefactory.paper.config`): a file with no version line or an older one is copied to `processes.yml.bak` and
+   against `DataVersion.CURRENT` (12, in `io.corefactory.paper.config`): a file with no version line or an older one is copied to `processes.yml.bak` and
    replaced by the shipped file, and a newer one is left with a warning. It then adds the missing entries of the other
    data files (see [CONFIGURATION.md](CONFIGURATION.md#startup-data-merge) and
    [processes.yml and its version](CONFIGURATION.md#processesyml-and-its-version)). `DataVersion.CURRENT` is raised whenever
@@ -114,22 +114,25 @@ has no Bukkit types and is tested without a server. Each action has a period in 
 The actions due on one tick run in the order they were added, and an action that throws is reported, so the actions
 after it still run on that tick. The order is the order of the calls in `CoreFactoryPlugin.onEnable`, which gives:
 
-1. `turrets`, every tick (`TurretRuntime.register`, before the core is registered).
-2. `waypoints`, every 5 ticks (`WaypointService`, when `DepositScanner` is built, also before the core).
-3. `core`, every tick.
-4. `achievement-save`, every 6000 ticks.
-5. `geiger`, every 10 ticks.
-6. `resources`, every 40 ticks.
-7. `oil`, every tick.
-8. `energy`, every tick: the energy network, then the logistics network.
-9. `water`, every tick.
-10. `machines`, every tick (`MachineTicker`).
-11. `sprites`, every tick (`SpriteEffects.start`).
-12. `charts`, every `charts.refresh-ticks` (default 10) (`ChartService.start`).
-13. `concealment`, every 40 ticks (`BarrelConcealment.start`).
+1. `turrets`, every tick, and `railgun-shots`, every tick (`TurretRuntime.register`, before the core is registered).
+2. `artillery`, every tick, `artillery-shots`, every tick, `artillery-hazards`, every 10 ticks (`ArtilleryHazards.STEP_TICKS`), and `command-center`, every tick (`ArtilleryRuntime.register`, also before the core).
+3. `waypoints`, every 5 ticks (`WaypointService`, when `DepositScanner` is built, also before the core).
+4. `core`, every tick.
+5. `achievement-save`, every 6000 ticks.
+6. `geiger`, every 10 ticks.
+7. `resources`, every 40 ticks.
+8. `oil`, every tick.
+9. `energy`, every tick: the energy network, then the logistics network.
+10. `water`, every tick.
+11. `machines`, every tick (`MachineTicker`).
+12. `chunks`, every 100 ticks, first run on the next tick (`ChunkKeeper.reconcile`).
+13. `sprites`, every tick (`SpriteEffects`, registered by `sprites.start()`).
+14. `charts`, every `charts.refresh-ticks` (default 10) (`ChartService`, registered by `charts.start()`).
+15. `concealment`, every 40 ticks, first run after one tick (`BarrelConcealment`, registered by `concealment.start()`).
 
-Outline actions are not in that list. `DepositOutline` and `EnergyEffects` add one each time they draw an outline, every
-10 ticks until it ends, so they run after the list above.
+Two more actions are added on demand and removed when they end. `artillery-targeting` runs every tick while a player has a
+listening session open on a command center (`ListeningMode`). `DepositOutline` and `EnergyEffects` each add one outline
+action that runs every 10 ticks until its seconds are up or the player leaves.
 
 Core keeps its transient per-event tasks on the Bukkit scheduler and does not use `TickScheduler`: `Tasks`, `BlockJobs`
 and `MilitaryMechanics` start their own tasks with `Bukkit.getScheduler()`.
@@ -218,7 +221,7 @@ ticks, and saves on schedule. `BlockJobs` runs its own task only while there is 
 
 ## Lab tools, drills and hoppers
 
-A lab tool, a petroleum drill and an ore drill each stand on a barrel. The host block's inventory holds what the machine owns: a lab tool's inputs, fuel and outputs, an ore drill's nine output slots, and a petroleum drill's one charcoal fuel slot. A petroleum drill has no output slots, since it pumps into the oil network. `machines.yml` keeps only each machine's position, type, progress and process. An ore drill from an earlier build stood on a dropper; `BarrelMigration` and `MachineStore.settle` move it to a barrel once its chunk loads.
+A lab tool, a petroleum drill and an ore drill each stand on a barrel. The host block's inventory holds what the machine owns: a lab tool's inputs, fuel and outputs, and an ore drill's nine output slots. A drill has no input or fuel slot, and a petroleum drill has no output slots either, since it pumps into the oil network. `machines.yml` keeps only each machine's position, type, progress and process. An ore drill from an earlier build stood on a dropper; `BarrelMigration` and `MachineStore.settle` move it to a barrel once its chunk loads.
 
 - `MachineMenu` is a view of the barrel. It copies the barrel into its slots, skips any slot the player has changed, and
   writes the player's changes back. The engine, the hoppers and the menu all read and write the same barrel.
@@ -232,15 +235,13 @@ A lab tool, a petroleum drill and an ore drill each stand on a barrel. The host 
   one it has, or else the mineable one with the largest remaining fraction, so every deposit in the square is mined in turn). Its items are made at the drill's rate and kept in a take
   batch (`DrillMining`, which also holds the search state). The batch is taken from the deposit in lots of ten, or when
   the oldest item has waited a second, and the taken items go into the output slots. `DrillRates` reads `drill-rates`
-  from `config.yml`. The grid is one more source there: `DrillRules.withGrid` takes the network's satisfaction when it is
-  stronger than the local power (see [Energy and logistics](#energy-and-logistics)). `DrillRules.petroleumPower` takes the
-  best of three sources: the redstone power the drill's block receives, each daylight detector touching it
-  (`signalEfficiency`, power over `DrillRules.FULL_SIGNAL`, which is 15), and charcoal in the fuel slot
-  (`CHARCOAL_EFFICIENCY`, 0.35). Ties go to solar, then redstone, then charcoal. `DrillRules.orePower` gives an ore drill
-  full power on a tick when the oil network gives it the petroleum it wants. The drill's cycle counts fuel use only
-  while it runs: an ore drill draws 0.5 litres of petroleum from the oil network per cycle (`DrillKind.ORE`), and a
-  petroleum drill uses one charcoal per eight counted cycles when charcoal is its source. `DrillBox` is the region a drill works in, and `DrillTable` gives each level's area, depth and cycle.
-- `DrillRules.status` returns the status in this order: no power, output full, no deposit in range, then running. A
+  from `config.yml`. Every drill is powered by the energy network alone: `DrillRules.efficiency` clamps the satisfaction its
+  grid gives it to 0 to 1, and that is the drill's efficiency (see [Energy and logistics](#energy-and-logistics)). The
+  cycle advances by the efficiency each tick. A petroleum drill pumps `rate x efficiency` litres a tick into the oil network
+  through `OilService`; an ore drill's batch of items grows at `rate x efficiency`, so the rate scales with the grid as it does
+  for a lab tool. No drill draws from the oil network or burns charcoal. `DrillBox` is the region a drill works in, and
+  `DrillTable` gives each level's area, depth and cycle.
+- `DrillRules.status` returns the status in this order: no power (the grid gives nothing), output full, no deposit in range, then running. A
   drill whose deposits in range are all empty reports `EXHAUSTED` ("Deposit exhausted"), and the drill stays there until
   it is moved. `DrillStatus.text` gives the words. `DrillText` gives the rate, the power and the lines of the info item.
 - `SolarPanelListener` handles the solar panel, which is a daylight detector. Breaking any daylight detector gives back the solar panel item.
@@ -295,7 +296,7 @@ and there are these kinds:
 - `LabPort` (`paper.machine`): a lab tool's barrel. It accepts an item exactly when a hopper would, into an input slot, and
   it gives items from its output slots, first slot first. Fuel is never taken through it.
 - `DrillPort` (`paper.machine`): a drill's output slots, first slot first. It accepts nothing: `accepts` is false and
-  `accept` is refused, because a drill's fuel comes from hoppers and by hand. The port keeps no items of its own, so the
+  `accept` is refused, because a drill has no input slots. The port keeps no items of its own, so the
   barrel is the only record.
 - `FuelPort` (`paper.logistics`): a generator's fuel. It accepts one fuel item at a time while the generator keeps fewer
   than `GeneratorFuel.CAP` (64), and it has no output.
@@ -338,7 +339,7 @@ right-click.
 **Satisfaction.** The solver gives each consumer a satisfaction from 0 to 1: the part of its demand it got.
 `EnergyService.satisfaction(id)` returns it, and 0 for a consumer the solver did not see. A lab tool advances through
 `WorkPace`: at satisfaction `s` it runs `s` of its process ticks on average. A drill reads the same value through
-`DrillRules.withGrid`. Logistics nodes read it through `SatisfactionMap`, and run at satisfaction times their normal
+`DrillRules.efficiency`. Logistics nodes read it through `SatisfactionMap`, and run at satisfaction times their normal
 speed: a node at 0 does nothing, and a node in an unloaded chunk reads 0.
 
 **Grids, outlines and charts.** A grid is not stored. Each tick `GridGraph.components` finds the connected groups of pylons
@@ -394,7 +395,7 @@ applies the pipe flow once per 0.05 s tick. `OilPlacement` and `OilListener` pla
 would mix the fluids, and `MixedNetworks` settles a saved network that holds two fluids at start-up (the minority fluid
 is emptied and a warning is logged; on a tie, petroleum is kept). `OilStore` saves the tubes with their fluid in
 `oil.yml` (version 2). The joins are decided by `OilJoinPlan` in Core, from the tubes and the devices beside them. A
-merging device (a petroleum drill, which gives; the generators, the ore drill and the level II pump, which take) joins every
+merging device (a petroleum drill, which gives; the generators and the level II pump, which take) joins every
 network its footprint touches into one. The refinery is separate: it is not a node of the grid, so each network beside it
 stays its own, and it takes petroleum from each intake and gives diesel into each output (a network that holds diesel, or
 is empty with a diesel consumer on it). A network whose fluids disagree moves nothing. Unverified in game: the network's
@@ -412,7 +413,7 @@ port to a belt or picker whose output cell is a tower belt, and the logistics ti
 
 ## Lab machine levels
 
-`io.corefactory.core.upgrade.LabLevels` holds the three levels, the work pace from `machine-upgrades.speed`, the kit detection
+`io.corefactory.core.upgrade.LabLevels` holds the five levels, the work pace from `machine-upgrades.speed`, the kit detection
 (`machine_upgrade_2` and `machine_upgrade_3` only) and the model ids. `MachineListener.applyKit` applies a module by right-click and
 refuses a wrong level. `MachineStore` saves each machine's level in `machines.yml` and loads a missing one as level I, and
 `MachineTicker` uses the pace and the title level. The level models are generated by

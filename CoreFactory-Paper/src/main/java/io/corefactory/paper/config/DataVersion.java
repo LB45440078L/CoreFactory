@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 public final class DataVersion {
 
     /** The version of processes.yml this build ships. Raise it when the machines, processes or drills change. */
-    public static final int CURRENT = 10;
+    public static final int CURRENT = 12;
 
     private static final Pattern STAMP = Pattern.compile("#\\s*data-version:\\s*(\\d+)");
 

@@ -6,7 +6,7 @@ public enum DrillStatus {
     /** The drill has power, room in its outputs and a deposit with something left in its square. */
     RUNNING,
 
-    /** The drill has no power: no redstone, no panel and no charcoal, or for an ore drill no petroleum. */
+    /** The energy network gives the drill no power, so it does not advance. */
     NO_POWER,
 
     /** The output slots have no room for another item, or for a petroleum drill the oil network takes no more petroleum. */
@@ -21,12 +21,12 @@ public enum DrillStatus {
     /**
      * The status as players read it.
      *
-     * @param kind the drill's kind, which names its power source
+     * @param kind the drill's kind
      */
     public String text(DrillKind kind) {
         return switch (this) {
             case RUNNING -> "Running";
-            case NO_POWER -> kind == DrillKind.ORE ? "No petroleum" : "No power";
+            case NO_POWER -> "No power";
             case FULL -> kind == DrillKind.PETROLEUM ? "Network full" : "Output full";
             case NO_TARGET -> "No deposit in range";
             case EXHAUSTED -> "Deposit exhausted";

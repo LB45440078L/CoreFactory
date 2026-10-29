@@ -1,7 +1,7 @@
 # =====================================================================================================
 #  CoreFactory research
 #
-#  The research tree is one line. Each node requires the node before it, so there are no shortcuts.
+#  The research tree branches. A node lists the nodes it requires, and it cannot be finished until all of them are.
 #  A node is finished by feeding its "cost" packs into a Research Console. Progress is kept in the database
 #  (SQLite or PostgreSQL, see config.yml), so every server that shares it sees the same research.
 #
@@ -119,7 +119,7 @@ nodes:
 
   tesseract_geometry:
     name: "&dTesseract Geometry"
-    description: "Fold a lattice into a fourth direction. The last thing that is ever researched."
+    description: "Fold a lattice into a fourth direction. Lab upgrades IV and V, pylon IV, the rail coils and belt duplex III all need it."
     requires: [exotic_matter]
     cost: {research_pack_exotic: 16, research_pack_plasma: 10}
     unlocks: [tesseract_lattice, four_dimensional_tnt, heavy_weapons_assembly, machine_gun_turret, laser_turret,
@@ -233,6 +233,21 @@ nodes:
     requires: [accumulator_iv, antimatter_shell]
     cost: {research_pack_exotic: 12, research_pack_plasma: 12, research_pack_nuclear: 10}
     unlocks: [accumulator_5]
+
+  # The fourth and fifth tiers of the lab machines and the pickers. Both need the tesseract, which the heavy weapons assembly needs.
+  lab_upgrades_iv_v:
+    name: "&dLab Upgrades IV and V"
+    description: "Modules that take a lab machine to level IV and to level V, the last level. Made on the heavy weapons assembly."
+    requires: [tesseract_geometry]
+    cost: {research_pack_exotic: 12, research_pack_plasma: 12}
+    unlocks: [machine_upgrade_4, machine_upgrade_5]
+
+  picker_iv_v:
+    name: "&dPickers IV and V"
+    description: "Claw arms that move eight and sixteen items a second, made on the heavy weapons assembly."
+    requires: [tesseract_geometry]
+    cost: {research_pack_exotic: 14, research_pack_plasma: 12, research_pack_nuclear: 8}
+    unlocks: [picker_4, picker_5]
 
   # The railgun line, the last turret: its coils and barrel first, then the turret that they make.
   railgun_coils:

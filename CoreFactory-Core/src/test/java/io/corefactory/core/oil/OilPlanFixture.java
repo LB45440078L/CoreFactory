@@ -35,11 +35,6 @@ final class OilPlanFixture {
         return new Device(anchor, Footprint.heightOf("petroleum_drill_4"), Fluid.PETROLEUM, null, false);
     }
 
-    /** An ore drill at an anchor, level 4: it joins the networks it touches and takes no oil. */
-    static Device oreDrill(Pos anchor) {
-        return new Device(anchor, Footprint.heightOf("ore_drill_4"), null, null, false);
-    }
-
     /** A petroleum generator at an anchor: it takes petroleum from the networks it joins. */
     static Device petroleumGenerator(Pos anchor) {
         return new Device(anchor, Footprint.heightOf("petroleum_generator"), null, Fluid.PETROLEUM, false);

@@ -39,7 +39,11 @@ public final class OreArt {
             new Spec("saltpeter_deposit", "LIME_GLAZED_TERRACOTTA", "#C4C0B4", "#FFFFFF", OreArt::saltpeter),
             new Spec("sulfur_deposit", "ORANGE_GLAZED_TERRACOTTA", "#4A4638", "#F2D21A", OreArt::sulfur),
             new Spec("zinc_deposit", "CYAN_GLAZED_TERRACOTTA", "#4A3524", "#4FD0E0", OreArt::sphalerite),
-            new Spec("coal_ore", "COAL_ORE", "#5C5C60", "#141416", OreArt::coal));
+            new Spec("coal_ore", "COAL_ORE", "#5C5C60", "#141416", OreArt::coal),
+            new Spec("iron_ore", "BLUE_GLAZED_TERRACOTTA", "#7A6E66", "#D9843A", OreArt::galena),
+            new Spec("copper_ore", "GREEN_GLAZED_TERRACOTTA", "#5E6E62", "#4FD19A", OreArt::sphalerite),
+            new Spec("gold_ore", "PINK_GLAZED_TERRACOTTA", "#8E7D52", "#FFD94A", OreArt::monazite),
+            new Spec("diamond_ore", "LIGHT_BLUE_GLAZED_TERRACOTTA", "#4E5C68", "#A8F0FF", OreArt::fluorite));
 
     private OreArt() {
     }

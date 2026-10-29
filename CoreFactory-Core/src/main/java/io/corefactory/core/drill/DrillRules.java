@@ -2,20 +2,15 @@ package io.corefactory.core.drill;
 
 import io.corefactory.core.process.ItemRef;
 
-import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 /**
- * The drill rules that need no server: the power of a drill, its status, the item a mined ore gives, and where a drill
- * may stand. Pure, so each rule is tested with plain numbers.
+ * The drill rules that need no server: the efficiency a drill runs at, its status, the item a mined ore gives, and where a drill
+ * may stand. Every drill is powered by the energy network, so its efficiency is the satisfaction the grid gives it. Pure, so each
+ * rule is tested with plain numbers.
  */
 public final class DrillRules {
-
-    /** The strongest redstone or daylight signal, which gives full efficiency. A redstone block emits it. */
-    public static final int FULL_SIGNAL = 15;
-
-    /** The efficiency of a petroleum drill that runs on charcoal. */
-    public static final double CHARCOAL_EFFICIENCY = 0.35;
 
     /** The ore id of a crude petroleum deposit in ores.yml. */
     public static final String DEPOSIT = "crude_petroleum_deposit";
@@ -26,6 +21,14 @@ public final class DrillRules {
     /** The product of a mined coal ore: vanilla charcoal. */
     public static final ItemRef CHARCOAL = ItemRef.material("CHARCOAL");
 
+    /** The ore id of a diamond ore in ores.yml. A drill that mines it yields vanilla diamond, one item per unit. */
+    public static final String DIAMOND = "diamond_ore";
+
+    /** The vanilla products of the ores that yield a vanilla item rather than their component. */
+    private static final Map<String, ItemRef> VANILLA_PRODUCTS = Map.of(
+            COAL, CHARCOAL,
+            DIAMOND, ItemRef.material("DIAMOND"));
+
     private static final Set<String> HARD_BASE = Set.of(
             "STONE", "GRANITE", "DIORITE", "ANDESITE", "TUFF", "DEEPSLATE");
 
@@ -33,76 +36,26 @@ public final class DrillRules {
     }
 
     /**
-     * The efficiency a redstone or daylight signal of this power gives: its power over {@link #FULL_SIGNAL}, clamped to 0
-     * to 1. A redstone block gives 15, so it runs a drill at full efficiency.
-     */
-    public static double signalEfficiency(int power) {
-        return Math.min(FULL_SIGNAL, Math.max(0, power)) / (double) FULL_SIGNAL;
-    }
-
-    /**
-     * The power of a petroleum drill: the best of its three sources, and the source that gives it. The sources are each solar
-     * panel beside the drill, the redstone around it, and charcoal in the fuel slot. A source that gives nothing never wins,
-     * so with every source at zero the drill has no power. A daylight detector also sends its signal to the block beside it,
-     * so a panel's power is part of the redstone reading too; a tie therefore names the panel.
+     * The efficiency of a drill from the satisfaction its grid gives it: the satisfaction, clamped to 0 to 1. A drill whose grid gives
+     * nothing has no efficiency, so it does not advance its cycle.
      *
-     * @param redstone the redstone power the drill block receives from its neighbours, 0 to 15
-     * @param panels   the power of each daylight detector beside the drill, 0 to 15 each; empty for none
-     * @param charcoal true when the fuel slot holds charcoal
+     * @param satisfaction the share of its demand the energy network gave the drill, 0 to 1
      */
-    public static DrillPower petroleumPower(int redstone, Collection<Integer> panels, boolean charcoal) {
-        DrillPower best = DrillPower.NONE;
-        best = stronger(best, new DrillPower(PowerSource.SOLAR, signalEfficiency(strongest(panels))));
-        best = stronger(best, new DrillPower(PowerSource.REDSTONE, signalEfficiency(redstone)));
-        best = stronger(best, new DrillPower(PowerSource.CHARCOAL, charcoal ? CHARCOAL_EFFICIENCY : 0.0));
-        return best;
-    }
-
-    /**
-     * The power of a drill with the energy network added: the stronger of its local power and the network's satisfaction.
-     * The local source stays when it is at least as strong, so a network never takes a drill off its own power.
-     *
-     * @param local        the power of the drill's own sources
-     * @param satisfaction the network's satisfaction of the drill, 0 to 1
-     */
-    public static DrillPower withGrid(DrillPower local, double satisfaction) {
-        double grid = Math.min(1.0, Math.max(0.0, satisfaction));
-        return grid > local.efficiency() ? new DrillPower(PowerSource.GRID, grid) : local;
-    }
-
-    /** The power of an ore drill: full power when the oil network gave it the petroleum it wants this tick, none without it. */
-    public static DrillPower orePower(boolean petroleum) {
-        return petroleum ? new DrillPower(PowerSource.PETROLEUM, 1.0) : DrillPower.NONE;
-    }
-
-    /**
-     * True when a drill draws its fluid fuel from the oil network this tick. Only a kind with a fluid fuel draws, and it draws only
-     * when it would run if the fuel came: its outputs have room, a deposit it may mine touches its square and that deposit has
-     * something left. An idle drill draws nothing. The fuel is what powers the drill, so the power it then has is not an input: a
-     * draw the network refuses leaves the drill without power, and {@link #status} reports that.
-     *
-     * @param kind          the drill's kind
-     * @param roomLeft      true when its output slots can take another item
-     * @param targetInRange true when a deposit its kind and selection allow touches its square
-     * @param working       true when the drill has a deposit with something left to work on
-     */
-    public static boolean drawsFuel(DrillKind kind, boolean roomLeft, boolean targetInRange, boolean working) {
-        return kind.fluid().isPresent() && status(true, roomLeft, targetInRange, working) == DrillStatus.RUNNING;
-    }
-
-    /** True when a petroleum drill burns charcoal in its fuel cycle: only when charcoal is the source that powers it. */
-    public static boolean burnsCharcoal(DrillPower power) {
-        return power.source() == PowerSource.CHARCOAL;
+    public static double efficiency(double satisfaction) {
+        if (Double.isNaN(satisfaction)) {
+            return 0.0;
+        }
+        return Math.min(1.0, Math.max(0.0, satisfaction));
     }
 
     /**
      * The status of a drill, checked in this order: no power, then no room, then no deposit in its square, then an empty
      * deposit. A drill is running only when all four are in order.
      *
-     * @param powered      true when its efficiency is positive
-     * @param roomLeft     true when its output slots can take another item
+     * @param powered       true when its efficiency is positive
+     * @param roomLeft      true when its output slots can take another item, or a petroleum drill's network takes more
      * @param targetInRange true when a deposit its kind and selection allow touches its square
-     * @param working      true when the drill has a deposit with something left to work on
+     * @param working       true when the drill has a deposit with something left to work on
      */
     public static DrillStatus status(boolean powered, boolean roomLeft, boolean targetInRange, boolean working) {
         if (!powered) {
@@ -118,14 +71,15 @@ public final class DrillRules {
     }
 
     /**
-     * The item a drill yields from one mined ore unit: vanilla charcoal for coal, otherwise the ore's drop component. Coal
-     * follows the same power and target rules as every other ore of an ore drill, at any level.
+     * The item a drill yields from one mined ore unit: vanilla charcoal for coal, vanilla diamond for diamond ore, otherwise
+     * the ore's drop component. Every ore of an ore drill follows the same power and target rules, at any level.
      *
      * @param oreId the ore's id in ores.yml
      * @param drop  the ore's drop component id
      */
     public static ItemRef mined(String oreId, String drop) {
-        return COAL.equals(oreId) ? CHARCOAL : ItemRef.item(drop);
+        ItemRef vanilla = VANILLA_PRODUCTS.get(oreId);
+        return vanilla != null ? vanilla : ItemRef.item(drop);
     }
 
     /**
@@ -134,17 +88,5 @@ public final class DrillRules {
      */
     public static boolean hardBase(String material) {
         return material != null && HARD_BASE.contains(material);
-    }
-
-    private static DrillPower stronger(DrillPower current, DrillPower candidate) {
-        return candidate.efficiency() > current.efficiency() ? candidate : current;
-    }
-
-    private static int strongest(Collection<Integer> powers) {
-        int best = 0;
-        for (int power : powers) {
-            best = Math.max(best, power);
-        }
-        return best;
     }
 }

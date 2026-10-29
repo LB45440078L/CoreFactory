@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * The slots of a machine's barrel and the order the layout's slots map onto them. A lab tool lays its barrel out as inputs,
- * then outputs, then fuel; a drill lays it out as fuel, then outputs. Each role is counted from zero within itself, so input 0
- * is the first barrel slot of its role. The rest of the barrel is unused. Pure, so the mapping is tested without a server.
+ * The slots of a machine's barrel and the order the layout's slots map onto them: inputs, then outputs, then fuel. Each role is counted
+ * from zero within itself, so input 0 is the first barrel slot of its role. The rest of the barrel is unused. Pure, so the mapping is
+ * tested without a server.
  */
 public final class MachineSlots {
 
@@ -27,7 +27,6 @@ public final class MachineSlots {
     private final int inputs;
     private final int outputs;
     private final int fuel;
-    private final boolean fuelFirst;
 
     /**
      * @param inputs  how many input slots
@@ -36,17 +35,6 @@ public final class MachineSlots {
      * @throws IllegalArgumentException when a count is negative or the three roles do not fit in a barrel
      */
     public MachineSlots(int inputs, int outputs, int fuel) {
-        this(inputs, outputs, fuel, false);
-    }
-
-    /**
-     * @param inputs    how many input slots
-     * @param outputs   how many output slots
-     * @param fuel      how many fuel slots
-     * @param fuelFirst true for a drill's order, fuel then outputs; false for a lab tool's, inputs then outputs then fuel
-     * @throws IllegalArgumentException when a count is negative or the three roles do not fit in a barrel
-     */
-    public MachineSlots(int inputs, int outputs, int fuel, boolean fuelFirst) {
         if (inputs < 0 || outputs < 0 || fuel < 0) {
             throw new IllegalArgumentException("A machine cannot have a negative number of slots.");
         }
@@ -57,7 +45,6 @@ public final class MachineSlots {
         this.inputs = inputs;
         this.outputs = outputs;
         this.fuel = fuel;
-        this.fuelFirst = fuelFirst;
     }
 
     /** The slots of a machine kind, as processes.yml gives them. */
@@ -65,9 +52,9 @@ public final class MachineSlots {
         return new MachineSlots(machine.inputSlots(), machine.outputSlots(), machine.fuelSlots());
     }
 
-    /** The slots of a drill: one fuel slot first, then the given number of outputs. */
+    /** The slots of a drill: no inputs and no fuel, then the given number of outputs. */
     public static MachineSlots drill(int outputs) {
-        return new MachineSlots(0, outputs, 1, true);
+        return new MachineSlots(0, outputs, 0);
     }
 
     /** How many slots the role has. */
@@ -130,13 +117,6 @@ public final class MachineSlots {
 
     /** The first barrel slot of a role. */
     private int start(Role role) {
-        if (fuelFirst) {
-            return switch (role) {
-                case FUEL -> 0;
-                case OUTPUT -> fuel;
-                case INPUT -> fuel + outputs;
-            };
-        }
         return switch (role) {
             case INPUT -> 0;
             case OUTPUT -> inputs;

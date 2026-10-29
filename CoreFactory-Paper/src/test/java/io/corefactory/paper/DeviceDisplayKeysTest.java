@@ -31,7 +31,9 @@ class DeviceDisplayKeysTest {
         }
         for (LogisticsLevel level : LogisticsLevel.values()) {
             ids.add(LogisticsIds.componentId(LogisticsIds.Kind.PICKER, level));
-            ids.add(LogisticsIds.componentId(LogisticsIds.Kind.SPLITTER, level));
+            if (level.compareTo(LogisticsLevel.III) <= 0) {
+                ids.add(LogisticsIds.componentId(LogisticsIds.Kind.SPLITTER, level));
+            }
         }
         return ids;
     }
@@ -40,14 +42,16 @@ class DeviceDisplayKeysTest {
     static List<String> beltDevices() {
         List<String> ids = new ArrayList<>();
         for (LogisticsLevel level : LogisticsLevel.values()) {
-            ids.add(LogisticsIds.componentId(LogisticsIds.Kind.BELT, level));
+            if (level.compareTo(LogisticsLevel.III) <= 0) {
+                ids.add(LogisticsIds.componentId(LogisticsIds.Kind.BELT, level));
+            }
         }
         return ids;
     }
 
     @Test
     void everyMachineDeviceDisplaysItsMachineModel() {
-        assertThat(machineDevices()).hasSize(22);
+        assertThat(machineDevices()).hasSize(24);
         for (String id : machineDevices()) {
             assertThat(ItemFactory.displayKey(id)).as(id).isEqualTo(ItemFactory.MACHINE + "/" + id);
         }

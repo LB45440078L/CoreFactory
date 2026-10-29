@@ -2,6 +2,7 @@ package io.corefactory.paper.geology;
 
 import io.corefactory.core.deposit.Deposit;
 import io.corefactory.core.deposit.DepositPlanner;
+import io.corefactory.core.deposit.DepositPool;
 import io.corefactory.core.deposit.DepositSettings;
 import io.corefactory.core.deposit.DepositStore;
 import io.corefactory.core.deposit.OreBlocks;
@@ -65,12 +66,8 @@ public final class DepositGenerator {
         this.store = Objects.requireNonNull(store, "store");
         this.settings = Objects.requireNonNull(settings, "settings");
         Objects.requireNonNull(ores, "ores");
-        List<String> solid = new ArrayList<>();
         Map<String, Layer> byId = new HashMap<>();
         for (OreDefinition ore : ores) {
-            if (!OIL_ORE.equals(ore.id())) {
-                solid.add(ore.id());
-            }
             Material host = Material.matchMaterial(ore.host());
             if (host == null || !host.isBlock()) {
                 continue;
@@ -84,7 +81,7 @@ public final class DepositGenerator {
             }
             byId.put(ore.id(), new Layer(host, Set.copyOf(replace), ore.minY(), ore.maxY()));
         }
-        this.solidOres = List.copyOf(solid);
+        this.solidOres = DepositPool.solid(ores, OIL_ORE);
         this.layers = Map.copyOf(byId);
     }
 

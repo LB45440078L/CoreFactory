@@ -153,6 +153,8 @@ public final class ComponentArt {
             new Spec("picker_1", "#B87333", "#3A4048", ComponentArt::picker),
             new Spec("picker_2", "#E0B030", "#3A4048", ComponentArt::picker),
             new Spec("picker_3", "#9B5CFF", "#3A4048", ComponentArt::picker),
+            new Spec("picker_4", "#FF5CA8", "#3A4048", ComponentArt::picker),
+            new Spec("picker_5", "#3FE8FF", "#3A4048", ComponentArt::picker),
             new Spec("splitter_1", "#5A6470", "#C87533", ComponentArt::splitter),
             new Spec("splitter_2", "#7A6A3A", "#D8A83A", ComponentArt::splitter),
             new Spec("splitter_3", "#5E4E8A", "#C9A227", ComponentArt::splitter),
@@ -192,7 +194,11 @@ public final class ComponentArt {
             new Spec("iron_plate", "#BFC6CE", "#7E8690", ComponentArt::plate),
             new Spec("iron_gear", "#AEB6C0", "#6E7782", ComponentArt::smallGear),
             new Spec("circuit_board", "#1F6A3A", "#D9A040", ComponentArt::circuit),
-            new Spec("charcoal", "#262220", "#5A524B", ComponentArt::lumps));
+            new Spec("charcoal", "#262220", "#5A524B", ComponentArt::lumps),
+            new Spec("raw_iron", "#6B5B52", "#C8733A", ComponentArt::lumps),
+            new Spec("raw_copper", "#9A6A44", "#6FD0A0", ComponentArt::lumps),
+            new Spec("raw_gold", "#9E8A4A", "#FFE27A", ComponentArt::lumps),
+            new Spec("diamond", "#7FB8D8", "#EFFBFF", ComponentArt::lumps));
 
     /**
      * Every component: the listed components, then the process machines' inventory sprites from

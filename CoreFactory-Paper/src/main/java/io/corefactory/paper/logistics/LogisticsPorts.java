@@ -15,6 +15,7 @@ import io.corefactory.paper.machine.PlacedMachine;
 import io.corefactory.paper.machine.VanillaContainerPort;
 import io.corefactory.paper.turret.TurretPort;
 import io.corefactory.paper.turret.TurretRegistry;
+import io.corefactory.paper.vertical.VerticalService;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -25,8 +26,8 @@ import java.util.UUID;
 
 /**
  * The ports at a block: a drill's output slots, a lab tool's barrel, a generator's fuel for a kind that burns fuel, a turret's ammunition,
- * a crafter's nine grid slots as a sink and as a picker's source, and a vanilla storage block (a chest, a trapped chest, a barrel, a
- * shulker box or a copper chest) as a sink and as a picker's source. The plugin's own devices are tried first, and a block a device
+ * a crafter's nine grid slots as a sink and as a picker's source, a vertical belt's cell as a sink and as a picker's source from any side,
+ * and a vanilla storage block (a chest, a trapped chest, a barrel, a shulker box or a copper chest) as a sink and as a picker's source. The plugin's own devices are tried first, and a block a device
  * occupies never falls through to the vanilla storage. Any other block has no
  * port, so a belt or a picker that points at it waits. A block in a world that is not loaded has none. A vanilla container that a claim
  * system protects takes items from a belt, a picker or a splitter, and gives items to a picker, only when the owner of that device is
@@ -39,14 +40,16 @@ final class LogisticsPorts {
     private final TurretRegistry turrets;
     private final ItemRefs refs;
     private final ContainerProtection containers;
+    private final VerticalService vertical;
 
     LogisticsPorts(MachineStore machines, DeviceRegistry energy, TurretRegistry turrets, ItemRefs refs,
-                   ContainerProtection containers) {
+                   ContainerProtection containers, VerticalService vertical) {
         this.machines = machines;
         this.energy = energy;
         this.turrets = turrets;
         this.refs = refs;
         this.containers = containers;
+        this.vertical = vertical;
     }
 
     /**
@@ -79,6 +82,10 @@ final class LogisticsPorts {
         }
         if (machines.at(block).isPresent() || turrets.at(block).isPresent() || energy.at(block).isPresent()) {
             return Optional.empty();
+        }
+        Optional<Port> belt = vertical.portAt(world, cell, () -> containers.permits(block, takeOwner));
+        if (belt.isPresent()) {
+            return belt;
         }
         Block vanilla = loaded.getBlockAt(cell.x(), cell.y(), cell.z());
         Optional<Port> crafter = CrafterPort.of(vanilla, refs, containers, putOwner, takeOwner).map(port -> port);

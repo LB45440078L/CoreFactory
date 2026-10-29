@@ -80,6 +80,25 @@ components:
       - "&8Crush it, then roast the dust."
     material: COCOA_BEANS
 
+  # Common metals from the ore drills. Iron, copper and gold; diamond is a vanilla diamond, see items.yml.
+  raw_iron:
+    name: "&fRaw Iron"
+    lore:
+      - "&7Rust-streaked lumps of iron ore, heavy and dull."
+    material: RAW_IRON
+
+  raw_copper:
+    name: "&6Raw Copper"
+    lore:
+      - "&7Green-stained copper ore, soft enough to cut with a knife."
+    material: RAW_COPPER
+
+  raw_gold:
+    name: "&eRaw Gold"
+    lore:
+      - "&7Quartz veined with pale gold."
+    material: RAW_GOLD
+
   # ----------------------------------------------------------------- Crushed ore (from the crusher)
 
   crushed_uraninite:
@@ -865,10 +884,26 @@ components:
   machine_upgrade_3:
     name: "&bUpgrade Module III"
     lore:
-      - "&7Takes a level II lab machine to level III, the last level: it works twice as fast."
+      - "&7Takes a level II lab machine to level III: it works twice as fast."
       - "&7Right-click a lab machine you own to fit it. Its items and progress stay."
       - "&8Made on the heavy weapons assembly, never by hand."
     material: SEA_LANTERN
+
+  machine_upgrade_4:
+    name: "&dUpgrade Module IV"
+    lore:
+      - "&7Takes a level III lab machine to level IV: it works 2.75 times as fast."
+      - "&7Right-click a lab machine you own to fit it. Its items and progress stay."
+      - "&8Made on the heavy weapons assembly, never by hand."
+    material: GLOWSTONE
+
+  machine_upgrade_5:
+    name: "&6Upgrade Module V"
+    lore:
+      - "&7Takes a level IV lab machine to level V, the last level: it works 3.5 times as fast."
+      - "&7Right-click a lab machine you own to fit it. Its items and progress stay."
+      - "&8Made on the heavy weapons assembly, never by hand."
+    material: BEACON
 
   # ----------------------------------------------------------------- Extraction and survey
 
@@ -909,7 +944,7 @@ components:
     name: "&8Petroleum Drill I"
     lore:
       - "&7Pumps petroleum slowly from deposits in a 10 x 10 area."
-      - "&8Power: a solar panel or a redstone block next to it, or charcoal."
+      - "&8Power: the energy network, from a pylon in range."
     material: BARREL
     recipe:
       type: shaped
@@ -960,7 +995,7 @@ components:
   ore_drill_1:
     name: "&7Ore Drill I"
     lore:
-      - "&7Mines special ores from a 10 x 10 area. Runs on petroleum from the oil network."
+      - "&7Mines special ores from a 10 x 10 area. Runs on the energy network."
       - "&8Place it on hard stone."
     material: BARREL
     recipe:
@@ -1261,6 +1296,21 @@ components:
     recipe:
       type: shapeless
       ingredients: [item:picker_2, material:DIAMOND_BLOCK, item:superconducting_magnet]
+
+  # The last two pickers are made on the heavy weapons assembly, by process only.
+  picker_4:
+    name: "&dPicker IV"
+    lore:
+      - "&7Moves eight items a second. Its claw is held by a superconducting magnet."
+      - "&8Needs a steady supply of power. Made on the heavy weapons assembly, never by hand."
+    material: NETHERITE_HOE
+
+  picker_5:
+    name: "&6Picker V"
+    lore:
+      - "&7Moves sixteen items a second, the fastest picker. A tesseract lattice steadies its claw."
+      - "&8Needs a steady supply of power. Made on the heavy weapons assembly, never by hand."
+    material: END_ROD
 
   splitter_1:
     name: "&7Splitter I"

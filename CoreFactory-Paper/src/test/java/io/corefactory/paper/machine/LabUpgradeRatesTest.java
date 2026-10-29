@@ -15,10 +15,11 @@ class LabUpgradeRatesTest {
 
     @Test
     void theConfiguredFactorsAreReadLevelByLevel() {
-        LabLevels levels = LabUpgradeRates.read(List.of(1.0, 1.25, 3.0), LOG);
+        LabLevels levels = LabUpgradeRates.read(List.of(1.0, 1.25, 3.0, 3.5, 4.0), LOG);
 
         assertThat(levels.speed(2)).isEqualTo(1.25);
         assertThat(levels.speed(3)).isEqualTo(3.0);
+        assertThat(levels.speed(5)).isEqualTo(4.0);
     }
 
     @Test
@@ -27,12 +28,14 @@ class LabUpgradeRatesTest {
 
         assertThat(LabUpgradeRates.read(LabUpgradeRates.DEFAULTS, LOG).speed(2)).isEqualTo(defaults.speed(2));
         assertThat(LabUpgradeRates.read(LabUpgradeRates.DEFAULTS, LOG).speed(3)).isEqualTo(defaults.speed(3));
+        assertThat(LabUpgradeRates.read(LabUpgradeRates.DEFAULTS, LOG).speed(5)).isEqualTo(defaults.speed(5));
     }
 
     @Test
     void aMissingOrShortListFallsBackToTheDefaults() {
         assertThat(LabUpgradeRates.read(null, LOG).speed(3)).isEqualTo(LabLevels.defaults().speed(3));
         assertThat(LabUpgradeRates.read(List.of(1.0, 2.0), LOG).speed(2)).isEqualTo(LabLevels.defaults().speed(2));
+        assertThat(LabUpgradeRates.read(List.of(1.0, 2.0, 3.0, 4.0), LOG).speed(2)).isEqualTo(LabLevels.defaults().speed(2));
     }
 
     @Test
@@ -45,7 +48,7 @@ class LabUpgradeRatesTest {
 
     @Test
     void aFactorThatFallsFromTheLevelBelowFallsBackToTheDefaults() {
-        assertThat(LabUpgradeRates.read(List.of(1.0, 2.0, 1.5), LOG).speed(3))
+        assertThat(LabUpgradeRates.read(List.of(1.0, 2.0, 1.5, 2.0, 2.0), LOG).speed(3))
                 .isEqualTo(LabLevels.defaults().speed(3));
     }
 }

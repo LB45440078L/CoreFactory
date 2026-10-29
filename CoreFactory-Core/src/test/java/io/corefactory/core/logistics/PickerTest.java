@@ -318,6 +318,8 @@ class PickerTest {
     void everyLevelPickerMovesItsRatePerSecondAtFullSatisfaction(LogisticsLevel level) {
         int moved = movesIn(level, 1.0, 20 * 20);
         double rate = LogisticsTable.pickerItemsPerSecond(level);
-        assertThat(moved).isBetween((int) (rate * 20) - 2, (int) (rate * 20) + 1);
+        // The first move waits for the priming delay, which costs the faster levels more items in a 20 second run.
+        double primed = 20 - LogisticsTable.PICKER_DELAY_SECONDS;
+        assertThat(moved).isBetween((int) (rate * primed) - 2, (int) (rate * 20) + 1);
     }
 }

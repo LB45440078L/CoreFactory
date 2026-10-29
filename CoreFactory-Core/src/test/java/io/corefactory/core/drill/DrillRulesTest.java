@@ -1,5 +1,6 @@
 package io.corefactory.core.drill;
 
+import io.corefactory.core.deposit.DrillYield;
 import io.corefactory.core.process.ItemRef;
 import org.junit.jupiter.api.Test;
 
@@ -11,146 +12,45 @@ import static org.assertj.core.api.Assertions.within;
 class DrillRulesTest {
 
     @Test
-    void aSignalIsItsPowerOverFifteenAndClamped() {
-        assertThat(DrillRules.signalEfficiency(0)).isZero();
-        assertThat(DrillRules.signalEfficiency(15)).isEqualTo(1.0);
-        assertThat(DrillRules.signalEfficiency(5)).isCloseTo(1.0 / 3.0, within(1e-9));
-        assertThat(DrillRules.signalEfficiency(-3)).isZero();
-        assertThat(DrillRules.signalEfficiency(20)).isEqualTo(1.0);
+    void theEfficiencyIsTheGridsSatisfactionClampedToZeroToOne() {
+        assertThat(DrillRules.efficiency(1.0)).isEqualTo(1.0);
+        assertThat(DrillRules.efficiency(0.4)).isEqualTo(0.4);
+        assertThat(DrillRules.efficiency(0.0)).isZero();
+        assertThat(DrillRules.efficiency(-0.5)).isZero();
+        assertThat(DrillRules.efficiency(1.5)).isEqualTo(1.0);
+        assertThat(DrillRules.efficiency(Double.NaN)).isZero();
     }
 
     @Test
-    void aRedstoneBlockOnlyRunsThePetroleumDrillAtFullPower() {
-        DrillPower power = DrillRules.petroleumPower(15, List.of(), false);
-        assertThat(power.source()).isEqualTo(PowerSource.REDSTONE);
-        assertThat(power.efficiency()).isEqualTo(1.0);
-        assertThat(power.powered()).isTrue();
+    void aDrillWithNoGridPowerHasNoEfficiency() {
+        assertThat(DrillRules.efficiency(0.0)).isZero();
+        assertThat(DrillRules.status(DrillRules.efficiency(0.0) > 0, true, true, true)).isEqualTo(DrillStatus.NO_POWER);
     }
 
     @Test
-    void aPartRedstoneSignalGivesItsOwnEfficiency() {
-        DrillPower power = DrillRules.petroleumPower(6, List.of(), false);
-        assertThat(power.source()).isEqualTo(PowerSource.REDSTONE);
-        assertThat(power.efficiency()).isCloseTo(0.4, within(1e-9));
+    void noPowerIsCheckedFirst() {
+        assertThat(DrillRules.status(false, false, false, false)).isEqualTo(DrillStatus.NO_POWER);
     }
 
     @Test
-    void aSolarPanelOnlyRunsTheDrillAtItsOwnPower() {
-        DrillPower power = DrillRules.petroleumPower(0, List.of(9), false);
-        assertThat(power.source()).isEqualTo(PowerSource.SOLAR);
-        assertThat(power.efficiency()).isCloseTo(0.6, within(1e-9));
+    void aFullFedDrillWithRoomAndAWorkingDepositRuns() {
+        assertThat(DrillRules.status(true, true, true, true)).isEqualTo(DrillStatus.RUNNING);
     }
 
     @Test
-    void charcoalOnlyGivesThirtyFivePercent() {
-        DrillPower power = DrillRules.petroleumPower(0, List.of(), true);
-        assertThat(power.source()).isEqualTo(PowerSource.CHARCOAL);
-        assertThat(power.efficiency()).isEqualTo(DrillRules.CHARCOAL_EFFICIENCY).isEqualTo(0.35);
+    void noRoomIsFullBeforeNoTargetOrExhaustion() {
+        assertThat(DrillRules.status(true, false, true, true)).isEqualTo(DrillStatus.FULL);
+        assertThat(DrillRules.status(true, false, false, false)).isEqualTo(DrillStatus.FULL);
     }
 
     @Test
-    void theBestSourceWins() {
-        assertThat(DrillRules.petroleumPower(5, List.of(9), true).source()).isEqualTo(PowerSource.SOLAR);
-        assertThat(DrillRules.petroleumPower(5, List.of(9), true).efficiency()).isCloseTo(0.6, within(1e-9));
-        assertThat(DrillRules.petroleumPower(5, List.of(), true).source()).isEqualTo(PowerSource.CHARCOAL);
-        assertThat(DrillRules.petroleumPower(12, List.of(9), true).source()).isEqualTo(PowerSource.REDSTONE);
-        assertThat(DrillRules.petroleumPower(12, List.of(9), true).efficiency()).isCloseTo(0.8, within(1e-9));
-        assertThat(DrillRules.petroleumPower(0, List.of(3), true).source()).isEqualTo(PowerSource.CHARCOAL);
+    void noDepositInSquareIsNoTarget() {
+        assertThat(DrillRules.status(true, true, false, false)).isEqualTo(DrillStatus.NO_TARGET);
     }
 
     @Test
-    void theStrongestOfSeveralPanelsIsTheSolarSource() {
-        DrillPower power = DrillRules.petroleumPower(0, List.of(3, 11, 0), false);
-        assertThat(power.source()).isEqualTo(PowerSource.SOLAR);
-        assertThat(power.efficiency()).isCloseTo(11.0 / 15.0, within(1e-9));
-    }
-
-    @Test
-    void allSourcesAtZeroMeanNoPower() {
-        DrillPower power = DrillRules.petroleumPower(0, List.of(0, 0), false);
-        assertThat(power).isEqualTo(DrillPower.NONE);
-        assertThat(power.source()).isEqualTo(PowerSource.NONE);
-        assertThat(power.efficiency()).isZero();
-        assertThat(power.powered()).isFalse();
-        assertThat(DrillRules.petroleumPower(0, List.of(), false)).isEqualTo(DrillPower.NONE);
-    }
-
-    @Test
-    void aTieIsNamedBySolarBecauseAPanelAlsoShowsInTheRedstoneReading() {
-        assertThat(DrillRules.petroleumPower(15, List.of(15), true).source()).isEqualTo(PowerSource.SOLAR);
-        assertThat(DrillRules.petroleumPower(9, List.of(9), false).source()).isEqualTo(PowerSource.SOLAR);
-        assertThat(DrillRules.petroleumPower(0, List.of(15), true).source()).isEqualTo(PowerSource.SOLAR);
-    }
-
-    @Test
-    void aRedstoneSourceStrongerThanThePanelIsNamedRedstone() {
-        assertThat(DrillRules.petroleumPower(15, List.of(9), false).source()).isEqualTo(PowerSource.REDSTONE);
-        assertThat(DrillRules.petroleumPower(15, List.of(), false).source()).isEqualTo(PowerSource.REDSTONE);
-    }
-
-    @Test
-    void aRedstoneReadingOutsideTheScaleIsClamped() {
-        assertThat(DrillRules.petroleumPower(40, List.of(), false).efficiency()).isEqualTo(1.0);
-        assertThat(DrillRules.petroleumPower(-4, List.of(), false)).isEqualTo(DrillPower.NONE);
-    }
-
-    @Test
-    void charcoalIsBurnedOnlyWhenCharcoalIsTheSource() {
-        assertThat(DrillRules.burnsCharcoal(DrillRules.petroleumPower(0, List.of(), true))).isTrue();
-        assertThat(DrillRules.burnsCharcoal(DrillRules.petroleumPower(3, List.of(), true))).isTrue();
-        assertThat(DrillRules.burnsCharcoal(DrillRules.petroleumPower(15, List.of(), true))).isFalse();
-        assertThat(DrillRules.burnsCharcoal(DrillRules.petroleumPower(0, List.of(9), true))).isFalse();
-        assertThat(DrillRules.burnsCharcoal(DrillPower.NONE)).isFalse();
-    }
-
-    @Test
-    void theGridRaisesADrillOnlyAboveItsLocalPower() {
-        DrillPower redstone = DrillRules.petroleumPower(7, List.of(), false);
-        assertThat(DrillRules.withGrid(redstone, 0.0)).isEqualTo(redstone);
-        assertThat(DrillRules.withGrid(redstone, 0.2)).isEqualTo(redstone);
-        assertThat(DrillRules.withGrid(redstone, 1.0)).isEqualTo(new DrillPower(PowerSource.GRID, 1.0));
-        assertThat(DrillRules.withGrid(DrillPower.NONE, 0.4)).isEqualTo(new DrillPower(PowerSource.GRID, 0.4));
-        assertThat(DrillRules.withGrid(DrillPower.NONE, 0.0)).isEqualTo(DrillPower.NONE);
-    }
-
-    @Test
-    void anOreDrillRunsAtFullPowerOnlyWithPetroleum() {
-        assertThat(DrillRules.orePower(true)).isEqualTo(new DrillPower(PowerSource.PETROLEUM, 1.0));
-        assertThat(DrillRules.orePower(false)).isEqualTo(DrillPower.NONE);
-    }
-
-    @Test
-    void anIdleOreDrillDrawsNoPetroleum() {
-        assertThat(DrillRules.drawsFuel(DrillKind.ORE, true, true, false)).isFalse();
-    }
-
-    @Test
-    void anOreDrillWithNoTargetDrawsNoPetroleum() {
-        assertThat(DrillRules.drawsFuel(DrillKind.ORE, true, false, false)).isFalse();
-        assertThat(DrillRules.drawsFuel(DrillKind.ORE, true, false, true)).isFalse();
-    }
-
-    @Test
-    void anOreDrillWithNoRoomInItsOutputsDrawsNoPetroleum() {
-        assertThat(DrillRules.drawsFuel(DrillKind.ORE, false, true, true)).isFalse();
-    }
-
-    @Test
-    void aRunningOreDrillDrawsItsPetroleum() {
-        assertThat(DrillRules.drawsFuel(DrillKind.ORE, true, true, true)).isTrue();
-    }
-
-    @Test
-    void aPetroleumDrillDrawsNoFluidFuelFromTheNetwork() {
-        assertThat(DrillRules.drawsFuel(DrillKind.PETROLEUM, true, true, true)).isFalse();
-    }
-
-    @Test
-    void aDrawTheNetworkRefusesLeavesTheOreDrillWithoutPowerAndNotRunning() {
-        // The draw is decided before the power is known. A refused draw gives the drill no petroleum power, so it does not run.
-        assertThat(DrillRules.drawsFuel(DrillKind.ORE, true, true, true)).isTrue();
-        boolean powered = DrillRules.orePower(false).powered();
-        assertThat(DrillRules.status(powered, true, true, true)).isEqualTo(DrillStatus.NO_POWER);
+    void anEmptyDepositInSquareIsExhausted() {
+        assertThat(DrillRules.status(true, true, true, false)).isEqualTo(DrillStatus.EXHAUSTED);
     }
 
     @Test
@@ -170,5 +70,36 @@ class DrillRulesTest {
         assertThat(DrillRules.CHARCOAL.kind()).isEqualTo(ItemRef.Kind.MATERIAL);
         assertThat(DrillRules.CHARCOAL.name()).isEqualTo("CHARCOAL");
         assertThat(DrillRules.mined("raw_galena_ore", "raw_galena")).isEqualTo(ItemRef.item("raw_galena"));
+    }
+
+    @Test
+    void theCommonMetalsYieldTheirRawItemAndADiamondOreYieldsVanillaDiamond() {
+        assertThat(DrillRules.mined("iron_ore", "raw_iron")).isEqualTo(ItemRef.item("raw_iron"));
+        assertThat(DrillRules.mined("copper_ore", "raw_copper")).isEqualTo(ItemRef.item("raw_copper"));
+        assertThat(DrillRules.mined("gold_ore", "raw_gold")).isEqualTo(ItemRef.item("raw_gold"));
+        assertThat(DrillRules.mined(DrillRules.DIAMOND, "diamond")).isEqualTo(ItemRef.material("DIAMOND"));
+        assertThat(DrillRules.mined(DrillRules.DIAMOND, "diamond").kind()).isEqualTo(ItemRef.Kind.MATERIAL);
+    }
+
+    @Test
+    void aFullyFedDrillYieldsItsLevelRateAndAPartFedOneItsShareOfIt() {
+        DrillYield yield = new DrillYield(new double[] {1.0, 1.5, 2.5, 4.0, 6.0});
+
+        assertThat(yield.itemsPerSecond(3) * DrillRules.efficiency(1.0)).isEqualTo(2.5);
+        assertThat(yield.itemsPerSecond(3) * DrillRules.efficiency(0.4)).isCloseTo(1.0, within(1e-9));
+        assertThat(yield.itemsPerSecond(3) * DrillRules.efficiency(0.0)).isZero();
+    }
+
+    @Test
+    void aPartFedDrillFinishesItsCycleInProportionallyMoreTicks() {
+        DrillState drill = new DrillState(new DrillDefinition("ore_drill_1", "Ore Drill", "BARREL", DrillKind.ORE,
+                DrillTable.level(1)));
+        double efficiency = DrillRules.efficiency(0.5);
+        int ticks = 0;
+        while (!drill.ready()) {
+            drill.advance(efficiency);
+            ticks++;
+        }
+        assertThat(ticks).isEqualTo(2 * DrillTable.level(1).cycleTicks());
     }
 }

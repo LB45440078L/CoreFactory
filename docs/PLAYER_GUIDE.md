@@ -43,6 +43,7 @@ Every mod item, bomb, machine, ore and research pack has its picture next to its
   - [Cinnabar](#cinnabar)
   - [Fluorite](#fluorite)
   - [Crude petroleum deposit](#crude-petroleum-deposit)
+  - [Iron, copper, gold and diamond](#iron-copper-gold-and-diamond)
   - [What to mine with](#what-to-mine-with)
   - [The silk touch trick](#the-silk-touch-trick)
   - [Finding ores in old land](#finding-ores-in-old-land)
@@ -212,7 +213,7 @@ Every mod item, bomb, machine, ore and research pack has its picture next to its
 
 CoreFactory adds seven things to your world.
 
-1. **Ores.** Eleven solid ores and crude petroleum lie in the world as deposits: round patches of one ore, set in the stone. They sit at different depths and show different colours. Digging a patch block gives one raw mineral, and drills take the rest out of the deposits. See [Finding ores](#finding-ores).
+1. **Ores.** Fifteen solid ores and crude petroleum lie in the world as deposits: round patches of one ore, set in the stone. They sit at different depths and show different colours. Digging a patch block gives one raw mineral, and drills take the rest out of the deposits. See [Finding ores](#finding-ores).
 2. **Machines.** Twenty machines turn raw minerals into the materials for bombs, ammunition and the turret. You place them like blocks, then open them to load and empty them. Hoppers can feed them. See [The lab machines](#the-lab-machines).
 3. **Drills.** Ten drills dig for you. Five petroleum drills draw petroleum, and five ore drills mine the solid ores. See [Drills and petroleum](#drills-and-petroleum).
 4. **Power and belts.** Generators make power, pylons carry it to the machines, and accumulators store it. Belts, pickers and splitters move items between machines. See [Electricity](#electricity) and [Belts and automation](#belts-and-automation).
@@ -232,7 +233,7 @@ There are three kinds of new item: the things you craft, the things you dig up o
 
 | Family | Items | Where they come from |
 |---|---|---|
-| Raw ores | <img src="images/components/raw_uraninite.png" width="24" height="24" align="absmiddle"> Raw uraninite, <img src="images/components/raw_pitchblende.png" width="24" height="24" align="absmiddle"> Raw pitchblende, <img src="images/components/raw_monazite.png" width="24" height="24" align="absmiddle"> Raw monazite, <img src="images/components/raw_thorite.png" width="24" height="24" align="absmiddle"> Raw thorite, <img src="images/components/raw_galena.png" width="24" height="24" align="absmiddle"> Raw galena, <img src="images/components/raw_cinnabar.png" width="24" height="24" align="absmiddle"> Raw cinnabar, <img src="images/components/raw_fluorite.png" width="24" height="24" align="absmiddle"> Raw fluorite | Mining the ore blocks |
+| Raw ores | <img src="images/components/raw_uraninite.png" width="24" height="24" align="absmiddle"> Raw uraninite, <img src="images/components/raw_pitchblende.png" width="24" height="24" align="absmiddle"> Raw pitchblende, <img src="images/components/raw_monazite.png" width="24" height="24" align="absmiddle"> Raw monazite, <img src="images/components/raw_thorite.png" width="24" height="24" align="absmiddle"> Raw thorite, <img src="images/components/raw_galena.png" width="24" height="24" align="absmiddle"> Raw galena, <img src="images/components/raw_cinnabar.png" width="24" height="24" align="absmiddle"> Raw cinnabar, <img src="images/components/raw_fluorite.png" width="24" height="24" align="absmiddle"> Raw fluorite, <img src="images/components/raw_iron.png" width="24" height="24" align="absmiddle"> Raw iron, <img src="images/components/raw_copper.png" width="24" height="24" align="absmiddle"> Raw copper, <img src="images/components/raw_gold.png" width="24" height="24" align="absmiddle"> Raw gold | Mining the ore blocks |
 | Crushed ores | <img src="images/components/crushed_uraninite.png" width="24" height="24" align="absmiddle"> Crushed uraninite, <img src="images/components/crushed_pitchblende.png" width="24" height="24" align="absmiddle"> Crushed pitchblende, <img src="images/components/crushed_monazite.png" width="24" height="24" align="absmiddle"> Crushed monazite, <img src="images/components/crushed_thorite.png" width="24" height="24" align="absmiddle"> Crushed thorite, <img src="images/components/crushed_galena.png" width="24" height="24" align="absmiddle"> Crushed galena, <img src="images/components/crushed_cinnabar.png" width="24" height="24" align="absmiddle"> Crushed cinnabar, <img src="images/components/crushed_fluorite.png" width="24" height="24" align="absmiddle"> Crushed fluorite | Crusher |
 | Process products | <img src="images/components/uranium_calcine.png" width="24" height="24" align="absmiddle"> Uranium calcine, <img src="images/components/slag.png" width="24" height="24" align="absmiddle"> Slag, <img src="images/components/refined_lead.png" width="24" height="24" align="absmiddle"> Refined lead, <img src="images/components/mercury_flask.png" width="24" height="24" align="absmiddle"> Mercury flask, <img src="images/components/yellowcake.png" width="24" height="24" align="absmiddle"> Yellowcake (U3O8), <img src="images/components/tailings.png" width="24" height="24" align="absmiddle"> Uranium tailings, <img src="images/components/rare_earth_concentrate.png" width="24" height="24" align="absmiddle"> Rare earth concentrate, <img src="images/components/phosphate_tailings.png" width="24" height="24" align="absmiddle"> Phosphate tailings, <img src="images/components/thorium_concentrate.png" width="24" height="24" align="absmiddle"> Thorium concentrate, <img src="images/components/silicate_tailings.png" width="24" height="24" align="absmiddle"> Silicate tailings, <img src="images/components/uf6_cylinder.png" width="24" height="24" align="absmiddle"> UF6 cylinder, <img src="images/components/depleted_uranium.png" width="24" height="24" align="absmiddle"> Depleted uranium, <img src="images/components/deuterium_cell.png" width="24" height="24" align="absmiddle"> Deuterium cell, <img src="images/components/purified_iron.png" width="24" height="24" align="absmiddle"> Purified iron, <img src="images/components/high_purity_graphite.png" width="24" height="24" align="absmiddle"> High-purity graphite, <img src="images/components/u233_oxide.png" width="24" height="24" align="absmiddle"> Uranium-233 oxide, <img src="images/components/plutonium_oxide.png" width="24" height="24" align="absmiddle"> Plutonium oxide, <img src="images/components/fission_waste.png" width="24" height="24" align="absmiddle"> Fission waste | Machines (see each machine) |
 | Advanced materials | <img src="images/components/enriched_uranium.png" width="24" height="24" align="absmiddle"> Enriched uranium, <img src="images/components/antiproton_capsule.png" width="24" height="24" align="absmiddle"> Antiproton capsule, <img src="images/components/antimatter_condensate.png" width="24" height="24" align="absmiddle"> Antimatter condensate, <img src="images/components/neutronium_slug.png" width="24" height="24" align="absmiddle"> Neutronium slug | Enrichment cascade (enriched uranium), particle accelerator (antiproton capsule and neutronium slug), antimatter condenser (antimatter condensate) |
@@ -240,7 +241,6 @@ There are three kinds of new item: the things you craft, the things you dig up o
 | Protection | <img src="images/components/hazmat_fabric.png" width="24" height="24" align="absmiddle"> Hazmat fabric, the four Radioactive Suit pieces, <img src="images/components/geiger_counter.png" width="24" height="24" align="absmiddle"> Geiger counter | Crafting table, after research |
 | Machines | <img src="images/components/crusher.png" width="24" height="24" align="absmiddle"> Crusher, <img src="images/components/roaster.png" width="24" height="24" align="absmiddle"> Roasting kiln, <img src="images/components/separator.png" width="24" height="24" align="absmiddle"> Centrifugal separator, <img src="images/components/purifier.png" width="24" height="24" align="absmiddle"> Purification still, <img src="images/components/converter.png" width="24" height="24" align="absmiddle"> Fluorination converter, <img src="images/components/enrichment_cascade.png" width="24" height="24" align="absmiddle"> Enrichment cascade, <img src="images/components/transmuter.png" width="24" height="24" align="absmiddle"> Neutron transmuter, <img src="images/components/spectrometer.png" width="24" height="24" align="absmiddle"> Spectrometer, <img src="images/components/particle_accelerator.png" width="24" height="24" align="absmiddle"> Particle accelerator, <img src="images/components/antimatter_condenser.png" width="24" height="24" align="absmiddle"> Antimatter condenser, <img src="images/components/research_console.png" width="24" height="24" align="absmiddle"> Research console | Crafting table, after research |
 | Drills and power | <img src="images/components/petroleum_drill_1.png" width="24" height="24" align="absmiddle"> Petroleum drills I to V, <img src="images/components/ore_drill_1.png" width="24" height="24" align="absmiddle"> Ore drills I to V, <img src="images/components/solar_panel.png" width="24" height="24" align="absmiddle"> Solar panel, <img src="images/components/ore_density_scanner.png" width="24" height="24" align="absmiddle"> Ore density scanner (finds deposits) | Crafting table, after research. The scanner needs Laboratory Basics |
-| Oil system | Oil tube, Oil T splitter, Oil cross splitter | Component assembly, after Materials Purification |
 | Research packs | <img src="images/components/research_pack_basic.png" width="24" height="24" align="absmiddle"> Basic, <img src="images/components/research_pack_chemical.png" width="24" height="24" align="absmiddle"> Chemical, <img src="images/components/research_pack_nuclear.png" width="24" height="24" align="absmiddle"> Nuclear, <img src="images/components/research_pack_plasma.png" width="24" height="24" align="absmiddle"> Plasma, <img src="images/components/research_pack_exotic.png" width="24" height="24" align="absmiddle"> Exotic | Spectrometer |
 | Crafted parts for machines | <img src="images/components/superconducting_magnet.png" width="24" height="24" align="absmiddle"> Superconducting magnet, <img src="images/components/neutron_flux_cell.png" width="24" height="24" align="absmiddle"> Neutron flux cell, <img src="images/components/tesseract_lattice.png" width="24" height="24" align="absmiddle"> Tesseract lattice | Crafting table, after research |
 | Upgrade modules | <img src="images/components/machine_upgrade_2.png" width="24" height="24" align="absmiddle"> Upgrade Module II, <img src="images/components/machine_upgrade_3.png" width="24" height="24" align="absmiddle"> Upgrade Module III | Component assembly and heavy weapons assembly, after research |
@@ -269,7 +269,7 @@ Some of the everyday bombs need only vanilla items. Others need components, so y
 
 <img src="images/ores/uraninite_ore.png" width="48" height="48" align="absmiddle">
 
-Eleven solid ores and crude petroleum lie in the world as **deposits**. A deposit is a round patch of one ore, roughly 48 to 96 blocks across, laid in the stone. None of them is visible from far away, so you must travel and dig to find them.
+Fifteen solid ores and crude petroleum lie in the world as **deposits**. A deposit is a round patch of one ore, roughly 48 to 96 blocks across, laid in the stone. None of them is visible from far away, so you must travel and dig to find them.
 
 Each chunk (a 16 by 16 block column) gets its deposits the first time it loads, and only once. Deposits never overlap, and the same world always has the same deposits in the same places. Old land gets its deposits too, when you first visit it.
 
@@ -297,6 +297,10 @@ Three things decide what you find and how much of it there is:
 | <img src="images/ores/sulfur_deposit.png" width="24" height="24" align="absmiddle"> Sulfur Deposit | -48 and 32 | Orange glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_sulfur.png" width="24" height="24" align="absmiddle"> Raw sulfur |
 | <img src="images/ores/zinc_deposit.png" width="24" height="24" align="absmiddle"> Sphalerite (Zinc Ore) | -48 and 48 | Cyan glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_sphalerite.png" width="24" height="24" align="absmiddle"> Raw sphalerite |
 | <img src="images/ores/coal_ore.png" width="24" height="24" align="absmiddle"> Coal Ore | -64 and 96 | Coal ore (the vanilla block) | 500,000 to 25,000,000 | <img src="images/components/charcoal.png" width="24" height="24" align="absmiddle"> Charcoal |
+| <img src="images/ores/iron_ore.png" width="24" height="24" align="absmiddle"> Iron Ore | -32 and 80 | Blue glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_iron.png" width="24" height="24" align="absmiddle"> Raw iron |
+| <img src="images/ores/copper_ore.png" width="24" height="24" align="absmiddle"> Copper Ore | -16 and 112 | Green glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_copper.png" width="24" height="24" align="absmiddle"> Raw copper |
+| <img src="images/ores/gold_ore.png" width="24" height="24" align="absmiddle"> Gold Ore | -64 and 32 | Pink glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/raw_gold.png" width="24" height="24" align="absmiddle"> Raw gold |
+| <img src="images/ores/diamond_ore.png" width="24" height="24" align="absmiddle"> Diamond Ore | -64 and -16 | Light blue glazed terracotta | 500,000 to 25,000,000 | <img src="images/components/diamond.png" width="24" height="24" align="absmiddle"> Diamond |
 
 The last four are described in [New ores](#new-ores).
 
@@ -344,6 +348,17 @@ In the world, a deposit shows as a patch of its colour. Most patch blocks are gl
 - **Next step:** crush it, then separate the crushed thorite. The separator gives <img src="images/components/thorium_concentrate.png" width="24" height="24" align="absmiddle"> thorium concentrate and <img src="images/components/silicate_tailings.png" width="24" height="24" align="absmiddle"> silicate tailings.
 - **Why it matters:** thorium concentrate breeds U-233 more reliably than rare earths do, so a thorite deposit is worth keeping for the drills.
 
+### Iron, copper, gold and diamond
+
+Iron and copper are the most common solid deposits, and drills can mine them as they can any other solid ore.
+
+- **Iron** (<img src="images/ores/iron_ore.png" width="24" height="24" align="absmiddle"> Iron Ore), from y -32 to y 80. The metal of most of the frame.
+- **Copper** (<img src="images/ores/copper_ore.png" width="24" height="24" align="absmiddle"> Copper Ore), from y -16 to y 112. Tied with iron for the most common.
+- **Gold** (<img src="images/ores/gold_ore.png" width="24" height="24" align="absmiddle"> Gold Ore), from y -64 to y 32. Less common than iron or copper.
+- **Diamond** (<img src="images/ores/diamond_ore.png" width="24" height="24" align="absmiddle"> Diamond Ore), from y -64 to y -16. The rarest solid deposit. A drill yields a diamond, not a raw mineral.
+
+Raw iron, raw copper and raw gold have no recipe yet, so a drill's raw metal is stored for later.
+
 ### Galena
 
 <img src="images/ores/galena_ore.png" width="24" height="24" align="absmiddle"> **Galena Ore**
@@ -383,7 +398,7 @@ In the world, a deposit shows as a patch of its colour. Most patch blocks are gl
 - **Drill yield:** a petroleum drill pumps the deposit's petroleum into the oil network, in litres. Digging a patch block by hand gives nothing: the deposit is a fluid, not an item, so it drops nothing, even with silk touch.
 - **Silk touch:** on an ore block item that you placed, keeps the block as an item. See [The silk touch trick](#the-silk-touch-trick).
 - **Pumping:** a petroleum drill draws the deposit down, in litres, until it is empty. The amount left is shown on the drill's info item and hologram. See [Petroleum drills](#petroleum-drills).
-- **Why it matters:** the petroleum runs the ore drills and the generators. See [Petroleum and diesel](#petroleum-and-diesel).
+- **Why it matters:** the petroleum feeds the refinery and the petroleum generator. See [Petroleum and diesel](#petroleum-and-diesel).
 
 ### What to mine with
 
@@ -661,7 +676,7 @@ Neutronium is a name for neutron-rich matter. Real neutron-rich matter exists in
 
 The tesseract is a four-dimensional cube. You cannot build one in our world, but you can draw its shadow. The lattice in the game is built by hand, from four superconducting magnets, four antiproton capsules and one high-purity graphite block. Its pattern is meant to look like the shadow of the 4D shape.
 
-Why it is fiction: a tesseract is a real mathematical object, but it is not something a machine can make. The mod uses it as the last, hardest step of the research tree.
+Why it is fiction: a tesseract is a real mathematical object, but it is not something a machine can make. The mod uses it as one of the hardest steps of the research tree.
 
 ### Is it realistic
 
@@ -1024,15 +1039,17 @@ The research console is a machine with no processes. It has its own screen, and 
 
 <img src="images/components/machine_upgrade_2.png" width="48" height="48" align="absmiddle">
 
-Every lab machine has three levels: I, II and III. A new machine is level I. A higher level makes the machine work faster, and you raise a machine's level with an upgrade module. You do not need a new machine.
+Every lab machine has five levels: I to V. A new machine is level I. A higher level makes the machine work faster, and you raise a machine's level with an upgrade module. You do not need a new machine.
 
 ### The levels
 
 - **Level I.** The normal pace, as you place the machine.
 - **Level II.** The machine works 1.5 times as fast, at full power. It has gold trim.
 - **Level III.** The machine works 2 times as fast, at full power. It has cyan trim and three lamps on the front.
+- **Level IV.** The machine works 2.75 times as fast, at full power. It has magenta trim and three lamps on the front.
+- **Level V.** The machine works 3.5 times as fast, at full power. It has orange trim and three lamps on the front. It is the top level.
 
-The power draw is the same at every level. The title of the machine's hologram shows its level as I, II or III.
+The power draw is the same at every level. The title of the machine's hologram shows its level as I to V.
 
 Drills do not take modules. Drills have their own levels. See [The five levels](#the-five-levels).
 
@@ -1042,19 +1059,21 @@ Drills do not take modules. Drills have their own levels. See [The five levels](
 |---|---|---|---|---|
 | <img src="images/components/machine_upgrade_2.png" width="24" height="24" align="absmiddle"> Upgrade Module II | Level I | Level II | Component assembly | Unlocked at Materials Purification |
 | <img src="images/components/machine_upgrade_3.png" width="24" height="24" align="absmiddle"> Upgrade Module III | Level II | Level III | Heavy weapons assembly | Unlocked at Tesseract Geometry |
+| <img src="images/components/machine_upgrade_4.png" width="24" height="24" align="absmiddle"> Upgrade Module IV | Level III | Level IV | Heavy weapons assembly | Lab Upgrades IV and V (Tesseract Geometry) |
+| <img src="images/components/machine_upgrade_5.png" width="24" height="24" align="absmiddle"> Upgrade Module V | Level IV | Level V, the top level | Heavy weapons assembly | Lab Upgrades IV and V (Tesseract Geometry) |
 
 To use a module, hold it in your hand and right-click the machine. Do not sneak. The module fits a machine you placed, or a machine a friend of yours placed. A machine saved before owners were kept takes anyone's module.
 
 - The machine's level goes up by one, and the module is used up.
 - The machine's contents and its progress stay as they are.
-- A module for the wrong level is refused with a message, and you keep the module. Module II works only on a level I machine, and Module III only on a level II machine.
+- A module for the wrong level is refused with a message, and you keep the module. Module II works only on a level I machine, Module III only on a level II machine, and so on up to Module V on a level IV machine.
 
 ### Tutorial: upgrading a machine
 
-1. **Get a module.** Make Upgrade Module II in the component assembly, or Upgrade Module III in the heavy weapons assembly.
+1. **Get a module.** Make Upgrade Module II in the component assembly, or Upgrade Module III, IV or V in the heavy weapons assembly.
 2. **Hold it.** Put the module in your hand.
 3. **Right-click the machine.** Do not sneak. The machine goes up one level, and the module is used up.
-4. **Check the title.** Look at the machine's hologram. Its title now shows II or III.
+4. **Check the title.** Look at the machine's hologram. Its title now shows II, III, IV or V.
 
 ## Research
 
@@ -1113,7 +1132,7 @@ The description of each node, as the game gives it:
 - **Particle Physics.** Accelerate charged particles to the energies where new matter appears.
 - **Antimatter Physics.** Trap antiprotons until they condense. A few atoms of it are very valuable.
 - **Exotic Matter.** Neutron-rich matter, and the weapons that use it.
-- **Tesseract Geometry.** Fold a lattice into a fourth direction. The last thing that is ever researched.
+- **Tesseract Geometry.** Fold a lattice into a fourth direction. Lab upgrades IV and V, pylon IV, the rail coils and belt duplex III all need it.
 
 ### The research packs
 
@@ -1180,7 +1199,9 @@ The TNT types that are locked are the ten nuclear tiers, the 4-Dimensional Bomb,
 Drills dig for you. A drill stands on a barrel and works a square of the world below it. The square grows with the drill's level. There are two kinds, and each has five levels.
 
 - **Petroleum drills** draw petroleum out of crude petroleum deposits.
-- **Ore drills** mine the solid ores out of their deposits, coal included.
+- **Ore drills** mine the solid ores out of their deposits, coal, iron, copper, gold and diamond included.
+
+Every drill runs on the energy network, like a lab tool: a pylon in range and a generator wired to it. No drill burns charcoal, takes solar or redstone power, or draws petroleum from the oil network.
 
 Drills need research. The first ones come after Chemical Separation, and the last ones come at the end of the line. The levels are in [The five levels](#the-five-levels), and the recipes are in [Drill recipes](#drill-recipes).
 
@@ -1188,24 +1209,22 @@ Drills need research. The first ones come after Chemical Separation, and the las
 
 - **It works a square.** The square is centred on the drill, and its side is the area of its level. A deposit counts when its circle touches the square, whatever its size, so the largest deposits are found too. The drill works one deposit at a time: the one with the most left in the square. When that deposit is empty, it moves on to the next. When it moves on before the items it made for the old deposit are all in its outputs, it keeps the old deposit until they are, so no item is lost for want of room.
 - **It works at its level's rate.** At full power a level 1 drill works at 1.0 a second, and each level is faster. For an ore drill that is items a second. For a petroleum drill it is litres a second. A petroleum drill pumps crude petroleum deposits into the oil network. An ore drill mines the other ores, including coal, which gives charcoal. Each unit an ore drill takes from a deposit becomes one item.
-- **It has its own storage.** An ore drill's barrel holds nine products and no fuel. You take products out by clicking them, and a hopper can take them out too. A petroleum drill's barrel holds one fuel item, charcoal, and no products. A hopper can fill its fuel slot. Nothing else goes in.
-- **It needs power.** Without power, it does nothing. See [The power of a drill](#the-power-of-a-drill).
+- **It has its own storage.** An ore drill's barrel holds nine products. You take products out by clicking them, and a hopper can take them out too. Nothing goes into a drill from a hopper, since a drill has no fuel slot. A petroleum drill has no storage at all: it pumps its petroleum into the oil network.
+- **It needs power.** Without grid power, it does nothing. See [The power of a drill](#the-power-of-a-drill).
 - **It stops when full.** When an ore drill's output slots have no room, it makes nothing and takes nothing, so the deposit keeps its amount until there is room. When the oil network refuses a petroleum drill's petroleum, the drill shows Network full and takes nothing from its deposit.
 - **Explosions.** A blast that reaches the drill breaks it, and its storage drops. A drill outside the blast's radius, or on protected ground, stays where it is.
 
 ### Placing a drill
 
 - **Stand it on hard stone.** The block under the drill must be stone, granite, diorite, andesite, tuff or deepslate. On any other block the drill will not place, and a message says why.
-- **Open it with a right-click.** Its screen has the info item at the top. A petroleum drill has a fuel slot on the left. An ore drill has its output slots in a grid instead. The info item shows the drill's level, area, depth, status, rate and power. It also lists what can power the drill, and says which source runs it.
+- **Open it with a right-click.** Its screen has the info item at the top. An ore drill has its output slots in a grid. A petroleum drill has no slots, so its grid is decoration. The info item shows the drill's level, area, depth, status, rate and power, and says that the energy network powers it.
 - **Break it to take it back.** Breaking a drill drops its items on the ground, and the drill itself.
-- **Levels IV and V are two blocks tall.** Like a door, they need the block above them free too. The block above is also checked
-  by any claim or region there. If it is protected, the drill will not place, and the game says "This spot is protected." Breaking
-  either half breaks the whole drill.
+- **Levels IV and V are two blocks tall.** Like a door, they need the block above them free too. The block above is also checked by any claim or region there. If it is protected, the drill will not place, and the game says "This spot is protected." Breaking either half breaks the whole drill.
 - **It moves while it works.** A running drill's head moves up and down into the ground. A drill that has stopped stays still.
 
 ### The five levels
 
-| Level | Square (blocks) | Rate a second at full power | Rate a minute at full power | Fuel cycle at full power |
+| Level | Square (blocks) | Rate a second at full power | Rate a minute at full power | Cycle at full power |
 |---|---|---|---|---|
 | 1 | 10 by 10 | 1.0 | 60 | 30 seconds |
 | 2 | 14 by 14 | 1.5 | 90 | 24 seconds |
@@ -1213,34 +1232,27 @@ Drills need research. The first ones come after Chemical Separation, and the las
 | 4 | 28 by 28 | 4.0 | 240 | 12 seconds |
 | 5 | 40 by 40 | 6.0 | 360 | 6 seconds |
 
-The rate is items for an ore drill and litres for a petroleum drill. Each higher level is wider and faster. An ore drill has nine output slots; a petroleum drill has none. The fuel cycle is the drill's fuel clock, and it does not set the output. The info item still shows a depth for each level, but the depth does not limit which deposits the drill finds.
+The rate is items for an ore drill and litres for a petroleum drill. Each higher level is wider and faster. An ore drill has nine output slots; a petroleum drill has none. The cycle is the progress bar of the drill's menu. It does not set the output. The info item still shows a depth for each level, but the depth does not limit which deposits the drill finds.
 
 ### The power of a drill
 
-A drill runs at the power of its best source. The source's name shows on the drill's hologram and in its info item, such as Power: solar 33%.
+A drill's power is the share of its demand that its grid gives it. Its demand is set by its level: 15 kW at level I, 25 kW at level II, 40 kW at level III, 60 kW at level IV and 90 kW at level V. A grid that gives the drill all of that runs it at full speed. The hologram, the info item and the screen show the share as `grid` and a percentage, such as Power: grid 60%.
 
 | Drill | Source | What it needs | Power | Name shown |
 |---|---|---|---|---|
-| Petroleum | Solar | An older solar panel (a daylight detector) touching the drill, on any side | The panel's power out of 15 | solar |
-| Petroleum | Redstone | A redstone block, redstone dust or a powered lever touching the drill | The redstone power out of 15. A redstone block gives 15 | redstone |
-| Petroleum | Charcoal | Charcoal in the fuel slot | 35 percent | charcoal |
-| Ore | Petroleum | Petroleum in the oil network the drill touches | 100 percent | petroleum |
-| Any drill | Grid | A pylon's square covers the drill, and a generator is wired to that pylon | The grid's share of full power, as a percentage | grid |
+| Any drill | Grid | A pylon's square covers the drill, and a generator is wired to that pylon | The grid's share of the drill's demand, as a percentage | grid |
 
-- **The best source wins.** If two sources are equal, the solar panel counts first, then redstone, then charcoal.
-- **The grid wins only when it is stronger.** The grid is used when its share is more than the drill's other source. It can run an ore drill that has no petroleum.
-- **Percentages round down.** A panel at power 5 reads 33 percent. That is less than the 35 percent of charcoal, so charcoal runs the drill instead. A panel at power 15 reads 100 percent.
-- **Charcoal burns only when it runs the drill.** While the drill runs on charcoal, the drill counts its fuel cycles, and one charcoal burns for every 8 cycles counted. When a panel or redstone is stronger, the charcoal stays in the slot.
-- **An ore drill draws petroleum while it runs.** While it runs, it takes half a litre of petroleum from its oil network for each cycle it counts, so one litre for every 2 cycles. Without petroleum, the drill stops.
+- **A short grid slows the drill.** When the generators give less than the load of the pylons, every device in that grid gets the same share of its demand. A drill at half power runs at half speed and makes half the output.
+- **Percentages round down.** A share of 0.596 reads 59 percent.
+- **Charcoal, redstone and solar do not power a drill.** A daylight detector or a redstone block beside a drill does nothing, and a drill burns no charcoal. Place the drill inside a pylon's square, with a generator wired to that pylon.
 
 ### Drill status
 
-The info item and the hologram show the drill's status. The status is checked in this order: no power (or no petroleum for an ore drill), then output full (network full for a petroleum drill), then no deposit in range, then deposit exhausted. The first one that applies is shown. If none applies, the drill is running.
+The info item and the hologram show the drill's status. The status is checked in this order: no power, then output full (network full for a petroleum drill), then no deposit in range, then deposit exhausted. The first one that applies is shown. If none applies, the drill is running.
 
 | Status | What it means | What to do |
 |---|---|---|
-| No power | A petroleum drill has no redstone, older solar panel, charcoal or grid power to run on. | Put a redstone block next to it, put charcoal in the fuel slot, or place it inside a pylon's square with a generator wired to that pylon. |
-| No petroleum | An ore drill's oil network holds no petroleum for it. | Connect the drill, with oil tubes, to the network of a petroleum drill. |
+| No power | The grid gives the drill no power: no pylon covers it, or the generators on its grid give nothing. | Place it inside a pylon's square, with a generator wired to that pylon. |
 | Output full | An ore drill's output slots have no room for another item. | Take the products out, by hand or with a hopper. |
 | Network full | A petroleum drill's oil network has no room for the petroleum it pumps. | Draw petroleum off the network, with a generator or a refinery on it. |
 | No deposit in range | No deposit that the drill can mine touches its square. A petroleum drill looks only for crude petroleum deposits, and an ore drill only for the other ores. | Move the drill over a deposit. Deposits lie underground in their own bands of depth. |
@@ -1254,10 +1266,10 @@ The hologram goes when a drill has no power, or when its outputs or its network 
 A drill's hologram has five lines. It shows while the drill has power and room: in its output slots for an ore drill, in its oil network for a petroleum drill.
 
 1. **The name.** The level and the kind, such as L1 Petroleum drill.
-2. **The power.** The source and its percentage, such as Power: solar 33%.
+2. **The power.** The grid and its share, such as Power: grid 33%.
 3. **The rate or status.** While the drill runs, its rate: items per second, then items per minute, such as Extracting 1.00/s (60.0/min) at level 1 and full power. For a petroleum drill the figure is litres a second, and the hologram shows no unit. When the drill cannot run, this line shows its status instead, such as No deposit in range.
 4. **The deposit.** The ore of the deposit the drill is working on, and what is left of it, such as Deposit Galena Ore 1.2M / 2.5M (48%). It reads Deposit none in range when no deposit is in its square.
-5. **The storage and fuel.** The items in the output slots, then the most they can hold, then the fuel count, such as Stored 0/576 · fuel 0. The most is nine full stacks of 64, which is 576. A petroleum drill has no output slots, so its line reads Stored 0/0 and its fuel count.
+5. **The storage.** The items in the output slots, then the most they can hold, such as Stored 0/576. The most is nine full stacks of 64, which is 576. A petroleum drill has no output slots, so its line reads Stored 0/0.
 
 The info item shows the same rate and the same deposit line. Its rate line reads stopped until the drill runs.
 
@@ -1265,19 +1277,15 @@ The info item shows the same rate and the same deposit line. Its rate line reads
 
 A petroleum drill works the crude petroleum deposits in its square, one deposit at a time: the one with the most left. It pumps the deposit's petroleum into the oil network in litres, and the amount left is shown on the drill's info item and hologram. When a deposit is empty, the drill moves on to the next one in its square.
 
-- **Power.** It runs on redstone, on charcoal, or on the grid. See [The power of a drill](#the-power-of-a-drill).
-- **Solar panel.** An older solar panel next to the drill gives it power. Full sun gives full speed, and night gives none. See [The solar panel](#the-solar-panel).
-- **Charcoal.** Charcoal in the fuel slot gives 35 percent of full speed. While it runs on charcoal, one charcoal burns for every 8 cycles counted.
-- **Output.** Its petroleum goes into the oil network of the tubes it touches. It has no output slots. When the network refuses petroleum, it shows Network full.
-
-Several solar panels do not add up. The best one counts.
+- **Power.** It runs on the grid alone, at the share of its demand that the grid gives it. See [The power of a drill](#the-power-of-a-drill).
+- **Output.** Its petroleum goes into the oil network of the tubes it touches, and it is a source of that network. It has no output slots. When the network refuses petroleum, it shows Network full.
 
 ### Ore drills
 
 An ore drill works the deposits of the other ores in its square, one deposit at a time: the one with the most left. Each unit it takes becomes one raw mineral, which goes into the output slots. It does not touch ordinary stone. Coal deposits are among the ones it mines, and each unit of coal gives you one charcoal.
 
-- **Petroleum.** It has no fuel slot. It takes petroleum from the oil network it touches: half a litre for each cycle it counts, so one litre for every 2 cycles. Without petroleum, the drill stops and shows No petroleum.
-- **Power.** It runs at full speed while it has petroleum. Solar panels and redstone do nothing for an ore drill. A grid in range can run it without petroleum, at the grid's share of full speed.
+- **Power.** It runs on the grid alone, at the share of its demand that the grid gives it, the same as a petroleum drill. Its speed and its output fall with that share.
+- **Oil network.** It takes no petroleum, and it is not joined to the oil network: a tube beside it does not join it.
 - **Resources menu.** Open the drill and use its resources button to see one entry for each deposit in its square. Each entry shows the ore's icon and the deposit's amounts. A toggle for each ore sets whether the drill mines it or ignores it, and the toggle applies to every deposit of that ore. Six entries show on each page, with arrows to turn the pages. An empty deposit shows a grey glass pane.
 
 An ore drill never gives you the ore block item, so silk touch does not apply to it. It gives you raw minerals, one for each unit it takes.
@@ -1286,14 +1294,10 @@ An ore drill never gives you the ore block item, so silk touch does not apply to
 
 <img src="images/components/solar_panel.png" width="24" height="24" align="absmiddle"> **Solar panel**
 
-A solar panel makes power from daylight. You place it on air, like a pylon, and wire it to a pylon. It makes nothing at night, and up to 320 W at noon. See [Generators](#generators).
+A solar panel makes power from daylight. You place it on air, like a pylon, and wire it to a pylon. It makes nothing at night, and up to 320 W at noon. It feeds the energy network like any other generator, so a drill is powered by it only through the grid. See [Generators](#generators).
 
-Older solar panels are different. A solar panel placed before the electrical system is a daylight detector block. It still sends a redstone signal to the petroleum drill beside it.
-
-- **Older panels: power.** Sunlight sets the power of an older panel, from 0 at night to 15 at full sun. A petroleum drill runs at that power out of 15. At full sun, that is full speed.
-- **Older panels: redstone, in plain words.** A daylight detector sends a redstone signal to the blocks next to it. The strength of the signal is the sunlight, from 0 to 15. The drill reads that signal like any other redstone signal. So the old panel powers the drill through redstone, and no wire is needed.
-- **A new panel does not power a drill by touching it.** Wire it to a pylon instead. A drill then gets power from the grid, if the pylon's square covers it.
-- **Breaking it.** Breaking any daylight detector gives you a solar panel back. A new panel gives back the same item.
+- **A daylight detector does not power a drill.** A daylight detector beside a drill sends no power to it. Wire a solar panel to a pylon instead.
+- **Breaking it.** Breaking a daylight detector that was placed as an older solar panel still gives you a solar panel back. A new panel gives back the same item.
 
 ### Oil tubes
 
@@ -1340,8 +1344,8 @@ A pylon carries power in watts. Its current limit is in amps. At 230 volts, a Py
 ### What powers what
 
 - **Lab tools need power.** Each lab tool asks for 4 kW. With less power than that, it runs slower. At half power it runs at half speed. With no power, it stops.
-- **Drills need power.** A drill asks for 15 kW at level I, 25 kW at level II, 40 kW at level III, 60 kW at level IV and 90 kW at level V. A drill can also run on its own power. See [The power of a drill](#the-power-of-a-drill).
-- **Belts, pickers and splitters need power.** A belt asks for 0.2 kW, 0.4 kW or 0.8 kW, by level. A picker asks for 0.1 kW, 0.2 kW or 0.4 kW. A splitter asks for 0.5 kW, 1 kW or 1.5 kW. Without power, they stop.
+- **Drills need power.** A drill asks for 15 kW at level I, 25 kW at level II, 40 kW at level III, 60 kW at level IV and 90 kW at level V, from its grid alone. See [The power of a drill](#the-power-of-a-drill).
+- **Belts, pickers and splitters need power.** A belt asks for 0.2 kW, 0.4 kW or 0.8 kW, by level. A picker asks for 0.1 kW, 0.2 kW, 0.4 kW, 0.8 kW or 1.6 kW, by level. A splitter asks for 0.5 kW, 1 kW or 1.5 kW. Without power, they stop.
 - **Pylons, wires and generators need no power.** They make, carry or store it.
 
 A lab tool or drill that is short of power shows a Grid line on its hologram. The line gives the grid's voltage, the power the machine asks for, and the share it gets, such as `Grid 230.0 V  4.0 kW  50 %`. The line is green at full power, yellow above zero and red at zero.
@@ -1376,7 +1380,7 @@ A pylon is a tower. You place it on air. Around it is a square of ground, its ra
 | Pylon IV | 25 | 51 by 51 blocks | 4000 A | 920 kW |
 | Pylon V | 40 | 81 by 81 blocks | 10000 A | 2.3 MW |
 
-- **Pylons IV and V are made in the heavy weapons assembly.** Pylon IV needs a Pylon III, a tesseract lattice, four superconducting magnets, two antiproton capsules and two enriched uranium. Pylon V needs a Pylon IV, two tesseract lattices, an antimatter containment, four antiproton capsules and eight superconducting magnets. They are researched as Pylon IV and Pylon V, after Tesseract Geometry and the antimatter shell. The recipes are in [Crafting](CRAFTING.md#processes-processesyml).
+- **Pylons IV and V are made in the heavy weapons assembly.** Pylon IV needs a Pylon III, a tesseract lattice, four superconducting magnets, two antiproton capsules and two enriched uranium. Pylon V needs a Pylon IV, two tesseract lattices, an antimatter containment, four antiproton capsules and eight superconducting magnets. Pylon IV is researched after Particle Physics and Tesseract Geometry, and Pylon V after Pylon IV and the condensed antimatter shell. The recipes are in [Crafting](CRAFTING.md#processes-processesyml).
 - **Placing.** Hold the pylon and right-click the side of a block. The pylon goes on the air beside the face you clicked. That spot must be air.
 - **Machines need no wire.** A machine inside the square gets the power. Only pylons and generators take wires.
 - **The edge counts.** A block on the edge of the square is in range.
@@ -1475,7 +1479,7 @@ An accumulator stores power. It stands on air inside a pylon's square. It needs 
 | Accumulator IV | 320 kWh | 200 kW | 200 kW |
 | Accumulator V | 1.28 MWh | 800 kW | 800 kW |
 
-- **Accumulators IV and V are made in the heavy weapons assembly.** Accumulator IV needs an Accumulator III, four pulse capacitors, two superconducting magnets and a tesseract lattice. Accumulator V needs an Accumulator IV, eight pulse capacitors, two antiproton capsules, four enriched uranium and a tesseract lattice. They are researched after Particle Physics and after the antimatter shell. The recipes are in [Crafting](CRAFTING.md#processes-processesyml).
+- **Accumulators IV and V are made in the heavy weapons assembly.** Accumulator IV needs an Accumulator III, four pulse capacitors, two superconducting magnets and a tesseract lattice. Accumulator V needs an Accumulator IV, eight pulse capacitors, two antiproton capsules, four enriched uranium and a tesseract lattice. Accumulator IV is researched after Particle Physics, and Accumulator V after Accumulator IV and the condensed antimatter shell. The recipes are in [Crafting](CRAFTING.md#processes-processesyml).
 - **It charges from spare power only.** It takes in power that no machine used during that moment, from the grid that covers it. A grid that is busy gives it nothing.
 - **It keeps 90 % of what it takes in.** The rest is lost when it charges.
 - **It gives power only when a machine is short.** A machine that cannot get enough from its grid takes the rest from an accumulator that shares a grid with it. A machine that is fully powered never draws from the accumulator.
@@ -1754,13 +1758,15 @@ A picker is a claw. It takes one item from its input and drops it on its output.
 | <img src="images/components/picker_1.png" width="24" height="24" align="absmiddle"> Picker I | 1 | 0.1 kW | Chemical Separation |
 | <img src="images/components/picker_2.png" width="24" height="24" align="absmiddle"> Picker II | 2 | 0.2 kW | Fluorine Chemistry |
 | <img src="images/components/picker_3.png" width="24" height="24" align="absmiddle"> Picker III | 4 | 0.4 kW | Nuclear Fission |
+| <img src="images/components/picker_4.png" width="24" height="24" align="absmiddle"> Picker IV | 8 | 0.8 kW | Pickers IV and V (Tesseract Geometry) |
+| <img src="images/components/picker_5.png" width="24" height="24" align="absmiddle"> Picker V | 16 | 1.6 kW | Pickers IV and V (Tesseract Geometry) |
 
 - **Placing.** Hold the picker and right-click the side of a block. You can use the north, south, east or west face. The top and the bottom do not work. The picker goes on the air beside that face.
 - **The input is the face you click.** The block you clicked is where the picker takes from. Its output is on the far side. Its input side faces the machine and its output side faces away, so its arrows always point outward. You do not need to turn it.
-- **What it takes.** It takes from a belt that points into it, from the output slots of a lab tool, from the products of a drill, from the grid of a crafter, or from a chest on its input side. A picker placed beside a drill takes the drill's products.
+- **What it takes.** It takes from a belt that points into it, from a belt that runs past its side, from a vertical belt beside it, from the output slots of a lab tool, from the products of a drill, from the grid of a crafter, or from a chest on its input side. A picker placed beside a drill takes the drill's products.
 - **From a chest.** On its input side, a picker takes from a chest, a trapped chest, a barrel, a shulker box or a copper chest. A double chest counts as one chest, and the picker takes from the whole of it. It takes one item at a time, at its speed, from the first plain stack. A named or enchanted item is skipped.
 - **Chests and claims.** A picker takes from a chest only where its owner may use it. See [Belts and chests: the claim rule](#belts-and-chests-the-claim-rule). A chest that a stranger's picker may not use keeps its items, and the picker waits.
-- **Sideways from a belt.** A picker placed beside a straight belt, with the belt running past it, takes items off that belt. It takes only what its speed allows, and the items it leaves keep moving on the belt. A belt that turns a corner gives nothing sideways.
+- **Sideways from a belt.** A picker placed beside a straight belt, with the belt running past it, takes items off that belt. It takes only what its speed allows, and the items it leaves keep moving on the belt. A belt that turns a corner gives nothing sideways. A picker placed on any side face of a vertical belt takes items off that belt too (see [Vertical transport belts](#vertical-transport-belts)).
 - **What it gives.** It gives to a belt that starts on its output side, to a lab tool that takes the item as an input (or as fuel, where the lab tool burns it), to the fuel slot of a generator that burns the item, into a crafter's grid, or into a chest, subject to the claim rule above.
 - **Only what fits.** The picker moves an item only when the output accepts it. Otherwise the item waits at the input. A belt that carries an item nothing takes is stopped, so the items behind it wait too.
 - **The start.** When a picker starts moving after it has been idle or blocked, it waits half a second before its first move. Its moves after that come at its speed.
@@ -1776,6 +1782,9 @@ belt can work with it, so a line of machines can feed a recipe and collect what 
 - **A belt or a picker fills it.** A belt that ends in front of the crafter, or a picker that gives to it, puts an item into the first
   switched-on slot that already holds the same item and has room, or else into the first empty switched-on slot. When no slot takes the
   item, the belt or picker waits. A crafter takes any item its slots take, so it is up to the recipe, not the line, to use what it gets.
+  A slot fills to the item's largest stack before the next slot of that item is used, and a full slot is skipped. So a crafter pre-filled
+  with 8 enriched uranium in a square takes more uranium left to right, row by row, until each of the 8 slots holds 64, while the
+  nuclear casing in the centre fills to 64 from the same belt.
 - **A redstone pulse makes it craft.** Vanilla crafts only when the crafter gets a redstone pulse, from a lever, a clock or any other
   redstone source. The line fills the grid, and the grid waits for the pulse. Without a pulse, nothing is crafted.
 - **Its product goes to the block it faces.** When the crafter crafts, vanilla pushes the product into the block the crafter faces, such
@@ -1865,6 +1874,7 @@ Vertical transport belts carry items up or down. You stack them against each oth
 
 - **Place the belts against each other.** A tower is a vertical run of vertical belts, one block after another.
 - **The level is set by the output end.** The tower's level is the level of its output-end belt, the belt at the end in the direction the tower carries. A tower may mix levels.
+- **A chest can feed the tower.** Place the bottom belt of an UP tower on top of a chest, and the chest's items go into the tower one at a time. A DOWN tower takes from a chest placed on top of its top belt.
 
 ### Direction
 
@@ -1875,11 +1885,17 @@ A tower carries items UP or DOWN. To set the direction, hold nothing and right-c
 
 ### Input and output
 
-**Input.** Items enter from the side only.
+**Input.** Items enter a tower from its side, or from the block beyond its input end.
 
 - A regular belt that flows into the side of any belt of a tower puts its items into the tower.
-- A picker whose output is a tower belt does the same. A picker can fill a tower, but it cannot take items from one.
-- Input comes only from a horizontal face of a tower belt. A belt cannot feed a tower from above or below.
+- A picker whose output is a tower belt does the same.
+- A chest, a barrel, a shulker box or another storage stands beyond the input end when it is directly below an UP tower, or directly above a DOWN tower. The tower takes one item at a time out of it, as a belt fed from that storage would, as long as the input belt has room. The storage gives only where the claim rule lets the tower's owner take from it.
+- A regular belt cannot feed a tower from above or below. Only the storage beyond the input end does.
+
+**Taking from a tower.** A picker placed on any of the four side faces (north, south, east or west) of a tower belt takes items off that belt, as it does from the side of a straight belt. A picker placed on the top or the bottom face of a belt is refused, as before. It takes the item nearest the output end among the items beside that belt, one at a time, at its speed. A picker takes only where its owner may use the tower, under the same claim rule as a chest.
+
+- The input end belt is an ordinary belt for this: its items can be taken from the side.
+- The items waiting at the output end are not taken from the side. They leave through the output, as described below.
 
 **Output.** The end of the tower in its direction gives items to the block beyond it: the top for UP, the bottom for DOWN. That block can be a regular belt, a machine or a chest.
 
@@ -1971,7 +1987,7 @@ The laser turret is the second defence. It fires a beam instead of rounds, so it
 - **The beam.** When its barrel is on the target and no solid block is in the way, it fires at once. The beam runs straight along the barrel and stops at the first block or living thing it meets. A target it may harm takes 12 damage at level 1, and more at each level, and armour does not reduce that.
 - **Light.** While it fires, its model glows at full brightness, and a light block shines in the air in front of the barrel for 4 ticks, a fifth of a second. Minecraft has no coloured light, so that light is white. The red comes from the glowing model and the beam. The light block is only placed on empty air outside a claim, and it goes away straight after.
 - **Beam and sounds.** A red beam of dust shows the line of fire, with a burst of sparks where it hits. A level 5 laser's beam and sparks are blue. A sharp phaser sound plays with each shot, and a charging sound when it picks up a target. The server limits the laser particles each tick, so many lasers firing at once draw fewer beams.
-- **How to get it.** The laser turret is researched at Tesseract Geometry, the last node. Its parts come from the chain above:
+- **How to get it.** The laser turret is researched at Tesseract Geometry. Its parts come from the chain above:
   - <img src="images/components/optical_lens.png" width="24" height="24" align="absmiddle"> **Optical lens**: made on the metal lathe from an amethyst shard and high-purity graphite, two to a pass. It is researched at Materials Purification.
   - <img src="images/components/laser_emitter.png" width="24" height="24" align="absmiddle"> **Laser emitter**: made in the component assembly from two circuit boards, glowstone dust and a brass ingot. It is researched at Materials Purification.
   - <img src="images/components/laser_turret.png" width="24" height="24" align="absmiddle"> **Laser turret**: made in the heavy weapons assembly from a steel frame, a targeting unit, a turret mechanism, four optical lenses and two laser emitters. It takes 70 seconds at full power.
@@ -4134,7 +4150,7 @@ If the catalogue will not open for you, and you see a message to say so, use the
 
 ### The tabs
 
-The catalogue has eighteen categories, in this order. Each one is a tab of its own.
+The catalogue has nineteen categories, in this order. Each one is a tab of its own.
 
 | Tab | What it holds |
 |---|---|
@@ -4145,18 +4161,19 @@ The catalogue has eighteen categories, in this order. Each one is a tab of its o
 | Radiation gear | The four Radioactive Suit pieces and the Geiger counter. |
 | Science materials | The materials of the process chain. |
 | Research packs | The five research packs. |
-| Lab machines | The twenty process machines, including the research console, the crude oil refinery, the induction furnace, the powder mill and the other machines of the ammunition chain, and the Ore Density Scanner. It also holds Upgrade Modules II and III. |
+| Lab machines | The twenty process machines, including the research console, the crude oil refinery, the induction furnace, the powder mill and the other machines of the ammunition chain, and the Ore Density Scanner. It also holds Upgrade Modules II to V. |
 | Drills | The ten drills: petroleum drills I to V and ore drills I to V. |
 | Oil system | The oil tube, the oil T splitter and the oil cross splitter. These carry fluid, not items. |
 | Electricity | Pylons I to V, accumulators I to V and the energy wire. |
 | Generators | The wind, solar, charcoal, petroleum, diesel and nuclear generators, and the nuclear fuel rod. |
 | Belts | Transport belts I to III, and the vertical transport belts I to III. |
-| Pickers | Pickers I to III. |
+| Pickers | Pickers I to V. |
 | Splitters | Splitters I to III. These carry items. |
 | Water | The water pump, and the Pump Upgrade kits II to V. The water pipe, and the water splitters T and X. These carry water, not items. |
+| Oil tubes | Oil tube, Oil T splitter, Oil cross splitter | Component assembly, after Materials Purification |
 | Ammunition | The empty shell, the high-grade gunpowder, and the bullets and rounds of the four kinds. |
 | Defences | The machine gun turret and the laser turret, and the parts they are built from: the precision barrel, the steel frame, the turret mechanism, the ammunition feed, the targeting unit, the optical lens and the laser emitter. |
-| Ores | The twelve ore blocks: uraninite, pitchblende, monazite, thorite, galena, cinnabar, fluorite, the crude petroleum deposit, saltpeter, sulfur, zinc and coal. |
+| Ores | The sixteen ore blocks: uraninite, pitchblende, monazite, thorite, galena, cinnabar, fluorite, the crude petroleum deposit, saltpeter, sulfur, zinc, coal, iron, copper, gold and diamond. |
 
 When the tabs do not all fit in the top row, the arrows at each end of the row scroll them. Seven tabs show at a time. The
 arrow on the left shows the earlier categories, and the arrow on the right shows the later ones.
@@ -4446,7 +4463,7 @@ A tick is a twentieth of a second. So 20 ticks make one second, and 200 ticks ma
 
 Open the drill and read the status line in its info item. The status tells you what to fix:
 
-- **No power.** Put a redstone block next to a petroleum drill, or put charcoal in its fuel slot. A drill also runs on the grid: place it inside a pylon's square, with a generator wired to that pylon.
+- **No power.** A drill runs on the grid alone. Place it inside a pylon's square, with a generator wired to that pylon.
 - **No petroleum.** An ore drill needs petroleum in the oil network it touches. Connect it, with oil tubes, to a petroleum drill's network.
 - **Network full.** A petroleum drill's oil network has no room for its petroleum. Draw petroleum off the network with a generator or a refinery.
 - **Output full.** Take the products out, by hand or with a hopper.
@@ -4461,7 +4478,7 @@ In crude petroleum deposits. Their patch blocks lie from y -64 to y 0, in stone 
 
 **Why does my petroleum drill stop at night?**
 
-An older solar panel gives no power at night. Then the drill needs a redstone source, charcoal in its fuel slot, or grid power. The power line of the info item shows which source runs the drill. See [The power of a drill](#the-power-of-a-drill).
+A drill needs grid power, and the grid's share sets its speed. The power line of the info item shows that share. See [The power of a drill](#the-power-of-a-drill).
 
 **My scanner says there are no deposits. Why?**
 
@@ -4575,7 +4592,7 @@ The line shows only while the machine runs or has something it can start. Some s
 
 **Pack.** A research pack, made by the spectrometer. Packs are fed into the research console.
 
-**Petroleum.** Crude oil, a fluid measured in litres. It runs the ore drills and the generators. See [Petroleum and diesel](#petroleum-and-diesel).
+**Petroleum.** Crude oil, a fluid measured in litres. It feeds the refinery and the petroleum generator. See [Petroleum and diesel](#petroleum-and-diesel).
 
 **Picker.** A claw that moves one item from its input to its output. See [Pickers](#pickers).
 
@@ -4607,7 +4624,7 @@ The line shows only while the machine runs or has something it can start. Some s
 
 **Slag.** The waste that roasting can leave behind. It has no use in the recipes.
 
-**Solar panel.** A generator that makes power from daylight. Place it on air and wire it to a pylon. Older solar panels are daylight detectors: placed next to a petroleum drill, they send a redstone signal from the sunlight.
+**Solar panel.** A generator that makes power from daylight. Place it on air and wire it to a pylon. A daylight detector beside a drill does not power it.
 
 **Splitter.** A block that sends each item straight on, or left or right, by its filter. See [Splitters](#splitters).
 

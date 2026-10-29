@@ -29,11 +29,10 @@ class DrillTextTest {
     }
 
     @Test
-    void thePowerReadsItsSourceAndItsPercentage() {
-        assertThat(DrillText.power(DrillRules.petroleumPower(15, List.of(), false))).isEqualTo("redstone 100%");
-        assertThat(DrillText.power(DrillRules.petroleumPower(0, List.of(9), false))).isEqualTo("solar 60%");
-        assertThat(DrillText.power(DrillRules.petroleumPower(0, List.of(), true))).isEqualTo("charcoal 35%");
-        assertThat(DrillText.power(DrillPower.NONE)).isEqualTo("none 0%");
+    void thePowerReadsTheGridAndItsPercentage() {
+        assertThat(DrillText.power(1.0)).isEqualTo("grid 100%");
+        assertThat(DrillText.power(0.6)).isEqualTo("grid 60%");
+        assertThat(DrillText.power(0.0)).isEqualTo("grid 0%");
     }
 
     @Test
@@ -80,33 +79,40 @@ class DrillTextTest {
     }
 
     @Test
-    void aRunningPetroleumDrillInfoShowsItsRateStatusPowerAndWhatPowersIt() {
-        List<String> lines = DrillText.infoLines(DrillKind.PETROLEUM, DrillTable.level(1),
-                DrillRules.petroleumPower(15, List.of(), false), DrillStatus.RUNNING, 0.05, "&7Deposit &fnone");
+    void aRunningPetroleumDrillInfoShowsItsRateStatusAndItsGrid() {
+        List<String> lines = DrillText.infoLines(DrillKind.PETROLEUM, DrillTable.level(1), 1.0, DrillStatus.RUNNING, 0.05,
+                "&7Deposit &fnone");
 
-        assertThat(lines).contains("&7Status &aRunning", "&7Rate &f0.05/s  (3.0/min)", "&7Power: &fredstone 100%");
-        assertThat(lines).contains("&7Deposit &fnone");
-        assertThat(lines).contains("&8- a redstone block or wire next to it", "&8- a solar panel next to it",
-                "&8- charcoal in the fuel slot");
-        assertThat(lines).doesNotContain("&8- petroleum in the fuel slot");
+        assertThat(lines).contains("&7Status &aRunning", "&7Rate &f0.05/s  (3.0/min)", "&7Power: &fgrid 100%");
+        assertThat(lines).contains("&7Deposit &fnone", "&7Powered by: &fthe energy network");
+        assertThat(lines).noneMatch(line -> line.contains("charcoal") || line.contains("solar") || line.contains("redstone"));
     }
 
     @Test
     void aStoppedDrillInfoReadsStoppedAndItsStatus() {
-        List<String> lines = DrillText.infoLines(DrillKind.PETROLEUM, DrillTable.level(1), DrillPower.NONE,
+        List<String> lines = DrillText.infoLines(DrillKind.PETROLEUM, DrillTable.level(1), 0.0,
                 DrillStatus.NO_POWER, 0.0, "&7Deposit &cnone in range");
 
-        assertThat(lines).contains("&7Rate &cstopped", "&7Status &cNo power", "&7Power: &fnone 0%");
+        assertThat(lines).contains("&7Rate &cstopped", "&7Status &cNo power", "&7Power: &fgrid 0%");
         assertThat(lines).noneMatch(line -> line.contains("/min"));
     }
 
     @Test
-    void anOreDrillInfoNamesPetroleumAsItsOnlySource() {
-        List<String> lines = DrillText.infoLines(DrillKind.ORE, DrillTable.level(3), DrillRules.orePower(true),
+    void anOreDrillWithNoPowerReadsNoPowerNotNoPetroleum() {
+        List<String> lines = DrillText.infoLines(DrillKind.ORE, DrillTable.level(3), 0.0,
+                DrillStatus.NO_POWER, 0.0, "&7Deposit &cnone in range");
+
+        assertThat(lines).contains("&7Status &cNo power", "&7Powered by: &fthe energy network");
+        assertThat(lines).noneMatch(line -> line.contains("petroleum"));
+    }
+
+    @Test
+    void anOreDrillInfoNamesNoFluidAsItsSource() {
+        List<String> lines = DrillText.infoLines(DrillKind.ORE, DrillTable.level(3), 1.0,
                 DrillStatus.NO_TARGET, 0.0, "&7Deposit &cnone in range");
 
-        assertThat(lines).contains("&8- petroleum from the oil network", "&7Status &cNo deposit in range");
-        assertThat(lines).noneMatch(line -> line.contains("charcoal") || line.contains("solar"));
+        assertThat(lines).contains("&7Status &cNo deposit in range");
+        assertThat(lines).noneMatch(line -> line.contains("petroleum") || line.contains("charcoal"));
     }
 
     @Test
@@ -119,7 +125,7 @@ class DrillTextTest {
     void noInfoLineLeavesAStrayAmpersandAfterItsColourCodes() {
         for (DrillKind kind : DrillKind.values()) {
             for (DrillStatus status : DrillStatus.values()) {
-                for (String line : DrillText.infoLines(kind, DrillTable.level(2), DrillRules.orePower(true), status,
+                for (String line : DrillText.infoLines(kind, DrillTable.level(2), 1.0, status,
                         0.2, DrillText.deposit("&7Galena Ore", deposit(10, 20)))) {
                     assertThat(visible(line)).as(line).doesNotContain("&");
                 }

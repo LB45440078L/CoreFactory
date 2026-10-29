@@ -34,7 +34,7 @@ class LabUpgradeConfigTest {
 
     @Test
     void theShippedSpeedListHasOneFactorForEachLevel() throws IOException {
-        assertThat(shipped().getDoubleList("machine-upgrades.speed")).containsExactly(1.0, 1.5, 2.0);
+        assertThat(shipped().getDoubleList("machine-upgrades.speed")).containsExactly(1.0, 1.5, 2.0, 2.75, 3.5);
     }
 
     private static YamlConfiguration shipped() throws IOException {

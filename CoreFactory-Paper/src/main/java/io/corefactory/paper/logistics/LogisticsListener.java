@@ -8,10 +8,13 @@ import io.corefactory.paper.machine.InteractionRoute;
 import io.corefactory.paper.machine.ItemRefs;
 import io.corefactory.paper.machine.MachineStore;
 import io.corefactory.paper.machine.PlacedMachine;
+import io.corefactory.paper.vertical.VerticalBelt;
+import io.corefactory.paper.vertical.VerticalService;
 import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
@@ -43,6 +46,9 @@ import java.util.Optional;
  * through its interaction, not its block); the host is the aimed block, and the device goes on the face the server's ray hits it
  * through. A right-click on a splitter with nothing to place opens its filter panel, as before.
  *
+ * <p>A picker or a splitter in the main hand, right-clicked on the interaction of a vertical belt, goes on the face the player aims
+ * through, as a right-click on a plain block does. The interaction covers the belt's whole block, so this click never reaches the block.
+ *
  * <p>A left-click breaks the device through a block break event, so protection plugins see it, and the device's items and its own
  * item drop. A left-click with a belt, picker or splitter in hand does nothing to the device, so a placement cannot break it by
  * accident; with any other item or an empty hand it breaks the device as before. Clicks with any other item on a belt or a picker
@@ -55,6 +61,7 @@ public final class LogisticsListener implements Listener {
 
     private final CoreFactoryCore core;
     private final LogisticsService service;
+    private final VerticalService vertical;
     private final MachineStore machines;
     private final DeviceRegistry energyDevices;
     private final LogisticsPlacement placement;
@@ -63,15 +70,17 @@ public final class LogisticsListener implements Listener {
     /**
      * @param core          the core, which reads the identity of an item
      * @param service       the service that owns the devices
+     * @param vertical      the vertical belts, whose interactions take the placements of pickers and splitters
      * @param machines      the lab tools and drills, whose hosts take the placements of pickers and splitters
      * @param energyDevices the generators and other energy devices, whose blocks take the placements of pickers and splitters
      * @param placement     the placement flow
      * @param refs          converts items to stacks, for the filter panel
      */
-    public LogisticsListener(CoreFactoryCore core, LogisticsService service, MachineStore machines, DeviceRegistry energyDevices,
-                             LogisticsPlacement placement, ItemRefs refs) {
+    public LogisticsListener(CoreFactoryCore core, LogisticsService service, VerticalService vertical, MachineStore machines,
+                             DeviceRegistry energyDevices, LogisticsPlacement placement, ItemRefs refs) {
         this.core = core;
         this.service = service;
+        this.vertical = vertical;
         this.machines = machines;
         this.energyDevices = energyDevices;
         this.placement = placement;
@@ -115,6 +124,11 @@ public final class LogisticsListener implements Listener {
 
     @EventHandler
     public void onInteractEntity(PlayerInteractEntityEvent event) {
+        Optional<VerticalBelt> belt = vertical.byInteraction(event.getRightClicked().getUniqueId());
+        if (belt.isPresent()) {
+            placeOnVerticalBelt(event, belt.get());
+            return;
+        }
         Optional<LogisticsDevice> device = service.byInteraction(event.getRightClicked().getUniqueId());
         if (device.isEmpty()) {
             return;
@@ -135,6 +149,26 @@ public final class LogisticsListener implements Listener {
         if (device.get().kind() == LogisticsIds.Kind.SPLITTER) {
             new SplitterMenu(device.get(), service, refs).open(player);
         }
+    }
+
+    /** A picker or a splitter in the main hand, right-clicked on a vertical belt's interaction, is placed against the face aimed through. */
+    private void placeOnVerticalBelt(PlayerInteractEntityEvent event, VerticalBelt belt) {
+        if (event.getHand() != EquipmentSlot.HAND) {
+            return;
+        }
+        Player player = event.getPlayer();
+        ItemStack held = player.getInventory().getItemInMainHand();
+        Optional<LogisticsIds.Device> device = logisticsOf(held).filter(found -> LogisticsIds.takesSide(found.kind()));
+        if (device.isEmpty()) {
+            return;
+        }
+        event.setCancelled(true);
+        World world = Bukkit.getWorld(belt.world());
+        if (world == null) {
+            return;
+        }
+        Pos cell = belt.pos();
+        placement.place(player, new Location(world, cell.x(), cell.y(), cell.z()), faceOf(player, cell), held, device.get());
     }
 
     /**

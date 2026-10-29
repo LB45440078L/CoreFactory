@@ -102,17 +102,32 @@ public final class CrafterGrid implements Port {
         return OptionalInt.empty();
     }
 
-    /** The enabled slot one more of the item goes into, by {@link StorageRules#slotFor}, or empty when no enabled slot takes it. */
+    /**
+     * The enabled slot one more of the item goes into. An item is spread over the slots that already hold it: it goes to the one with the
+     * fewest items that still has room, the earliest in slot order (row by row, left to right) on a tie. So a belt feeding a square of
+     * eight of one item fills the square evenly, one item to each slot in turn, and each slot reaches a full stack only after the others
+     * have reached the same count. Only when no slot holds the item with room does it go into the first enabled empty slot.
+     */
     private OptionalInt slotFor(ItemRef ref) {
-        List<Stack> open = new ArrayList<>();
-        List<Integer> positions = new ArrayList<>();
+        int stackLimit = limit.applyAsInt(ref);
+        int best = -1;
+        int bestCount = Integer.MAX_VALUE;
         for (int index = 0; index < SLOTS; index++) {
-            if (!disabled[index]) {
-                open.add(slots.get(index));
-                positions.add(index);
+            Stack slot = slots.get(index);
+            int count = slot.count();
+            if (!disabled[index] && count > 0 && count < stackLimit && count < bestCount && ref.equals(slot.ref())) {
+                best = index;
+                bestCount = count;
             }
         }
-        OptionalInt position = StorageRules.slotFor(limit.applyAsInt(ref), open, ref);
-        return position.isEmpty() ? OptionalInt.empty() : OptionalInt.of(positions.get(position.getAsInt()));
+        if (best >= 0) {
+            return OptionalInt.of(best);
+        }
+        for (int index = 0; index < SLOTS; index++) {
+            if (!disabled[index] && slots.get(index).count() <= 0) {
+                return OptionalInt.of(index);
+            }
+        }
+        return OptionalInt.empty();
     }
 }

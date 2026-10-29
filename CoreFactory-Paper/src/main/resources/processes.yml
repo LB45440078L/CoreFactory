@@ -1,4 +1,4 @@
-# data-version: 10
+# data-version: 12
 # =====================================================================================================
 #  CoreFactory processes and machines
 #
@@ -572,7 +572,7 @@ processes:
     outputs:
       - {item: item:targeting_unit, amount: 1}
 
-  # The laser emitter is built from two circuit boards, a graphite crystal and a brass ingot.
+  # The laser emitter is built from two circuit boards, glowstone dust and a brass ingot.
   assemble_laser_emitter:
     machine: component_assembly
     ticks: 400
@@ -700,7 +700,7 @@ processes:
     outputs:
       - {item: item:accumulator_5, amount: 1}
 
-  # ----------------------------------------------------------------- Lab machine upgrade modules (levels 2 and 3)
+  # ----------------------------------------------------------------- Lab machine upgrade modules (levels 2 to 5)
 
   # Each module takes a lab machine up one level; the id names the level it makes. Never hand-made.
   assemble_machine_upgrade_2:
@@ -716,6 +716,37 @@ processes:
     inputs: ["item:targeting_unit:1", "item:optical_lens:2", "item:laser_emitter:1", "item:brass_ingot:2"]
     outputs:
       - {item: item:machine_upgrade_3, amount: 1}
+
+  assemble_machine_upgrade_4:
+    machine: heavy_weapons_assembly
+    ticks: 1800
+    inputs: ["item:tesseract_lattice:1", "item:superconducting_magnet:2", "item:laser_emitter:2", "item:optical_lens:2"]
+    outputs:
+      - {item: item:machine_upgrade_4, amount: 1}
+
+  assemble_machine_upgrade_5:
+    machine: heavy_weapons_assembly
+    ticks: 2400
+    inputs: ["item:tesseract_lattice:2", "item:superconducting_magnet:2", "item:antiproton_capsule:1", "item:targeting_unit:2"]
+    outputs:
+      - {item: item:machine_upgrade_5, amount: 1}
+
+  # ----------------------------------------------------------------- Pickers IV and V (processed)
+
+  # Each picker takes the one below it, and the heavy weapons assembly makes it from the advanced parts.
+  assemble_picker_4:
+    machine: heavy_weapons_assembly
+    ticks: 1200
+    inputs: ["item:picker_3:1", "item:superconducting_magnet:2", "item:optical_lens:2", "item:precision_barrel:1"]
+    outputs:
+      - {item: item:picker_4, amount: 1}
+
+  assemble_picker_5:
+    machine: heavy_weapons_assembly
+    ticks: 1800
+    inputs: ["item:picker_4:1", "item:tesseract_lattice:1", "item:laser_emitter:2", "item:antiproton_capsule:1"]
+    outputs:
+      - {item: item:picker_5, amount: 1}
 
   # ----------------------------------------------------------------- Water system and vertical belts (processed)
 
@@ -850,7 +881,7 @@ processes:
 #  area, depth and cycle length are in the code (DrillTable), so this section names only the kind and level
 #  of each drill. The name and the block it stands on come from materials.yml.
 #
-#    kind     petroleum (pumps deposits into the oil network as litres, fuel: charcoal or solar) or ore (mines special ores, fuel: petroleum from the oil network)
+#    kind     petroleum (pumps deposits into the oil network as litres) or ore (mines special ores). Both run on the energy network.
 #    level    1 to 5
 # =====================================================================================================
 

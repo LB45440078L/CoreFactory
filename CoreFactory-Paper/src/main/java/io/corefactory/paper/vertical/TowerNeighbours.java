@@ -21,4 +21,10 @@ public interface TowerNeighbours {
 
     /** The port at the cell (a machine, a chest or another storage), or empty when the cell gives none. */
     Optional<Port> portAt(UUID world, Pos cell, UUID owner);
+
+    /**
+     * The storage at the cell beyond a tower's input end, that the tower takes items from: a machine, a chest or another storage, taken
+     * for the owner of the tower. Empty when the cell gives none, or when it is a belt or a tower.
+     */
+    Optional<Port> sourceAt(UUID world, Pos cell, UUID owner);
 }

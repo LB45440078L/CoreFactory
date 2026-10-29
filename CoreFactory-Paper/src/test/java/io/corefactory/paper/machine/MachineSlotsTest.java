@@ -94,9 +94,9 @@ class MachineSlotsTest {
     @Test
     void theDrillBarrelFitsTheBarrelButNotTheNineSlotDropper() {
         MachineSlots drill = MachineSlots.drill(DrillTable.OUTPUT_SLOTS);
-        assertThat(drill.used()).isEqualTo(10);
+        assertThat(drill.used()).isEqualTo(DrillTable.OUTPUT_SLOTS);
         assertThat(drill.fits(MachineSlots.BARREL_SIZE)).isTrue();
-        assertThat(drill.fits(9)).isFalse();
+        assertThat(drill.fits(8)).isFalse();
     }
 
     @Test

@@ -139,6 +139,8 @@ public final class MachineArt {
             picker(1, "#B87333"),
             picker(2, "#E0B030"),
             picker(3, "#9B5CFF"),
+            picker(4, "#FF5CA8"),
+            picker(5, "#3FE8FF"),
             splitter(1, "#4A4F58", "#C87533"),
             splitter(2, "#5A5230", "#D8A83A"),
             splitter(3, "#5E4E2A", "#9B5CFF"));

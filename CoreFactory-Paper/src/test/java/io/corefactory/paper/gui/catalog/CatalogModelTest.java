@@ -34,7 +34,7 @@ class CatalogModelTest {
     private static final List<String> GENERATORS = List.of("solar_panel", "wind_generator", "charcoal_generator",
             "petroleum_generator", "diesel_generator", "nuclear_generator", "nuclear_fuel_rod");
     private static final List<String> BELTS = List.of("belt_1", "belt_2", "belt_3");
-    private static final List<String> PICKERS = List.of("picker_1", "picker_2", "picker_3");
+    private static final List<String> PICKERS = List.of("picker_1", "picker_2", "picker_3", "picker_4", "picker_5");
     private static final List<String> SPLITTERS = List.of("splitter_1", "splitter_2", "splitter_3");
     private static final List<String> DUPLEXES = List.of("belt_duplex_1", "belt_duplex_2", "belt_duplex_3");
 
@@ -198,7 +198,7 @@ class CatalogModelTest {
     void theMachinesAreEveryProcessMachineAndTheResearchConsoleAndTheScanner() {
         assertThat(idsIn("Lab machines").stream().filter(id -> !id.startsWith("machine_upgrade_")).toList())
                 .containsExactlyElementsOf(List.copyOf(machineIdsWithScanner()));
-        assertThat(idsIn("Lab machines")).contains("machine_upgrade_2", "machine_upgrade_3");
+        assertThat(idsIn("Lab machines")).contains("machine_upgrade_2", "machine_upgrade_3", "machine_upgrade_4", "machine_upgrade_5");
     }
 
     @Test

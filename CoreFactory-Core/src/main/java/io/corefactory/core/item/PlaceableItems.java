@@ -34,7 +34,7 @@ public final class PlaceableItems {
      */
     public static final Set<String> LOGISTICS_DEVICES = Set.of(
             "belt_1", "belt_2", "belt_3", "belt_duplex_1", "belt_duplex_2", "belt_duplex_3",
-            "picker_1", "picker_2", "picker_3", "splitter_1", "splitter_2", "splitter_3");
+            "picker_1", "picker_2", "picker_3", "picker_4", "picker_5", "splitter_1", "splitter_2", "splitter_3");
 
     /** The component ids of the vertical transport belts, placed on air by the vertical belt listener. */
     public static final Set<String> VERTICAL_DEVICES = Set.of("vertical_belt_1", "vertical_belt_2", "vertical_belt_3");

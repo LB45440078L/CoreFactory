@@ -52,7 +52,7 @@ energy:
     # pylon in range stops. A value of 0 means a lab tool needs no power.
     lab-demand: 4000
     # Power a placed drill asks for when its level is not known, in watts (W). A drill normally asks for the power of its level
-    # (15 kW to 90 kW). A drill runs on the stronger of its own power (redstone, solar, fuel) and its network.
+    # (15 kW to 90 kW). Every drill runs on its network alone, at the share of this demand the network gives it.
     drill-demand: 15000
   # Generators (wind, solar, charcoal, petroleum, diesel and nuclear) are placed on air like pylons, and a nuclear one may also stand
   # in water. Their output, burn times and fuel are fixed by the energy table of the core, so they have no keys here.
@@ -65,8 +65,8 @@ energy:
   # Read at startup, so a change needs a restart.
   wire-particle-cap: 320
 
-# The items a drill yields per second at full power, one rate for each level from 1 to 5. A drill works at the power it has,
-# its own source or its network when that is stronger, so a petroleum drill on charcoal yields 35% of its rate. Each rate is
+# The items a drill yields per second at full power, one rate for each level from 1 to 5. A drill works at the share of its demand
+# (15 kW to 90 kW by level, in energy.consumers) that its network gives it, so a drill on a half-fed grid yields half its rate. Each rate is
 # finite and 0 or more, and a higher level never yields less than the one below. Read at startup, so a change needs a restart.
 # A petroleum drill's rate is litres of petroleum per second, pushed into the oil network, not items; an ore drill yields items.
 drill-rates:
@@ -77,13 +77,15 @@ drill-rates:
   - 6.0
 
 machine-upgrades:
-  # The work pace factor of each lab machine level, level I, II and III. A machine of level II runs its process 1.5 times as
-  # fast at full power, level III twice as fast; the power it draws is unchanged. Each factor is finite and above zero, and a
-  # higher level is never slower than the one below. Read at startup, so a change needs a restart.
+  # The work pace factor of each lab machine level, level I to V. A machine of level II runs its process 1.5 times as fast at full
+  # power, level III twice as fast, level IV 2.75 times and level V 3.5 times; the power it draws is unchanged. Each factor is finite
+  # and above zero, and a higher level is never slower than the one below. Read at startup, so a change needs a restart.
   speed:
     - 1.0
     - 1.5
     - 2.0
+    - 2.75
+    - 3.5
 
 charts:
   # Grid charts (/cf grid create): a hologram of a grid's satisfaction, production or storage. Read at startup, so a change
@@ -98,6 +100,10 @@ logistics:
   # The most item displays on belts at once. Each item on a belt is shown as a small item display that glides along the belt. Past
   # this cap the items are still carried, but not shown, and one warning is logged. Read at startup, so a change needs a restart.
   max-item-displays: 2000
+  # Whether the console warning about the cap above is logged at all. Off: the items are still carried past the cap, and nothing is logged.
+  cap-warning: true
+  # Minutes between two of those warnings, in server time. Zero or less: the warning is logged once only, the first time the cap is reached.
+  cap-warning-minutes: 10
   # Ticks between saves of logistics.yml, which holds the belts, pickers, splitters and the items on the belts. The file is also saved
   # on shutdown.
   save-interval-ticks: 300
@@ -568,8 +574,8 @@ command-center:
 # The water network: pipes, splitters and pumps. A pump stands on a water block and feeds the pipes joined to it. Lab machines and
 # nuclear generators that have a pipe on one of their faces take water from the network. Read at startup, so a change needs a restart.
 water:
-  # The water blocks a pump's source needs, counted 6-connected from the pump's block. A pump below this count is refused when placed,
-  # and stops while its source is below it.
+  # The water blocks a pump's source needs, counted 6-connected from the pump's block.
+  # A pump is placed whatever its source; it stops while its source is below this count.
   source-min-blocks: 100
   # Ticks between two checks of a pump's source. A source that drops is noticed within this many ticks (200 is ten seconds).
   source-check-ticks: 200

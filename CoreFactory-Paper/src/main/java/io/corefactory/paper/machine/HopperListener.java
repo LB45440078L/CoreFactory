@@ -130,7 +130,7 @@ public final class HopperListener implements Listener {
                 ref -> menu.accepts(ref, MachineLayout.Kind.FUEL), item);
     }
 
-    /** The barrel slot an item goes into in the given role: the first slot holding it with room, else the first empty one. */
+    /** The barrel slot an item goes into in the given role: the slot holding it with room, else an empty slot its ingredient may fill. */
     private OptionalInt slotFor(PlacedMachine machine, Inventory held, MachineSlots.Role role, ItemRef item) {
         List<Integer> indexes = machine.menu().slots().indexes(role).stream()
                 .filter(index -> Barrel.has(held, index)).toList();
@@ -141,7 +141,7 @@ public final class HopperListener implements Listener {
             refsHeld.add(refs.of(stack).orElse(null));
             counts.add(ItemRefs.isEmpty(stack) ? 0 : stack.getAmount());
         }
-        OptionalInt position = HopperRules.insertionSlot(refsHeld, counts, item, refs.limit(item));
+        OptionalInt position = HopperRules.insertionSlot(refsHeld, counts, item, refs.limit(item), productsOf(machine));
         return position.isPresent() ? OptionalInt.of(indexes.get(position.getAsInt())) : OptionalInt.empty();
     }
 

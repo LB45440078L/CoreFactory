@@ -2,7 +2,6 @@ package io.corefactory.paper.oil;
 
 import io.corefactory.core.CoreFactoryCore;
 import io.corefactory.core.device.Footprint;
-import io.corefactory.core.drill.DrillKind;
 import io.corefactory.core.energy.Pos;
 import io.corefactory.core.oil.Fluid;
 import io.corefactory.core.oil.FluidTank;
@@ -54,7 +53,8 @@ import java.util.logging.Logger;
  * and the tubes whose joins changed are drawn again.
  *
  * <p>A device joins the networks that touch its footprint. A petroleum drill gives petroleum into every network it joins; a petroleum or
- * diesel generator, an ore drill and a diesel pump take from them. These devices merge the networks they touch into one. A crude oil refinery
+ * diesel generator and a diesel pump take from them. An ore drill joins no network at all. These devices merge the networks they touch
+ * into one. A crude oil refinery
  * keeps the networks it touches apart: it takes petroleum from each network that holds petroleum, and gives diesel into each network that
  * holds diesel, or is empty with a diesel consumer on it, on any of its faces. Devices move fluid through {@link #supply}, {@link #draw} and
  * {@link #available}. Each network moves at most the pipe flow of the settings per server tick, counted over supply and draw together. A
@@ -551,8 +551,8 @@ public final class OilService {
     }
 
     /**
-     * The device a block belongs to when it may join the oil network: a lab machine that is a petroleum or ore drill or the refinery, an
-     * energy generator that burns a fluid, or a water pump at the diesel level. Empty for any other block.
+     * The device a block belongs to when it may join the oil network: a lab machine that is a petroleum drill or the refinery, an
+     * energy generator that burns a fluid, or a water pump at the diesel level. Empty for any other block, and for an ore drill.
      */
     private Optional<Device> endpointAt(Location block) {
         Optional<PlacedMachine> placed = machines.at(block);
@@ -578,8 +578,9 @@ public final class OilService {
     }
 
     /**
-     * The device of a placed lab machine in the oil network: a petroleum drill gives petroleum, an ore drill joins without a fluid, and the
-     * refinery takes petroleum and gives diesel, keeping each network it touches apart. Empty for a machine that does not join the network.
+     * The device of a placed lab machine in the oil network: a petroleum drill gives petroleum, and the refinery takes petroleum and gives
+     * diesel, keeping each network it touches apart. Empty for a machine that does not join the network, and for an ore drill, which never
+     * joins it.
      */
     private static Optional<Device> deviceOf(PlacedMachine placed) {
         if (!placed.isLoaded()) {
@@ -593,12 +594,9 @@ public final class OilService {
             }
             return Optional.of(new Device(anchor, height, Fluid.DIESEL, Fluid.PETROLEUM, true));
         }
-        DrillKind kind = placed.drill().definition().kind();
-        if (kind == DrillKind.PETROLEUM) {
-            return Optional.of(new Device(anchor, height, Fluid.PETROLEUM, null, false));
-        }
-        if (kind == DrillKind.ORE) {
-            return Optional.of(new Device(anchor, height, null, null, false));
+        Optional<Fluid> pumped = placed.drill().definition().kind().pumps();
+        if (pumped.isPresent()) {
+            return Optional.of(new Device(anchor, height, pumped.get(), null, false));
         }
         return Optional.empty();
     }

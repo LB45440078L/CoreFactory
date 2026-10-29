@@ -343,7 +343,7 @@ class ArtTest {
                 "antimatter_condenser", "research_console", "crude_oil_refinery", "induction_furnace", "powder_mill",
                 "cartridge_press", "bullet_swaging_machine", "ammunition_assembly", "metal_lathe", "component_assembly",
                 "heavy_weapons_assembly");
-        assertThat(LevelArt.LEVELS).containsExactly(2, 3);
+        assertThat(LevelArt.LEVELS).containsExactly(2, 3, 4, 5);
         for (String id : LevelArt.LAB_MACHINES) {
             MachineArt.Spec base = LevelArt.base(id);
             for (int level : LevelArt.LEVELS) {
@@ -618,7 +618,7 @@ class ArtTest {
         List<String> expectedMachines = new ArrayList<>(List.of("crusher", "roaster", "separator", "purifier", "converter",
                 "transmuter", "spectrometer", "research_console", "pylon_1", "pylon_2", "pylon_3", "pylon_4", "pylon_5",
                 "accumulator_1", "accumulator_2", "accumulator_3", "accumulator_4", "accumulator_5", "petroleum_drill_1", "petroleum_drill_2", "petroleum_drill_3",
-                "ore_drill_1", "ore_drill_2", "ore_drill_3", "picker_1", "picker_2", "picker_3", "splitter_1",
+                "ore_drill_1", "ore_drill_2", "ore_drill_3", "picker_1", "picker_2", "picker_3", "picker_4", "picker_5", "splitter_1",
                 "splitter_2", "splitter_3", "wind_generator", "wind_generator_top", "charcoal_generator",
                 "charcoal_generator_top", "petroleum_generator", "petroleum_generator_top", "diesel_generator",
                 "diesel_generator_top", "nuclear_generator", "nuclear_generator_top", "solar_panel", "ore_drill_4",

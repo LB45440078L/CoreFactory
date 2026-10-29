@@ -102,6 +102,15 @@ public final class VerticalTower {
     }
 
     /**
+     * The block beyond the input end, where a storage, a machine or a regular belt may stand and give items into the tower: the block
+     * below the bottom for UP, above the top for DOWN. The items enter the tower at its input block.
+     */
+    public Pos inputEndCell() {
+        Pos end = direction() == VerticalDir.UP ? bottom() : top();
+        return new Pos(end.x(), end.y() - direction().dy(), end.z());
+    }
+
+    /**
      * Whether a regular belt may push into this tower from a face of one of its belts. Any of the four horizontal faces of
      * any belt of the tower accepts; the top and bottom faces are the tower's own column, not a side.
      *

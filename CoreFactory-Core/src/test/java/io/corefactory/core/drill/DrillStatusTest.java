@@ -33,7 +33,7 @@ class DrillStatusTest {
     void theStatusTextsArePlayerFacing() {
         assertThat(DrillStatus.RUNNING.text(DrillKind.ORE)).isEqualTo("Running");
         assertThat(DrillStatus.NO_POWER.text(DrillKind.PETROLEUM)).isEqualTo("No power");
-        assertThat(DrillStatus.NO_POWER.text(DrillKind.ORE)).isEqualTo("No petroleum");
+        assertThat(DrillStatus.NO_POWER.text(DrillKind.ORE)).isEqualTo("No power");
         assertThat(DrillStatus.FULL.text(DrillKind.ORE)).isEqualTo("Output full");
         assertThat(DrillStatus.FULL.text(DrillKind.PETROLEUM)).isEqualTo("Network full");
         assertThat(DrillStatus.NO_TARGET.text(DrillKind.ORE)).isEqualTo("No deposit in range");

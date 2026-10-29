@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /**
  * A drill's output slots as a logistics port. A picker takes a product out of the drill's barrel, first output slot first, one
- * item at a time. Nothing goes into a drill through a port: its fuel comes from a hopper or by hand, so {@link #accepts(Item)}
+ * item at a time. Nothing goes into a drill through a port, since a drill has no input slots, so {@link #accepts(Item)}
  * is false and {@link #accept(Item)} is refused. The port keeps no items of its own; its stacks are the drill's barrel slots, so
  * the barrel is the truth and an item cannot be counted twice.
  */
@@ -21,7 +21,7 @@ public final class DrillPort implements Port {
     private final List<Stack> outputs;
 
     /**
-     * @param outputs the output slots, in output order; the fuel slot is not among them
+     * @param outputs the output slots, in output order
      */
     public DrillPort(List<Stack> outputs) {
         this.outputs = List.copyOf(Objects.requireNonNull(outputs, "outputs"));
@@ -49,7 +49,7 @@ public final class DrillPort implements Port {
 
     @Override
     public void accept(Item item) {
-        throw new IllegalStateException("a drill takes no items through a port; its fuel is fed by hoppers and by hand");
+        throw new IllegalStateException("a drill takes no items through a port: it has no input slots");
     }
 
     @Override

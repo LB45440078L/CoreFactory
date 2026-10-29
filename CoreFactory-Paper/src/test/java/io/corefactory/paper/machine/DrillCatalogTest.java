@@ -80,21 +80,21 @@ class DrillCatalogTest {
     }
 
     @Test
-    void theFuelOfAPetroleumDrillIsCharcoalAndOfAnOreDrillIsPetroleum() {
-        assertThat(catalog.drill("petroleum_drill_3").orElseThrow().fuel()).contains(ItemRef.material("CHARCOAL"));
-        assertThat(catalog.drill("ore_drill_3").orElseThrow().fuel()).isEmpty();
+    void everyDrillIsElectricAndHasNoFuelSlot() {
+        for (DrillDefinition drill : catalog.drills()) {
+            Machine machine = catalog.machine(drill.id()).orElseThrow();
+            assertThat(machine.fuelSlots()).as(drill.id()).isZero();
+            assertThat(machine.inputSlots()).as(drill.id()).isZero();
+        }
     }
 
     @Test
-    void aPetroleumDrillIsAMachineWithOneCharcoalSlotAndAnOreDrillWithTheOutputGrid() {
+    void aPetroleumDrillHasNoSlotsAndAnOreDrillHasTheOutputGrid() {
         for (DrillDefinition drill : catalog.drills()) {
             Machine machine = catalog.machine(drill.id()).orElseThrow();
-            assertThat(machine.inputSlots()).as(drill.id()).isZero();
             if (drill.kind() == DrillKind.PETROLEUM) {
-                assertThat(machine.fuelSlots()).as(drill.id()).isEqualTo(1);
                 assertThat(machine.outputSlots()).as(drill.id()).isZero();
             } else {
-                assertThat(machine.fuelSlots()).as(drill.id()).isZero();
                 assertThat(machine.outputSlots()).as(drill.id()).isEqualTo(DrillTable.OUTPUT_SLOTS);
             }
         }

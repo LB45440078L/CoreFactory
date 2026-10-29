@@ -11,7 +11,7 @@ offers the ids that have a crafting recipe or that a machine makes. An id that i
 | `/cf help` | none | Lists the subcommands. |
 | `/cf give <id> [player] [amount]` | `corefactory.give` | Gives a TNT type, a component or an ore block. `id` may be an ore id, such as `uraninite_ore`, which gives its ore block item. `player` defaults to you. `amount` is 1 to 64, default 1. A larger number gives 64. Text that is not a number is refused. |
 | `/cf list` | none | Prints every TNT id, every component id and every ore id. |
-| `/cf gui` | `corefactory.guide` | Opens the catalogue: a paged browser of everything the plugin adds, in eighteen categories, each its own tab. Left-click an entry for one copy (needs `corefactory.give`, which operators have, and the research for the item). Without that permission a left click says only administrators can take items, and the entry's lore says so. Right-click an entry for its recipe. A click that does something plays a short sound, which only you hear. |
+| `/cf gui` | `corefactory.guide` | Opens the catalogue: a paged browser of everything the plugin adds, in nineteen categories, each its own tab. Left-click an entry for one copy (needs `corefactory.give`, which operators have, and the research for the item). Without that permission a left click says only administrators can take items, and the entry's lore says so. Right-click an entry for its recipe. A click that does something plays a short sound, which only you hear. |
 | `/cf recipe <id>` | `corefactory.recipes` | Shows the recipe of a TNT type or a component in a crafting grid. An item a machine makes has no crafting recipe, so its view shows the process and the machine that makes it. Click an ingredient that has a recipe of its own to open that recipe; BACK returns. |
 | `/cf book [player]` | `corefactory.guide` | Gives the tutorial book: a short guide to crafting, placing, the <img src="images/components/fuse_linker.png" width="24" height="24" align="absmiddle"> fuse linker, components, nuclear weapons, achievements and commands, then the science chapters (ores, the uranium chain, breeding, hydrogen and particles, exotic matter, research, warheads and machines), with the recipes and costs read from the game's files. |
 | `/cf achievements [player]` | `corefactory.achievements` | Opens your achievements, in pages of 45. Unlocked ones glow and show the date; locked ones show progress. With a player name it shows theirs, which needs `corefactory.give`. |
@@ -19,6 +19,7 @@ offers the ids that have a crafting recipe or that a machine makes. An id that i
 | `/cf aim [north\|east\|south\|west\|up\|down]` | `corefactory.configure` | Sets the direction of the placed TNT you look at. Without an argument it uses your facing. Shaped charges use this direction; napalm uses it only when dropped. |
 | `/cf target [x y z]` | `corefactory.configure` | Sets the teleport destination of the placed TNT you look at. Without coordinates it is the block you stand on; with `x y z` it is that block in your world. Give all three coordinates or none: one or two are refused. Used by <img src="images/tnt/teleport_tnt.png" width="24" height="24" align="absmiddle"> teleport TNT. |
 | `/cf unlink` | `corefactory.configure` | Removes every fuse link of the placed TNT you look at. |
+| `/cf holograms [on\|off]` | `corefactory.configure` | With no argument, says whether the holograms of devices are shown. `on` or `off` shows or hides them for everyone. Device holograms start hidden after each restart; a pylon's hologram is always shown. The setting is kept in memory only. |
 | `/cf count` | none | Number of placed custom TNT blocks. |
 | `/cf reload` | `corefactory.reload` | Re-reads `config.yml`, `tnts.yml`, `items.yml` and `materials.yml`, and re-registers recipes. Placed TNT stays as it is. `processes.yml`, `ores.yml`, `research.yml`, the `deposits` section and the drill section need a restart. See [CONFIGURATION.md](CONFIGURATION.md). |
 | `/cf pack [update]` | `corefactory.reload` | Shows the bundled and installed resource pack versions and what the next start will do. `update` copies the bundled pack now, only if it is newer. See [RESOURCE_PACK.md](RESOURCE_PACK.md#versions-and-updates). |
@@ -101,7 +102,7 @@ a command. The table gives each action and who may do it. None of them has a per
 |---|---|---|
 | `corefactory.*` | op | Every node below. |
 | `corefactory.give` | op | `/cf give`, taking items from the catalogue, and another player's achievements (`/cf achievements <player>`). Only holders of this node can take items from the catalogue; everyone else can browse it and open recipes. |
-| `corefactory.configure` | op | `/cf aim`, `/cf target`, `/cf unlink`. |
+| `corefactory.configure` | op | `/cf aim`, `/cf target`, `/cf unlink` and `/cf holograms`. |
 | `corefactory.reload` | op | `/cf reload` and `/cf pack`. |
 | `corefactory.guide` | everyone | `/cf gui` (the catalogue) and `/cf book`. |
 | `corefactory.recipes` | everyone | `/cf recipe`, and right-clicking a catalogue entry. |
